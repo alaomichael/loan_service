@@ -379,10 +379,10 @@ export default class LoansController {
         // @ts-ignore
         loan[0].startDate = DateTime.now().toISO();
         let duration = parseInt(loan[0].duration);
-        loan[0].payoutDate = DateTime.now().plus({ days: duration });
+        loan[0].repaymentDate = DateTime.now().plus({ days: duration });
         console.log("The currentDate line 336: ", currentDateMs);
         console.log("Time loan was started line 337: ", loan[0].startDate);
-        console.log("Time loan payout date line 338: ", loan[0].payoutDate);
+        console.log("Time loan repayment date line 338: ", loan[0].repaymentDate);
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -390,7 +390,7 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan has just been activated.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 348:", timelineObject);
         //  Push the new object to the array
@@ -414,16 +414,6 @@ export default class LoansController {
         //  return response.status(200).json({ status: 'OK', data: loan.$original })
 
         // END
-        const requestUrl = Env.get("CERTIFICATE_URL"); //+ loan[0].id
-        await new PuppeteerServices(requestUrl, {
-          paperFormat: "a3",
-          fileName: `${loan[0].requestType}_${loan[0].id}`,
-        })
-          .printAsPDF(loan[0])
-          .catch((error) => console.error(error));
-        console.log("Loan Certificate generated, URL, line 378: ", requestUrl);
-        // save the certicate url
-        loan[0].certificateUrl = requestUrl;
         await loan[0].save();
         return response.json({
           status: "OK",
@@ -476,9 +466,9 @@ export default class LoansController {
           id: uuid(),
           action: "loan declined",
           // @ts-ignore
-          message: `${loan[0].walletHolderDetails.firstName} loan has just been declined.`,
+          message: `${loan[0].loanAccountDetails.firstName} loan has just been declined.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount declined: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 429:", timelineObject);
         //  Push the new object to the array
@@ -562,18 +552,8 @@ export default class LoansController {
         // on success
 
         // update status loan
-        loan[0].isPayoutAuthorized = true;
-        loan[0].isTerminationAuthorized = true;
+        loan[0].isLoanApproved = true;
         loan[0].status = "terminated";
-
-        // @ts-ignore
-        // loan[0].datePayoutWasDone = DateTime.now().toISO()
-        // loan[0].startDate = DateTime.now().toISO()
-        // let duration = parseInt(loan[0].duration)
-        // loan[0].payoutDate = DateTime.now().plus({ days: duration })
-        // console.log('The currentDate line 284: ', currentDateMs)
-        // console.log('Time loan was started line 285: ', loan[0].startDate)
-        // console.log('Time loan payout date line 286: ', loan[0].payoutDate)
 
         // update timeline
         timelineObject = {
@@ -582,7 +562,7 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan has just been terminated.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 529:", timelineObject);
         //  Push the new object to the array
@@ -908,74 +888,22 @@ export default class LoansController {
         message: "No data matched your feedback query",
       });
     }
-    // try {
-    //   let testAmount = 505000
-    //   let testDuration = 180
-    //   let testInvestmentType = 'fixed'
-    //   let investmentRate = async function (amount, duration, investmentType) {
-    //     try {
-    //       const response = await axios.get(
-    //         `${API_URL}/investments/rates?amount=${amount}&duration=${duration}&investmentType=${investmentType}`
-    //       )
-    //       console.log('The API response: ', response.data)
-    //       if (response.data.status === 'OK' && response.data.data.length > 0) {
-    //         return response.data.data[0].interest_rate
-    //       } else {
-    //         return
-    //       }
-    //     } catch (error) {
-    //       console.error(error)
-    //     }
-    //   }
-
-    //   console.log(
-    //     ' The Rate return for RATE: ',
-    //     await investmentRate(testAmount, testDuration, testInvestmentType)
-    //   )
-    //   let rate = await investmentRate(testAmount, testDuration, testInvestmentType)
-    //   console.log(' Rate return line 236 : ', rate)
-    //   if (rate === undefined  || rate.length < 1) {
-    //     return response.status(400).json({
-    //       status: 'FAILED',
-    //       message: 'no loan rate matched your search, please try again.',
-    //       data: [],
-    //     })
-    //   }
-
-    //   // const loan = await Loan.query().where('status', 'initiated') // rate
-    //   // console.log('LOAN DATA line 169: ', loan)
-
-    //   // const loan = await Loan.query().where('status', 'pending')
-    //   // .orWhere('id', params.id)
-    //   // .limit()
-    //   if (loan && loan.length > 0) {
-    //     // console.log('LOAN: ',loan.map((inv) => inv.$extras))
-    //     console.log('LOAN DATA line 253: ', loan)
-    //     return response
-    //       .status(200)
-    //       .json({ status: 'OK', data: loan.map((inv) => inv.$original) })
-    //   } else {
-    //     return response
-    //       .status(200)
-    //       .json({ status: 'FAILED', message: 'no loan matched your query.' })
-    //   }
-    // } catch (error) {
-    //   console.error(error)
-    // }
   }
 
   public async update({ request, response }: HttpContextContract) {
     try {
       let { walletId, loanId } = request.qs();
       console.log(" walletId and loanId: ", walletId + " " + loanId);
+      let { amountApproved } = request.all()
+  console.log(" amountApproved line 898: ", amountApproved);
       let loan = await Loan.query().where({
-        walletId: request.input("walletId"),
-        id: request.input("loanId"),
+        walletId: walletId,
+        id: loanId,
       });
       if (loan.length > 0) {
         console.log("Loan Selected for Update line 1001:", loan[0].startDate);
         let isDueForRepayment;
-        if (loan[0].startDate !== null) {
+        if (loan[0].status !== "active") {
           let createdAt = loan[0].createdAt;
           let duration = loan[0].duration;
           let timeline;
@@ -987,6 +915,7 @@ export default class LoansController {
             // let newRolloverType = request.input("rolloverType");
             // Restrict update to timed/fixed deposit only
             if (loan && isDueForRepayment === false) {
+              loan[0].amountApproved = amountApproved;
               // loan[0].amount = request.input('amount')
               // loan[0].investmentType = request.input('investmentType')
               // Todo
@@ -1007,9 +936,9 @@ export default class LoansController {
                   id: uuid(),
                   action: "loan updated",
                   // @ts-ignore
-                  message: `${loan[0].walletHolderDetails.firstName} loan has just been updated.`,
+                  message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
-                  meta: `amount approved: ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+                  meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
                 };
                 console.log("Timeline object line 1041:", timelineObject);
                 //  Push the new object to the array
@@ -1024,16 +953,16 @@ export default class LoansController {
                 // send to user
                 return response.json({
                   status: "OK",
-                  data: loan.map((inv) => inv.$original),
+                  data: loan.map((loan) => loan.$original),
                 });
               }
               return; // 422
             } else {
               return response.status(400).json({
                 status: "FAILED",
-                data: loan.map((inv) => inv.$original),
+                data: loan.map((loan) => loan.$original),
                 message:
-                  "please check your loan type, and note the rollover target cannot be more than 5 times",
+                  "please check your loan parameters",
               });
             }
           } catch (error) {
@@ -1043,7 +972,7 @@ export default class LoansController {
         } else {
           return response.json({
             status: "FAILED",
-            data: loan.map((inv) => inv.$original),
+            data: loan.map((loan) => loan.$original),
           });
         }
       } else {
@@ -2379,206 +2308,6 @@ export default class LoansController {
                   console.log("Payload line 1969 :", payload);
                   let payloadDuration = investmentData.duration;
                   let payloadInvestmentType = investmentData.investmentType;
-                  // A function for creating new loan
-                  // const createInvestment = async (
-                  //   payloadAmount,
-                  //   payloadDuration,
-                  //   payloadInvestmentType,
-                  //   investmentData
-                  // ) => {
-                  //   console.log('Loan data line 1713: ', investmentData)
-                  //   console.log('Loan payloadAmount data line 1714: ', payloadAmount)
-                  //   console.log('Loan payloadDuration data line 1715: ', payloadDuration)
-                  //   console.log(
-                  //     'Loan payloadInvestmentType data line 1717: ',
-                  //     payloadInvestmentType
-                  //   )
-
-                  //   console.log(
-                  //     ' The Rate return for RATE line 2274: ',
-                  //     await investmentRate(payloadAmount, payloadDuration, payloadInvestmentType)
-                  //   )
-                  //   let rate = await investmentRate(
-                  //     payloadAmount,
-                  //     payloadDuration,
-                  //     payloadInvestmentType
-                  //   )
-                  //   console.log(' Rate return line 2282 : ', rate)
-                  //   if (rate === undefined) {
-                  //     return response.status(400).json({
-                  //       status: 'FAILED',
-                  //       message: 'no loan rate matched your search, please try again.',
-                  //       data: [],
-                  //     })
-                  //   }
-                  //   let settings = await Setting.query().where({ tagName: 'default setting' })
-                  //   console.log('Approval setting line 2291:', settings[0])
-                  //   let payload
-                  //   // destructure / extract the needed data from the loan
-                  //   let {
-                  //     amount,
-                  //     rolloverType,
-                  //     rolloverTarget,
-                  //     rolloverDone,
-                  //     investmentType,
-                  //     duration,
-                  //     walletId,
-                  //     tagName,
-                  //     currencyCode,
-                  //     long,
-                  //     lat,
-                  //     walletHolderDetails,
-                  //   } = investmentData
-                  //   // copy the loan data to payload
-                  //   payload = {
-                  //     amount,
-                  //     rolloverType,
-                  //     rolloverTarget,
-                  //     rolloverDone,
-                  //     investmentType,
-                  //     duration,
-                  //     walletId,
-                  //     tagName,
-                  //     currencyCode,
-                  //     long,
-                  //     lat,
-                  //     walletHolderDetails,
-                  //   }
-                  //   payload.amount = payloadAmount
-                  //   //  payload.interestRate = rate
-                  //   console.log('PAYLOAD line 2325 :', payload)
-
-                  //   const loan = await Loan.create(payload)
-                  //   loan.interestRate = rate
-
-                  //   // When the Invest has been approved and activated
-                  //   let investmentAmount = loan.amount
-                  //   let loanDuration = loan.duration
-                  //   let amountDueOnRepayment = await interestDueOnPayout(
-                  //     investmentAmount,
-                  //     rate,
-                  //     loanDuration
-                  //   )
-                  //   // @ts-ignore
-                  //   loan.interestDueOnLoan = amountDueOnRepayment
-                  //   // @ts-ignore
-                  //   loan.totalAmountToPayout = loan.amount + amountDueOnRepayment
-                  //   // @ts-ignore
-                  //   loan.walletId = loan.walletHolderDetails.investorFundingWalletId
-                  //   await loan.save()
-                  //   console.log('The new Reinvestment, line 2345 :', loan)
-
-                  //   await loan.save()
-                  //   let newInvestmentId = loan.id
-                  //   // @ts-ignore
-                  //   let newInvestmentEmail = loan.walletHolderDetails.email
-
-                  //   // Send Loan Initiation Message to Queue
-
-                  //   // check if Approval is set to Auto, from Setting Controller
-                  //   let requestType = 'start loan'
-                  //   let approvalIsAutomated = settings[0].isInvestmentAutomated
-                  //   if (approvalIsAutomated === false) {
-                  //     // Send Approval Request to Admin
-                  //     walletId = loan.walletId
-                  //     let loanId = loan.id
-                  //     // let requestType = 'start loan'
-                  //     let approval = await approvalRequest(walletId, loanId, requestType)
-                  //     console.log(' Approval request return line 2362 : ', approval)
-                  //     if (approval === undefined) {
-                  //       return response.status(400).json({
-                  //         status: 'FAILED',
-                  //         message:
-                  //           'loan approval request was not successful, please try again.',
-                  //         data: [],
-                  //       })
-                  //     }
-                  //     // update timeline
-                  //     timelineObject = {
-                  //       id: uuid(),
-                  //       action: 'loan initiated',
-                  //       // @ts-ignore
-                  //       message: `${loan.walletHolderDetails.firstName} loan has just been sent for activation approval.`,
-                  //       createdAt: DateTime.now(),
-                  //       meta: `amount invested: ${loan.amount}, request type : ${requestType}`,
-                  //     }
-                  //     console.log('Timeline object line 2380:', timelineObject)
-                  //     //  Push the new object to the array
-                  //      console.log('Timeline array line 2382:', loan.timeline)
-                  //     //  create a new timeline array
-                  //     timeline =  []
-                  //     timeline.push(timelineObject)
-                  //     console.log('Timeline object line 2384:', timeline)
-                  //     // stringify the timeline array
-                  //     loan.timeline = JSON.stringify(timeline)
-                  //     console.log('Timeline array line 2389:', loan.timeline)
-                  //     // Save
-                  //     await loan.save()
-
-                  //     // Send to Notification Service
-                  //     // New loan initiated
-                  //     Event.emit('new:loan', {
-                  //       id: newInvestmentId,
-                  //       email: newInvestmentEmail,
-                  //     })
-                  //   } else if (approvalIsAutomated === true) {
-                  //     // TODO
-                  //     // If Approval is automated
-                  //     // Send Loan Payload To Transaction Service and await response
-                  //     let sendToTransactionService = 'OK' //= new SendToTransactionService(loan)
-                  //     console.log(' Feedback from Transaction service: ', sendToTransactionService)
-                  //     if (sendToTransactionService === 'OK') {
-                  //       // Activate the loan
-                  //       loan.requestType = requestType
-                  //       loan.status = 'active'
-                  //       loan.approvalStatus = 'approved'
-                  //       loan.startDate = DateTime.now() //.toISODate()
-                  //       loan.payoutDate = DateTime.now().plus({
-                  //         days: parseInt(loanDuration),
-                  //       })
-                  //       // update timeline
-                  //       timelineObject = {
-                  //         id: uuid(),
-                  //         action: 'loan activated',
-                  //         // @ts-ignore
-                  //         message: `${loan.walletHolderDetails.firstName} loan has just been activated.`,
-                  //         createdAt: DateTime.now(),
-                  //         meta: `amount invested: ${loan.amount}, request type : ${loan.requestType}`,
-                  //       }
-                  //       console.log('Timeline object line 2422:', timelineObject)
-                  //       //  Push the new object to the array
-                  //       timeline = [] //JSON.parse(loan.timeline)
-                  //       timeline.push(timelineObject)
-                  //       console.log('Timeline object line 2426:', timeline)
-                  //       // stringify the timeline array
-                  //       loan.timeline = JSON.stringify(timeline)
-                  //       // Save
-                  //       await loan.save()
-                  //       const requestUrl = Env.get('CERTIFICATE_URL') //+ loan.id
-                  //       await new PuppeteerServices(requestUrl, {
-                  //         paperFormat: 'a3',
-                  //         fileName: `${loan.requestType}_${loan.id}`,
-                  //       })
-                  //         .printAsPDF(loan)
-                  //         .catch((error) => console.error(error))
-                  //       console.log(
-                  //         'Loan Certificate generated, URL, line 2439: ',
-                  //         requestUrl
-                  //       )
-                  //       // save the certicate url
-                  //       loan.certificateUrl = requestUrl
-                  //       await loan.save()
-                  //       // Send to Notification Service
-                  //       // New Loan Initiated and Activated
-                  //       Event.emit('new:loan', {
-                  //         id: newInvestmentId,
-                  //         email: newInvestmentEmail,
-                  //       })
-                  //     }
-                  //   }
-                  //   return response.status(201).json({ status: 'OK', data: loan.$original })
-                  //   // END
-                  // }
                   let payout;
                   let newTimeline: any[] = [];
                   let rate;
@@ -3156,29 +2885,30 @@ amountRequested,
 amountApproved,
         tagName,
         currencyCode,
-
+isDisbursementSuccessful,
         long,
         lat,
         interestRate,
         interestDueOnLoan,
-
+isLoanApproved,
         createdAt,
         startDate,
 dateDisbursementWasDone,
         requestType,
         approvalStatus,
         status,
+        repaymentDate
       } = loan;
 
       console.log("Initial status line 2949: ", status);
-      console.log("Initial datePayoutWasDone line 2950: ", dateDisbursementWasDone);
+      console.log("Initial dateDisbursementWasDone line 2950: ", dateDisbursementWasDone);
       let payload = {
         loanId: id,
         walletId,
         duration,
       amountRequested,
 amountApproved,
-
+tagName,
         currencyCode,
         loanAccountDetails,
         long,
@@ -3188,10 +2918,9 @@ amountApproved,
         totalAmountPaid: amountApproved,
         createdAt,
         startDate,
-        payoutDate,
-        isPayoutAuthorized,
-        isTerminationAuthorized,
-        isPayoutSuccessful,
+        repaymentDate,
+        isLoanApproved,
+        isDisbursementSuccessful,
         dateDisbursementWasDone,
         requestType,
         approvalStatus,
@@ -3200,14 +2929,14 @@ amountApproved,
       };
       // get the amount paid and the status of the transaction
       // let amountPaid = 50500
-      isPayoutSuccessful = true;
+      isDisbursementSuccessful = true;
 
       // Save the Transaction to
       // payload[0].totalAmountToPayout = 0
       // payload.totalAmountPaid = amountPaid
       payload.approvalStatus = "approved";
       payload.status = "paid";
-      payload.isPayoutSuccessful = isPayoutSuccessful;
+      payload.isDisbursementSuccessful = isDisbursementSuccessful;
       // @ts-ignore
       console.log("Payout Payload: ", payload);
 
@@ -3217,9 +2946,6 @@ amountApproved,
       payoutRecord = await PayoutRecord.query().where({
         loan_id: payload.loanId,
         wallet_id: walletId,
-        : ,
-        rollover_target: payload.rolloverTarget,
-        rollover_done: payload.rolloverDone,
       });
       console.log(" QUERY RESULT line 3003: ", payoutRecord);
       if (payoutRecord.length > 0) {
@@ -3230,7 +2956,7 @@ amountApproved,
         });
       }
       // loan[0].totalAmountToPayout = amountPaid
-      loan.isPayoutSuccessful = isPayoutSuccessful;
+      loan.isDisbursementSuccessful = isDisbursementSuccessful;
       loan.approvalStatus = "approved";
       loan.status = "paid";
       // @ts-ignore
@@ -3255,9 +2981,6 @@ amountApproved,
         .where({
           loan_id: payload.loanId,
           wallet_id: walletId,
-          : ,
-          rollover_target: payload.rolloverTarget,
-          investment_type: payload.investmentType,
         })
         .first();
       console.log("Payout loan data line 3040:", payout);
@@ -3265,9 +2988,8 @@ amountApproved,
         payout.totalAmountToPayout = payoutRecord.totalAmountPaid;
         payout.isPayoutAuthorized = payoutRecord.isPayoutAuthorized;
         payout.isTerminationAuthorized = payoutRecord.isTerminationAuthorized;
-        payout.isPayoutSuccessful = payoutRecord.isPayoutSuccessful;
+        payout.isDisbursementSuccessful = payoutRecord.isDisbursementSuccessful;
         payout.approvalStatus = payoutRecord.approvalStatus;
-        payout.rolloverDone = payoutRecord.rolloverDone;
         payout.datePayoutWasDone = payoutRecord.createdAt;
         payout.status = payoutRecord.status;
         payout.timeline = payoutRecord.timeline;
