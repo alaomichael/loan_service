@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid("id").primary().index().unique().notNullable();
       table.text("wallet_id").unsigned().nullable().index();
       table.float("amount_requested", 255).unsigned().notNullable().index();
-      table.float("amount_approved", 255).unsigned().notNullable().index();
+      table.float("amount_approved", 255).unsigned().notNullable().defaultTo(0).index();
       table
         .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
         .unsigned()

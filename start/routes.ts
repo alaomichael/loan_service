@@ -37,6 +37,8 @@ Route.group(() => {
 
     // POST ROUTES
     Route.post("wallets", "WalletsController.store");
+    Route.post("loans", "LoansController.store");
+    Route.post("admin/loans/settings", "SettingsController.store");
 
     Route.post("investments/approvals", "ApprovalsController.store");
     Route.post("admin/investments", "InvestmentsController.store");
@@ -48,16 +50,18 @@ Route.group(() => {
       "admin/investments/transactions",
       "InvestmentsController.processPayment"
     );
-    Route.post("admin/investments/settings", "SettingsController.store");
 
     // GET ROUTES
-Route.get("wallets", "WalletsController.index");
-Route.get("wallets/:walletId", "WalletsController.showByWalletId");
+    Route.get("wallets", "WalletsController.index");
+    Route.get("wallets/:walletId", "WalletsController.showByWalletId");
+    Route.get("loans/rates", "LoansController.getLoanRate");;
+    Route.get("loans", "LoansController.index");
+    Route.get("loans/:loanId", "LoansController.showByLoanId");
+    Route.get("admin/loans/settings", "SettingsController.index");
 
     Route.get("investments", "InvestmentsController.index");
     Route.get("admin/investments", "InvestmentsController.index");
     Route.get("investments/rates", "RatesController.index");
-    Route.get("admin/investments/settings", "SettingsController.index");
     Route.get("admin/investments/rates", "RatesController.index");
     Route.get("admin/investments/taxes", "TaxesController.index");
     Route.get("admin/investments/taxrecords", "TaxRecordsController.index");
@@ -88,11 +92,11 @@ Route.get("wallets/:walletId", "WalletsController.showByWalletId");
     // Route.get('investments/rates', 'InvestmentsController.rate')
 
     // PUT ROUTES
-Route.put("wallets/:walletId", "WalletsController.update");
+    Route.put("wallets", "WalletsController.update");
+    Route.put("admin/loans/settings", "SettingsController.update");
 
     Route.put("investments/payouts", "InvestmentsController.payout");
     Route.put("investments/terminates", "InvestmentsController.payout");
-    Route.put("admin/investments/settings", "SettingsController.update");
     Route.put("admin/investments/terminates", "InvestmentsController.payout");
     Route.put("admin/investments/payouts", "InvestmentsController.payout");
     Route.put("admin/investments/rates", "RatesController.update");
@@ -103,9 +107,9 @@ Route.put("wallets/:walletId", "WalletsController.update");
     Route.put("investments", "InvestmentsController.update");
 
     // DELETE ROUTES
-Route.delete("wallets/:walletId", "WalletsController.destroy");
+    Route.delete("wallets", "WalletsController.destroy");
+    Route.delete("admin/loans/settings", "SettingsController.destroy");
 
-    Route.delete("admin/investments/settings", "SettingsController.destroy");
     Route.delete("admin/investments/rates", "RatesController.destroy");
     Route.delete("admin/investments/taxes", "TaxesController.destroy");
     Route.delete(

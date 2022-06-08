@@ -14,11 +14,6 @@ export default class ApprovalsController {
     const { walletId, limit, loanId, requestType, approvalStatus, remark } =
       request.qs();
     console.log("Approvals query: ", request.qs());
-    const countApprovals = await Approval.query()
-      .where("approval_status", "pending")
-      .getCount();
-    console.log("Approval count: ", countApprovals);
-
     const approval = await Approval.all();
     let sortedApprovals = approval;
     if (walletId) {
@@ -213,8 +208,7 @@ export default class ApprovalsController {
               // newStatus = 'terminated'
               // loan[0].status = newStatus
               loan[0].approvalStatus = approval[0].approvalStatus;
-              loan[0].isPayoutAuthorized = true;
-              loan[0].isTerminationAuthorized = true;
+              loan[0].isLoanApproved = true;
               // Calculate the Total Amount to payout by pro-rata
               let startDate = loan[0].startDate;
               let currentDate = new Date().toISOString();
@@ -225,24 +219,24 @@ export default class ApprovalsController {
               let expectedDuration = loan[0].duration;
               let expectedInterestOnMaturity =
                 loan[0].interestDueOnLoan;
-              let amountInvested = loan[0].amount;
+              let amountRequested = loan[0].amountRequested;
               if (parseInt(expectedDuration) > daysOfLoan) {
                 // Pro-rata the Interest Due on Loan
                 let interestDuePerDay =
                   expectedInterestOnMaturity / parseInt(expectedDuration);
                 let newInterestDueToTermination =
                   daysOfLoan * interestDuePerDay;
-                let formerTotalAmountToPayout =
-                  loan[0].totalAmountToPayout;
+                let formerTotalAmountToRepay =
+                  loan[0].totalAmountToRepay;
                 console.log(
                   "Former Total Amount Due for payout if Matured is, line 203: ",
-                  formerTotalAmountToPayout
+                  formerTotalAmountToRepay
                 );
-                loan[0].totalAmountToPayout =
-                  amountInvested + newInterestDueToTermination;
+                loan[0].totalAmountToRepay =
+                  amountRequested + newInterestDueToTermination;
                 // Save the updated loan
                 await loan[0].save();
-                let newTotalAmountToPayout = loan[0].totalAmountToPayout;
+                let newTotalAmountToPayout = loan[0].totalAmountToRepay;
                 console.log(
                   "Total Amount Due for payout due to Termination, line 211: ",
                   newTotalAmountToPayout
@@ -255,8 +249,7 @@ export default class ApprovalsController {
               // newStatus = 'payout'
               // loan[0].status = newStatus
               loan[0].approvalStatus = approval[0].approvalStatus;
-              loan[0].isPayoutAuthorized = true;
-              loan[0].isTerminationAuthorized = true;
+              loan[0].isLoanApproved = true;
               // Save the updated loan
               await loan[0].save();
             } else if (
@@ -275,8 +268,7 @@ export default class ApprovalsController {
               // newStatus = 'active'
               // loan[0].status = newStatus
               loan[0].approvalStatus = approval[0].approvalStatus;
-              loan[0].isPayoutAuthorized = false;
-              loan[0].isTerminationAuthorized = false;
+              loan[0].isLoanApproved = false;
               // Save the updated loan
               await loan[0].save();
             } else if (
@@ -286,8 +278,7 @@ export default class ApprovalsController {
               // newStatus = 'active'
               // loan[0].status = newStatus
               loan[0].approvalStatus = approval[0].approvalStatus;
-              loan[0].isPayoutAuthorized = false;
-              loan[0].isTerminationAuthorized = false;
+              loan[0].isLoanApproved = false;
               // Save the updated loan
               await loan[0].save();
             }
