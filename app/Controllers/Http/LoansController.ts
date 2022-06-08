@@ -26,7 +26,7 @@ import Wallet from "App/Models/Wallet";
 export default class LoansController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("LOAN params: ", params);
-    const { search, limit, requestType, userId, loanId, status } =
+    const { search, limit, requestType, walletId, loanId, status } =
       request.qs();
     console.log("LOAN query: ", request.qs());
     // const count = await Loan.query()
@@ -47,9 +47,9 @@ export default class LoansController {
     if (search) {
       sortedInvestments = sortedInvestments.filter((loan) => {
         // @ts-ignore
-        // console.log(' Sorted :', loan.walletHolderDetails.lastName!.startsWith(search))
+        // console.log(' Sorted :', loan.loanAccountDetails.lastName!.startsWith(search))
         // @ts-ignore
-        return loan.walletHolderDetails.lastName!.startsWith(search);
+        return loan.loanAccountDetails.lastName!.startsWith(search);
       });
     }
     if (requestType) {
@@ -65,10 +65,10 @@ export default class LoansController {
       });
     }
 
-    if (userId) {
+    if (walletId) {
       sortedInvestments = sortedInvestments.filter((loan) => {
         // @ts-ignore
-        return loan.userId === userId;
+        return loan.walletId === walletId;
       });
     }
     if (loanId) {
@@ -93,7 +93,7 @@ export default class LoansController {
     Event.emit("list:investments", {
       id: loan[0].id,
       // @ts-ignore
-      email: loan[0].walletHolderDetails.email,
+      email: loan[0].loanAccountDetails.email,
     });
     // return loan
     console.log(" SORTED LOAN line 78" + sortedInvestments);
@@ -208,7 +208,6 @@ export default class LoansController {
     }
   }
 
-
   public async showByWalletId({
     params,
     request,
@@ -216,17 +215,17 @@ export default class LoansController {
   }: HttpContextContract) {
     console.log("LOAN params: ", params);
     const { walletId } = request.params();
-    console.log("LOAN params loanId: ", walletId);
+    console.log("LOAN params walletId: ", walletId);
     try {
-      let loan = await Loan.query()
+      let loans = await Loan.query()
         .where({ walletId: walletId });
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
-      if (!loan) return response.status(404).json({ status: "FAILED" });
+      if (!loans || loans.length < 0) return response.status(404).json({ status: "FAILED" });
       return response
         .status(200)
-        .json({ status: "OK", data: loan.$original });
+        .json({ status: "OK", data: loans.map((loan) => loan.$original) });
     } catch (error) {
       console.log(error);
     }
@@ -1140,7 +1139,7 @@ export default class LoansController {
     console.log("Payload line 1010  :", payload);
     // check BVN status
 let bvnIsVerified = await Wallet.query().where({ bvn: payload.bvn, isBvnVerified: true }).first()
-if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not verified."})}
+if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not verified."})}else{ payload.isBvnVerified = true }
   // check creditRating
 
   // check available rate to apply
@@ -1206,7 +1205,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
     // @ts-ignore
     loan.interestDueOnLoan = amountDueOnRepayment;
     // @ts-ignore
-    loan.totalAmountToPayout = loan.amount + amountDueOnRepayment;
+    loan.totalAmountToRepay = loan.amountRequested + amountDueOnRepayment;
 
     // loan.payoutDate = await payoutDueDate(loan.startDate, loan.duration)
     // @ts-ignore

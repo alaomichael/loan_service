@@ -56,6 +56,7 @@ Route.group(() => {
     Route.get("wallets/:walletId", "WalletsController.showByWalletId");
     Route.get("loans/rates", "LoansController.getLoanRate");;
     Route.get("loans", "LoansController.index");
+    // Route.get("loans/:walletId", "LoansController.showByWalletId");
     Route.get("loans/:loanId", "LoansController.showByLoanId");
     Route.get("admin/loans/settings", "SettingsController.index");
 
