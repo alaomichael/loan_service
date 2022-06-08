@@ -1052,20 +1052,34 @@ export default class LoansController {
     // check available rate to apply
     let payloadAmount = payload.amountRequested;
     let payloadDuration = payload.duration;
+    // console.log(
+    //   " The Rate return for RATE line 1141: ",
+    //   await generateRate(payloadAmount, payloadDuration)
+    // );
+    // let rate = Number(await generateRate(payloadAmount, payloadDuration));
+    // console.log(" Rate return line 1151 : ", rate);
+    // // @ts-ignore
+    // if (rate === undefined || rate.length < 1) {
+    //   return response.status(400).json({
+    //     status: "FAILED",
+    //     message: "no loan rate matched your search, please try again.",
+    //     data: [],
+    //   });
+    // }
     console.log(
-      " The Rate return for RATE line 1141: ",
-      await generateRate(payloadAmount, payloadDuration)
+      " The Rate return for RATE line 1227: ",
+      await investmentRate(payloadAmount, payloadDuration)
     );
-    let rate = Number(await generateRate(payloadAmount, payloadDuration));
-    console.log(" Rate return line 1151 : ", rate);
-    // @ts-ignore
+    let rate = await investmentRate(payloadAmount, payloadDuration);
+    console.log(" Rate return line 1238 : ", rate);
     if (rate === undefined || rate.length < 1) {
       return response.status(400).json({
         status: "FAILED",
-        message: "no loan rate matched your search, please try again.",
+        message: "no investment rate matched your search, please try again.",
         data: [],
       });
     }
+
     console.log("Payload line 1160  :", payload);
     const loan = await Loan.create(payload);
     loan.interestRate = rate;
@@ -1133,6 +1147,63 @@ export default class LoansController {
       }
     } else if (approvalIsAutomated === true) {
       // TODO
+      // Get recommendations
+      let amountRecommended;
+      amountRecommended = 425000
+      // call Okra
+
+      // call CreditRegistry
+
+      // TODO
+      payloadAmount = amountRecommended;
+      // loan.amountApproved = amountRecommended;
+     payloadDuration = payload.duration;
+     payload.amountApproved = amountRecommended;
+      // console.log(
+      //   " The Rate return for RATE line 1141: ",
+      //   await generateRate(payloadAmount, payloadDuration)
+      // );
+      // let rate = Number(await generateRate(payloadAmount, payloadDuration));
+      // console.log(" Rate return line 1151 : ", rate);
+      // // @ts-ignore
+      // if (rate === undefined || rate.length < 1) {
+      //   return response.status(400).json({
+      //     status: "FAILED",
+      //     message: "no loan rate matched your search, please try again.",
+      //     data: [],
+      //   });
+      // }
+      console.log(
+        " The Rate return for RATE line 1227: ",
+        await investmentRate(payloadAmount, payloadDuration)
+      );
+      let rate = await investmentRate(payloadAmount, payloadDuration);
+      console.log(" Rate return line 1238 : ", rate);
+      if (rate === undefined || rate.length < 1) {
+        return response.status(400).json({
+          status: "FAILED",
+          message: "no investment rate matched your search, please try again.",
+          data: [],
+        });
+      }
+
+      console.log("Payload line 1190  :", payload);
+      const loan = await Loan.create(payload);
+      loan.interestRate = rate;
+
+      // When the loan has been approved and activated
+      let amount = loan.amountApproved;
+      let loanDuration = loan.duration;
+      let amountDueOnRepayment = Number(await interestDueOnLoan(
+        amount,
+        rate,
+        loanDuration
+      ));
+      loan.interestDueOnLoan = amountDueOnRepayment;
+      loan.totalAmountToRepay = loan.amountApproved + amountDueOnRepayment;
+      await loan.save();
+      console.log("The new loan:", loan);
+
       // Send Loan Payload To Transaction Service
       let sendToTransactionService = "OK"; //= new SendToTransactionService(loan)
       console.log(
@@ -1141,7 +1212,7 @@ export default class LoansController {
       );
       if (sendToTransactionService === "OK") {
         // Activate the loan
-        loan.amountApproved = loan.amountRequested;
+        loan.amountApproved = amountRecommended;
         loan.requestType = requestType;
         loan.status = "active";
         loan.approvalStatus = "approved";
@@ -1175,13 +1246,6 @@ export default class LoansController {
         });
       }
     }
-
-    // Testing
-    // let verificationCodeExpiresAt = DateTime.now().plus({ hours: 2 }).toHTTP() // .toISODate()
-    // let testingPayoutDate = DateTime.now().plus({ days: duration }).toHTTP()
-    // console.log('verificationCodeExpiresAt : ' + verificationCodeExpiresAt + ' from now')
-    // console.log('Testing Payout Date: ' + testingPayoutDate)
-
     // Save update to database
     await loan.save();
     let newLoanId = loan.id;
@@ -1199,145 +1263,152 @@ export default class LoansController {
     request,
     response,
   }: HttpContextContract) {
+    //  START
+    try {
+      let { walletId, loanId } = request.qs();
+      console.log(" walletId and loanId: ", walletId + " " + loanId);
+      let amountApproved;
 
-    let payload;
-    // call Okra
+      let loan = await Loan.query().where({
+        walletId: walletId,
+        id: loanId,
+      });
+      if (loan.length > 0) {
+        console.log("Loan Selected for Update line 1258:", loan[0].startDate);
+        let payload = loan[0];
+        // call Okra
 
-    // Call Credit registry
+        // Call Credit registry
 
-    // give recommendation based on the report of Okra and CreditRegistry, internal algorithm
+        // give recommendation based on the report of Okra and CreditRegistry, internal algorithm
 
-    // check available rate to apply
-    let payloadAmount = payload.amountRequested;
-    let payloadDuration = payload.duration;
-    let amountRecommended;
-    amountRecommended = 350000;
-    // console.log(
-    //   " The Rate return for RATE line 1212: ",
-    //   await generateRate(payloadAmount, payloadDuration)
-    // );
-    // let rate = Number(await generateRate(payloadAmount, payloadDuration));
-    // console.log(" Rate return line 1151 : ", rate);
-    // // @ts-ignore
-    // if (rate === undefined || rate.length < 1) {
-    //   return response.status(400).json({
-    //     status: "FAILED",
-    //     message: "no loan rate matched your search, please try again.",
-    //     data: [],
-    //   });
-    // }
- console.log(
-   " The Rate return for RATE line 1227: ",
-   await investmentRate(payloadAmount, payloadDuration, )
- );
- let rate = await investmentRate(
-   payloadAmount,
-   payloadDuration,
+        // check available rate to apply
+        let payloadAmount = payload.amountRequested;
+        let payloadDuration = payload.duration;
+        let amountRecommended;
+        amountRecommended = 400000;
+        // console.log(
+        //   " The Rate return for RATE line 1212: ",
+        //   await generateRate(payloadAmount, payloadDuration)
+        // );
+        // let rate = Number(await generateRate(payloadAmount, payloadDuration));
+        // console.log(" Rate return line 1151 : ", rate);
+        // // @ts-ignore
+        // if (rate === undefined || rate.length < 1) {
+        //   return response.status(400).json({
+        //     status: "FAILED",
+        //     message: "no loan rate matched your search, please try again.",
+        //     data: [],
+        //   });
+        // }
+        console.log(
+          " The Rate return for RATE line 1227: ",
+          await investmentRate(payloadAmount, payloadDuration)
+        );
+        let rate = await investmentRate(payloadAmount, payloadDuration);
+        console.log(" Rate return line 1238 : ", rate);
+        if (rate === undefined || rate.length < 1) {
+          return response.status(400).json({
+            status: "FAILED",
+            message:
+              "no investment rate matched your search, please try again.",
+            data: [],
+          });
+        }
 
- );
- console.log(" Rate return line 1238 : ", rate);
- if (rate === undefined || rate.length < 1) {
-   return response.status(400).json({
-     status: "FAILED",
-     message: "no investment rate matched your search, please try again.",
-     data: [],
-   });
- }
+        let isDueForRepayment;
+        if (loan[0].status !== "active") {
+          let createdAt = loan[0].createdAt;
+          let duration = loan[0].duration;
+          let timeline;
+          let timelineObject;
+          try {
+            isDueForRepayment = await dueForRepayment(createdAt, duration);
+            console.log("Is due for repayment status :", isDueForRepayment);
+            if (loan && isDueForRepayment === false) {
+              loan[0].amountApproved = amountRecommended; // amountApproved;
+              amountApproved = loan[0].amountApproved;
+              console.log(" amountApproved line 1270: ", amountApproved);
+              // Recalculate the interestRate and totalAmountToRepay
+              loan[0].interestRate = rate;
+              // When the loan has been approved and activated
+              let amount = loan[0].amountApproved;
+              let loanDuration = loan[0].duration;
+              let amountDueOnRepayment = Number(
+                await interestDueOnLoan(amount, rate, loanDuration)
+              );
+              loan[0].interestDueOnLoan = amountDueOnRepayment;
+              loan[0].totalAmountToRepay =
+                loan[0].amountApproved + amountDueOnRepayment;
+              await loan[0].save();
+              console.log("The new loan:", loan[0]);
 
-//  START
- try {
-   let { walletId, loanId } = request.qs();
-   console.log(" walletId and loanId: ", walletId + " " + loanId);
-   let amountApproved  = amountRecommended
-   console.log(" amountApproved line 1252: ", amountApproved);
-   let loan = await Loan.query().where({
-     walletId: walletId,
-     id: loanId,
-   });
-   if (loan.length > 0) {
-     console.log("Loan Selected for Update line 1001:", loan[0].startDate);
-     let isDueForRepayment;
-     if (loan[0].status !== "active") {
-       let createdAt = loan[0].createdAt;
-       let duration = loan[0].duration;
-       let timeline;
-       let timelineObject;
-       try {
-         isDueForRepayment = await dueForRepayment(createdAt, duration);
-         console.log("Is due for repayment status :", isDueForRepayment);
-         // let newRolloverTarget = request.input("rolloverTarget");
-         // let newRolloverType = request.input("rolloverType");
-         // Restrict update to timed/fixed deposit only
-         if (loan && isDueForRepayment === false) {
-           loan[0].amountApproved = amountApproved;
-           // loan[0].amount = request.input('amount')
-           // loan[0].investmentType = request.input('investmentType')
-           // Todo
-           // Update Timeline
-           // Retrieve the current timeline
+              // Todo
+              // Update Timeline
+              // Retrieve the current timeline
 
-           // Turn Timeline string to json
+              // Turn Timeline string to json
 
-           // push the update to the array
+              // push the update to the array
 
-           // Turn Timeline json to string
+              // Turn Timeline json to string
 
-           // save the timeline to the loan object
+              // save the timeline to the loan object
 
-           if (loan) {
-             // update timeline
-             timelineObject = {
-               id: uuid(),
-               action: "loan updated",
-               // @ts-ignore
-               message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
-               createdAt: DateTime.now(),
-               meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
-             };
-             console.log("Timeline object line 1041:", timelineObject);
-             //  Push the new object to the array
-             timeline = loan[0].timeline;
-             timeline.push(timelineObject);
-             console.log("Timeline object line 1045:", timeline);
-             // stringify the timeline array
-             loan[0].timeline = JSON.stringify(timeline);
-             // Save
-             await loan[0].save();
-             console.log("Update Loan:", loan);
-             // send to user
-             return response.json({
-               status: "OK",
-               data: loan.map((loan) => loan.$original),
-             });
-           }
-           return; // 422
-         } else {
-           return response.status(400).json({
-             status: "FAILED",
-             data: loan.map((loan) => loan.$original),
-             message: "please check your loan parameters",
-           });
-         }
-       } catch (error) {
-         console.error("Is due for payout status Error :", error);
-         return response.json({ status: "FAILED", data: error.message });
-       }
-     } else {
-       return response.json({
-         status: "FAILED",
-         data: loan.map((loan) => loan.$original),
-       });
-     }
-   } else {
-     return response.status(404).json({
-       status: "FAILED",
-       message: "No data match your query parameters",
-     });
-   }
- } catch (error) {
-   console.error(error);
- }
-// END
+              if (loan) {
+                // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan updated",
+                  // @ts-ignore
+                  message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+                };
+                console.log("Timeline object line 1297:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan[0].timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1301:", timeline);
+                // stringify the timeline array
+                loan[0].timeline = JSON.stringify(timeline);
+                // Save
+                await loan[0].save();
+                console.log("Update Loan:", loan);
+                // send to user
+                return response.json({
+                  status: "OK",
+                  data: loan.map((loan) => loan.$original),
+                });
+              }
+              return; // 422
+            } else {
+              return response.status(400).json({
+                status: "FAILED",
+                data: loan.map((loan) => loan.$original),
+                message: "please check your loan parameters",
+              });
+            }
+          } catch (error) {
+            console.error("Is due for payout status Error :", error);
+            return response.json({ status: "FAILED", data: error.message });
+          }
+        } else {
+          return response.json({
+            status: "FAILED",
+            data: loan.map((loan) => loan.$original),
+          });
+        }
+      } else {
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    // END
   }
 
   public async approve({ request, response }: HttpContextContract) {
