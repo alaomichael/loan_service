@@ -18,6 +18,7 @@ import {
   repaymentDueDate,
   approvalRequest,
   sendPaymentDetails,
+  investmentRate,
   // @ts-ignore
 } from "App/Helpers/utils";
 
@@ -1198,6 +1199,7 @@ export default class LoansController {
     request,
     response,
   }: HttpContextContract) {
+
     let payload;
     // call Okra
 
@@ -1208,20 +1210,134 @@ export default class LoansController {
     // check available rate to apply
     let payloadAmount = payload.amountRequested;
     let payloadDuration = payload.duration;
-    console.log(
-      " The Rate return for RATE line 1141: ",
-      await generateRate(payloadAmount, payloadDuration)
-    );
-    let rate = Number(await generateRate(payloadAmount, payloadDuration));
-    console.log(" Rate return line 1151 : ", rate);
-    // @ts-ignore
-    if (rate === undefined || rate.length < 1) {
-      return response.status(400).json({
-        status: "FAILED",
-        message: "no loan rate matched your search, please try again.",
-        data: [],
-      });
-    }
+    let amountRecommended;
+    amountRecommended = 350000;
+    // console.log(
+    //   " The Rate return for RATE line 1212: ",
+    //   await generateRate(payloadAmount, payloadDuration)
+    // );
+    // let rate = Number(await generateRate(payloadAmount, payloadDuration));
+    // console.log(" Rate return line 1151 : ", rate);
+    // // @ts-ignore
+    // if (rate === undefined || rate.length < 1) {
+    //   return response.status(400).json({
+    //     status: "FAILED",
+    //     message: "no loan rate matched your search, please try again.",
+    //     data: [],
+    //   });
+    // }
+ console.log(
+   " The Rate return for RATE line 1227: ",
+   await investmentRate(payloadAmount, payloadDuration, )
+ );
+ let rate = await investmentRate(
+   payloadAmount,
+   payloadDuration,
+
+ );
+ console.log(" Rate return line 1238 : ", rate);
+ if (rate === undefined || rate.length < 1) {
+   return response.status(400).json({
+     status: "FAILED",
+     message: "no investment rate matched your search, please try again.",
+     data: [],
+   });
+ }
+
+//  START
+ try {
+   let { walletId, loanId } = request.qs();
+   console.log(" walletId and loanId: ", walletId + " " + loanId);
+   let amountApproved  = amountRecommended
+   console.log(" amountApproved line 1252: ", amountApproved);
+   let loan = await Loan.query().where({
+     walletId: walletId,
+     id: loanId,
+   });
+   if (loan.length > 0) {
+     console.log("Loan Selected for Update line 1001:", loan[0].startDate);
+     let isDueForRepayment;
+     if (loan[0].status !== "active") {
+       let createdAt = loan[0].createdAt;
+       let duration = loan[0].duration;
+       let timeline;
+       let timelineObject;
+       try {
+         isDueForRepayment = await dueForRepayment(createdAt, duration);
+         console.log("Is due for repayment status :", isDueForRepayment);
+         // let newRolloverTarget = request.input("rolloverTarget");
+         // let newRolloverType = request.input("rolloverType");
+         // Restrict update to timed/fixed deposit only
+         if (loan && isDueForRepayment === false) {
+           loan[0].amountApproved = amountApproved;
+           // loan[0].amount = request.input('amount')
+           // loan[0].investmentType = request.input('investmentType')
+           // Todo
+           // Update Timeline
+           // Retrieve the current timeline
+
+           // Turn Timeline string to json
+
+           // push the update to the array
+
+           // Turn Timeline json to string
+
+           // save the timeline to the loan object
+
+           if (loan) {
+             // update timeline
+             timelineObject = {
+               id: uuid(),
+               action: "loan updated",
+               // @ts-ignore
+               message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
+               createdAt: DateTime.now(),
+               meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+             };
+             console.log("Timeline object line 1041:", timelineObject);
+             //  Push the new object to the array
+             timeline = loan[0].timeline;
+             timeline.push(timelineObject);
+             console.log("Timeline object line 1045:", timeline);
+             // stringify the timeline array
+             loan[0].timeline = JSON.stringify(timeline);
+             // Save
+             await loan[0].save();
+             console.log("Update Loan:", loan);
+             // send to user
+             return response.json({
+               status: "OK",
+               data: loan.map((loan) => loan.$original),
+             });
+           }
+           return; // 422
+         } else {
+           return response.status(400).json({
+             status: "FAILED",
+             data: loan.map((loan) => loan.$original),
+             message: "please check your loan parameters",
+           });
+         }
+       } catch (error) {
+         console.error("Is due for payout status Error :", error);
+         return response.json({ status: "FAILED", data: error.message });
+       }
+     } else {
+       return response.json({
+         status: "FAILED",
+         data: loan.map((loan) => loan.$original),
+       });
+     }
+   } else {
+     return response.status(404).json({
+       status: "FAILED",
+       message: "No data match your query parameters",
+     });
+   }
+ } catch (error) {
+   console.error(error);
+ }
+// END
   }
 
   public async approve({ request, response }: HttpContextContract) {

@@ -329,17 +329,16 @@ const sendPaymentDetails = async function (amount, duration, investmentType) {
 // )
 const investmentRate = async function (
   payloadAmount,
-  payloadDuration,
-  payloadInvestmentType
+  payloadDuration
 ) {
   try {
     const response = await axios.get(
-      `${API_URL}/investments/rates?amount=${payloadAmount}&duration=${payloadDuration}&investmentType=${payloadInvestmentType}`
+      `${API_URL}/loans/rates?amount=${payloadAmount}&duration=${payloadDuration}`
     );
-    console.log("The API response line 346: ", response.data);
+    console.log("The API response line 338: ", response.data);
     if (response.data.status === "OK" && response.data.data.length > 0) {
       console.log(
-        "The API response line 348: ",
+        "The API response line 341: ",
         response.data.data[0].interestRate
       );
       return response.data.data[0].interestRate;

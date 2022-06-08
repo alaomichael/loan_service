@@ -64,6 +64,9 @@ export default class Loan extends BaseModel {
   public isLoanApproved: boolean;
 
   @column()
+  public acceptOffer: boolean;
+
+  @column()
   public isDisbursementSuccessful: boolean;
 
   @column()

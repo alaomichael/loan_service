@@ -31,7 +31,7 @@ Route.get("health", async ({ response }) => {
 
 Route.group(() => {
   Route.group(() => {
-   
+
     // POST ROUTES
     Route.post("wallets", "WalletsController.store");
     Route.post("loans", "LoansController.store");
@@ -52,11 +52,11 @@ Route.group(() => {
     // Route.get("loans/rates", "LoansController.getLoanRate");;
     Route.get("loans", "LoansController.index");
     // Route.get("loans/:walletId", "LoansController.showByWalletId");
-    Route.get("loans/:loanId", "LoansController.showByLoanId");
     Route.get("admin/loans/settings", "SettingsController.index");
     Route.get("loans/rates", "RatesController.index");
     Route.get("admin/loans/rates", "RatesController.index");
     Route.get("admin/loans/approvals", "ApprovalsController.index");
+    Route.get("loans/:loanId", "LoansController.showByLoanId");
 
     // Route.get('investments/payouts', 'InvestmentsController.showPayouts')
     Route.get("investments/payouts", "PayoutsController.index");
