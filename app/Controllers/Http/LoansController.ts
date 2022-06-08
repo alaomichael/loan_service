@@ -34,7 +34,7 @@ export default class LoansController {
     //   .getCount();
     // console.log("LOAN count: ", count);
     // let settings = await Setting.query().where({ currency_code: 'NGN' })
-    // console.log('Approval setting line 35:', settings[0].isPayoutAutomated)
+    // console.log('Approval setting line 35:', settings[0].isDisbursementAutomated)
     // const loan = await Loan.query().offset(0).limit(1)
     const loan = await Loan.all(); //.sort(function (Loan.timeline.createdAt, Loan.timeline.createdAt) {return Loan.timeline.createdAt-Loan.timeline.createdAt})
     // console.log('LOAN before sorting line 40: ', loan)
@@ -193,16 +193,12 @@ export default class LoansController {
     const { loanId } = request.params();
     console.log("LOAN params loanId: ", loanId);
     try {
-      let loan = await Loan.query()
-        .where({ id: loanId })
-        .first();
+      let loan = await Loan.query().where({ id: loanId }).first();
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
       if (!loan) return response.status(404).json({ status: "FAILED" });
-      return response
-        .status(200)
-        .json({ status: "OK", data: loan.$original });
+      return response.status(200).json({ status: "OK", data: loan.$original });
     } catch (error) {
       console.log(error);
     }
@@ -217,12 +213,12 @@ export default class LoansController {
     const { walletId } = request.params();
     console.log("LOAN params walletId: ", walletId);
     try {
-      let loans = await Loan.query()
-        .where({ walletId: walletId });
+      let loans = await Loan.query().where({ walletId: walletId });
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
-      if (!loans || loans.length < 0) return response.status(404).json({ status: "FAILED" });
+      if (!loans || loans.length < 0)
+        return response.status(404).json({ status: "FAILED" });
       return response
         .status(200)
         .json({ status: "OK", data: loans.map((loan) => loan.$original) });
@@ -231,7 +227,11 @@ export default class LoansController {
     }
   }
 
-  public async showRepayment({ params, request, response }: HttpContextContract) {
+  public async showRepayment({
+    params,
+    request,
+    response,
+  }: HttpContextContract) {
     console.log("LOAN params: ", params);
     try {
       //   const loan = await Loan.query().where('status', 'payout')
@@ -364,9 +364,7 @@ export default class LoansController {
             message:
               "No loan activation approval data matched your query, please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
         loan[0].approvalStatus = approvals[0].approvalStatus;
@@ -383,14 +381,8 @@ export default class LoansController {
         let duration = parseInt(loan[0].duration);
         loan[0].payoutDate = DateTime.now().plus({ days: duration });
         console.log("The currentDate line 336: ", currentDateMs);
-        console.log(
-          "Time loan was started line 337: ",
-          loan[0].startDate
-        );
-        console.log(
-          "Time loan payout date line 338: ",
-          loan[0].payoutDate
-        );
+        console.log("Time loan was started line 337: ", loan[0].startDate);
+        console.log("Time loan payout date line 338: ", loan[0].payoutDate);
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -429,10 +421,7 @@ export default class LoansController {
         })
           .printAsPDF(loan[0])
           .catch((error) => console.error(error));
-        console.log(
-          "Loan Certificate generated, URL, line 378: ",
-          requestUrl
-        );
+        console.log("Loan Certificate generated, URL, line 378: ", requestUrl);
         // save the certicate url
         loan[0].certificateUrl = requestUrl;
         await loan[0].save();
@@ -476,9 +465,7 @@ export default class LoansController {
             message:
               "No loan activation decline data matched your query, please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
 
@@ -566,9 +553,7 @@ export default class LoansController {
             message:
               "No loan termination approval data matched your query,or the feedback has been applied,or please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
         loan[0].approvalStatus = approvals[0].approvalStatus;
@@ -641,9 +626,7 @@ export default class LoansController {
             message:
               "No loan termination decline data matched your query,or the feedback has been applied,or please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
 
@@ -726,9 +709,7 @@ export default class LoansController {
             message:
               "No loan data matched your query,or the feedback has been applied,or please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
         loan[0].approvalStatus = approvals[0].approvalStatus;
@@ -750,10 +731,7 @@ export default class LoansController {
 
         // console.log('The currentDate line 372: ', currentDateMs)
         // console.log('Time loan was started line 373: ', loan[0].startDate)
-        console.log(
-          "Time loan payout date line 390: ",
-          loan[0].payoutDate
-        );
+        console.log("Time loan payout date line 390: ", loan[0].payoutDate);
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -805,9 +783,7 @@ export default class LoansController {
             message:
               "No loan payout decline data matched your query, or the feedback has been applied, or please try again",
             approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map(
-              (loan) => loan.$original
-            ),
+            investmentdata: loan.map((loan) => loan.$original),
           });
         }
 
@@ -990,37 +966,28 @@ export default class LoansController {
 
   public async update({ request, response }: HttpContextContract) {
     try {
+      let { walletId, loanId } = request.qs();
+      console.log(" walletId and loanId: ", walletId + " " + loanId);
       let loan = await Loan.query().where({
-        user_id: request.input("userId"),
+        walletId: request.input("walletId"),
         id: request.input("loanId"),
       });
       if (loan.length > 0) {
-        console.log(
-          "Loan Selected for Update line 889:",
-          loan[0].startDate
-        );
-        let isDueForPayout;
+        console.log("Loan Selected for Update line 1001:", loan[0].startDate);
+        let isDueForRepayment;
         if (loan[0].startDate !== null) {
           let createdAt = loan[0].createdAt;
           let duration = loan[0].duration;
           let timeline;
           let timelineObject;
           try {
-            isDueForPayout = await dueForPayout(createdAt, duration);
-            // isDueForPayout = await dueForPayout(loan[0].startDate, loan[0].duration)
-            console.log("Is due for payout status :", isDueForPayout);
-            let newRolloverTarget = request.input("rolloverTarget");
-            let newRolloverType = request.input("rolloverType");
+            isDueForRepayment = await dueForRepayment(createdAt, duration);
+            console.log("Is due for repayment status :", isDueForRepayment);
+            // let newRolloverTarget = request.input("rolloverTarget");
+            // let newRolloverType = request.input("rolloverType");
             // Restrict update to timed/fixed deposit only
-            if (
-              loan &&
-              loan[0].investmentType !== "debenture" &&
-              isDueForPayout === false &&
-              newRolloverTarget <= 5
-            ) {
+            if (loan && isDueForRepayment === false) {
               // loan[0].amount = request.input('amount')
-              loan[0].rolloverTarget = newRolloverTarget;
-              loan[0].rolloverType = newRolloverType;
               // loan[0].investmentType = request.input('investmentType')
               // Todo
               // Update Timeline
@@ -1042,13 +1009,13 @@ export default class LoansController {
                   // @ts-ignore
                   message: `${loan[0].walletHolderDetails.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
-                  meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+                  meta: `amount approved: ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
                 };
-                console.log("Timeline object line 935:", timelineObject);
+                console.log("Timeline object line 1041:", timelineObject);
                 //  Push the new object to the array
                 timeline = loan[0].timeline;
                 timeline.push(timelineObject);
-                console.log("Timeline object line 939:", timeline);
+                console.log("Timeline object line 1045:", timeline);
                 // stringify the timeline array
                 loan[0].timeline = JSON.stringify(timeline);
                 // Save
@@ -1091,26 +1058,26 @@ export default class LoansController {
     // return // 401
   }
 
-  public async getLoanRate({ request, response}: HttpContextContract){
-      let {amount,duration} = request.qs()
-      console.log(
-        " The Rate return for RATE line 1073: ",
-        await generateRate(amount, duration)
-      );
-      let rate = await generateRate(amount, duration);
-      console.log(" Rate return line 1077 : ", rate);
-      // @ts-ignore
-      if (rate === undefined || rate.length < 1) {
-        return response.status(400).json({
-          status: "FAILED",
-          message: "no loan rate matched your search, please try again.",
-          data: [],
-        });
-      }
-       return response.status(200).json({
-         status: "OK",
-         data: rate,
-       });
+  public async getLoanRate({ request, response }: HttpContextContract) {
+    let { amount, duration } = request.qs();
+    console.log(
+      " The Rate return for RATE line 1073: ",
+      await generateRate(amount, duration)
+    );
+    let rate = await generateRate(amount, duration);
+    console.log(" Rate return line 1077 : ", rate);
+    // @ts-ignore
+    if (rate === undefined || rate.length < 1) {
+      return response.status(400).json({
+        status: "FAILED",
+        message: "no loan rate matched your search, please try again.",
+        data: [],
+      });
+    }
+    return response.status(200).json({
+      status: "OK",
+      data: rate,
+    });
   }
 
   public async store({ request, response }: HttpContextContract) {
@@ -1138,12 +1105,21 @@ export default class LoansController {
     const payload: any = await request.validate({ schema: investmentSchema });
     console.log("Payload line 1010  :", payload);
     // check BVN status
-let bvnIsVerified = await Wallet.query().where({ bvn: payload.bvn, isBvnVerified: true }).first()
-if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not verified."})}else{ payload.isBvnVerified = true }
-  // check creditRating
+    let bvnIsVerified = await Wallet.query()
+      .where({ bvn: payload.bvn, isBvnVerified: true })
+      .first();
+    if (!bvnIsVerified) {
+      return response.json({
+        status: "FAILED",
+        message: "BVN is not verified.",
+      });
+    } else {
+      payload.isBvnVerified = true;
+    }
+    // check creditRating
 
-  // check available rate to apply
-  let payloadAmount = payload.amountRequested;
+    // check available rate to apply
+    let payloadAmount = payload.amountRequested;
     let payloadDuration = payload.duration;
     // let investmentRate = async function () {
     //   try {
@@ -1163,15 +1139,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
 
     console.log(
       " The Rate return for RATE line 1141: ",
-      await generateRate(
-        payloadAmount,
-        payloadDuration
-      )
+      await generateRate(payloadAmount, payloadDuration)
     );
-    let rate = Number(await generateRate(
-      payloadAmount,
-      payloadDuration
-    ));
+    let rate = Number(await generateRate(payloadAmount, payloadDuration));
     console.log(" Rate return line 1151 : ", rate);
     // @ts-ignore
     if (rate === undefined || rate.length < 1) {
@@ -1183,18 +1153,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
     }
     console.log("Payload line 1160  :", payload);
     const loan = await Loan.create(payload);
-    // const newInvestment = request.all() as Partial<Loan>
-    // const loan = await Loan.create(newInvestment)
-    // return response.OK(loan)
-    // The code below only work when there is auth
-    // await user.related('investments').save(loan)
-
-    // generateRate, interestDueOnPayout, dueForPayout, payoutDueDate
-
     loan.interestRate = rate;
-    // loan.rolloverDone = payload.rolloverDone
 
-    // When the Invest has been approved and activated
+    // When the loan has been approved and activated
     let amount = loan.amountRequested;
     let loanDuration = loan.duration;
     let amountDueOnRepayment = await interestDueOnLoan(
@@ -1206,25 +1167,12 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
     loan.interestDueOnLoan = amountDueOnRepayment;
     // @ts-ignore
     loan.totalAmountToRepay = loan.amountRequested + amountDueOnRepayment;
-
-    // loan.payoutDate = await payoutDueDate(loan.startDate, loan.duration)
-    // @ts-ignore
-    // loan.walletId = loan.loanAccountDetails.loanAccountWalletId;
     await loan.save();
     console.log("The new loan:", loan);
 
     // TODO
-    // Send Loan Payload To Transaction Service
-    // let sendToTransactionService //= new SendToTransactionService(loan)
-    // console.log(' Feedback from Transaction service: ', sendToTransactionService)
-    // UPDATE Loan Status based on the response from Transaction Service
-    // let duration = Number(loan.duration)
-    // let updatedCreatedAt = DateTime.now().plus({ hours: 2 }).toISODate()
-    // let updatedPayoutDate = DateTime.now().plus({ days: duration }).toISODate()
-    // console.log('updated CreatedAt Time : ' + updatedCreatedAt)
-    // console.log('Updated Payout Date: ' + updatedPayoutDate)
-    // Save Loan new status to Database
-    // await loan.save()
+    // Send Loan Payload To Admin
+
     // Send Loan Initiation Message to Queue
 
     // check if Approval is set to Auto, from Setting Controller
@@ -1239,7 +1187,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
       id: uuid(),
       action: "loan initiated",
       // @ts-ignore
-      message: `${loan.loanAccountDetails.firstName} just initiated a loan.`,
+      message: `${loan.loanAccountDetails.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
       createdAt: loan.createdAt,
       meta: `duration: ${loan.duration}`,
     };
@@ -1278,6 +1226,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
       );
       if (sendToTransactionService === "OK") {
         // Activate the loan
+        loan.amountApproved = loan.amountRequested;
         loan.requestType = requestType;
         loan.status = "active";
         loan.approvalStatus = "approved";
@@ -1289,7 +1238,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
           id: uuid(),
           action: "loan activated",
           // @ts-ignore
-          message: `${loan.loanAccountDetails.firstName} loan has just been activated.`,
+          message: `${loan.loanAccountDetails.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and activated.`,
           createdAt: loan.startDate,
           meta: `duration: ${loan.duration}, payout date : ${loan.repaymentDate}`,
         };
@@ -1328,9 +1277,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
       id: newLoanId,
       email: newLoanEmail,
     });
-    return response
-      .status(201)
-      .json({ status: "OK", data: loan.$original });
+    return response.status(201).json({ status: "OK", data: loan.$original });
   }
 
   public async approve({ request, response }: HttpContextContract) {
@@ -1354,7 +1301,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
         );
         console.log("Is due for payout status :", isDueForRepayment);
         // Restrict update to timed/fixed deposit only
-        // if (loan && loan[0].investmentType !== 'debenture' && isDueForPayout === false)
+        // if (loan && loan[0].investmentType !== 'debenture' && isDueForRepayment === false)
         if (loan) {
           loan[0].status = request.input("status")
             ? request.input("status")
@@ -1376,9 +1323,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
           }
           return; // 422
         } else {
-          return response
-            .status(304)
-            .json({ status: "FAILED", data: loan });
+          return response.status(304).json({ status: "FAILED", data: loan });
         }
       } else {
         return response.status(404).json({
@@ -1398,59 +1343,43 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
     response,
   }: HttpContextContract) {
     console.log("LOAN params: ", params);
-    const {
-      userId,
-      loanId,
-      isPayoutAuthorized,
-      isTerminationAuthorized,
-      status,
-      payoutDate,
-      walletId,
-      limit,
-    } = request.qs();
+    const { loanId, status, repaymentDate, walletId, limit } =
+      request.qs();
     console.log("LOAN query: ", request.qs());
 
     try {
       const loan = await Loan.all();
       // .limit()
       let sortedApprovalRequest = loan;
-      if (userId) {
-        sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
-          // @ts-ignore
-          return loan.userId === parseInt(userId);
-        });
-      }
+
       if (loanId) {
         // @ts-ignore
-        sortedApprovalRequest = await Loan.query().where(
-          "id",
-          loanId
-        );
+        sortedApprovalRequest = await Loan.query().where("id", loanId);
       }
 
-      if (isPayoutAuthorized) {
-        sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
-          // @ts-ignore
-          return (
-            loan.isPayoutAuthorized.toString() === `${isPayoutAuthorized}`
-          );
-        });
-      }
+      // if (isPayoutAuthorized) {
+      //   sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
+      //     // @ts-ignore
+      //     return (
+      //       loan.isPayoutAuthorized.toString() === `${isPayoutAuthorized}`
+      //     );
+      //   });
+      // }
 
-      if (isTerminationAuthorized) {
-        sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
-          // @ts-ignore
-          return (
-            loan.isTerminationAuthorized.toString() ===
-            `${isTerminationAuthorized}`
-          );
-        });
-      }
+      // if (isTerminationAuthorized) {
+      //   sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
+      //     // @ts-ignore
+      //     return (
+      //       loan.isTerminationAuthorized.toString() ===
+      //       `${isTerminationAuthorized}`
+      //     );
+      //   });
+      // }
 
-      if (payoutDate) {
+      if (repaymentDate) {
         sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
           // @ts-ignore
-          return loan.payoutDate.includes(payoutDate);
+          return loan.repaymentDate.includes(repaymentDate);
         });
       }
       if (status) {
@@ -1504,8 +1433,8 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
       if (loan.length > 0) {
         console.log("loan search data :", loan[0].$original);
         // @ts-ignore
-        // let isDueForPayout = await dueForPayout(loan[0].startDate, loan[0].duration)
-        // console.log('Is due for payout status :', isDueForPayout)
+        // let isDueForRepayment = await dueForPayout(loan[0].startDate, loan[0].duration)
+        // console.log('Is due for payout status :', isDueForRepayment)
 
         // TESTING
         let startDate = DateTime.now().minus({ days: 5 }).toISO();
@@ -1513,14 +1442,14 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
         console.log("Time loan was started line 1332: ", startDate);
         let timelineObject;
         let timeline;
-        let isDueForPayout = await dueForPayout(startDate, duration);
-        console.log("Is due for payout status line 1336:", isDueForPayout);
+        let isDueForRepayment = await dueForRepayment(startDate, duration);
+        console.log("Is due for payout status line 1336:", isDueForRepayment);
         // let amt = loan[0].amount
         let settings = await Setting.query().where({
           tagName: "default setting",
         });
         console.log("Approval setting line 1339:", settings[0]);
-        if (isDueForPayout) {
+        if (isDueForRepayment) {
           //  START
           let payload = loan[0].$original;
           // send to Admin for approval
@@ -1588,10 +1517,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               " loan[0].approvalStatus  line 1400:",
               loan[0].approvalStatus
             );
-            console.log(
-              " loan[0].status line 1401:",
-              loan[0].status
-            );
+            console.log(" loan[0].status line 1401:", loan[0].status);
             let payout;
             if (
               (payoutRequestIsExisting.length < 1 &&
@@ -1615,9 +1541,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 id: uuid(),
                 action: "loan payout initiated",
                 // @ts-ignore
-                message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payout processing.`,
+                message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
-                meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
+                meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
               console.log("Timeline object line 1429:", timelineObject);
               //  Push the new object to the array
@@ -1649,9 +1575,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 id: uuid(),
                 action: "loan payout initiated",
                 // @ts-ignore
-                message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payout processing.`,
+                message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
-                meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
+                meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
               console.log("Timeline object line 1463:", timelineObject);
               //  Push the new object to the array
@@ -1682,23 +1608,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
             // END
             loan[0].status = "active";
             loan[0].approvalStatus = "pending";
-            // // update timeline
-            // timelineObject = {
-            //   id: uuid(),
-            //   action: 'loan payout initiated',
-            //   // @ts-ignore
-            //   message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payout processing.`,
-            //   createdAt: payout.createdAt,
-            //   meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
-            // }
-            // console.log('Timeline object line 1295:', timelineObject)
-            // //  Push the new object to the array
-            // timeline = loan[0].timeline
-            // timeline.push(timelineObject)
-            // console.log('Timeline object line 1299:', timeline)
-            // // stringify the timeline array
-            // loan[0].timeline = JSON.stringify(timeline)
-            // Save
+             // Save
             await loan[0].save();
           } else if (approvalIsAutomated === true) {
             if (loan[0].status !== "paid") {
@@ -1706,8 +1616,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               loan[0].requestType = requestType;
               loan[0].approvalStatus = "approved";
               loan[0].status = "payout";
-              loan[0].isPayoutAuthorized = true;
-              loan[0].isTerminationAuthorized = true;
+              loan[0].isLoanApproved = true;
               // Save
               await loan[0].save();
             }
@@ -1735,10 +1644,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               " loan[0].approvalStatus  line 1535:",
               loan[0].approvalStatus
             );
-            console.log(
-              " loan[0].status line 1536:",
-              loan[0].status
-            );
+            console.log(" loan[0].status line 1536:", loan[0].status);
             let payout;
             if (
               (payoutRequestIsExisting.length < 1 &&
@@ -1760,9 +1666,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 id: uuid(),
                 action: "loan payout approved",
                 // @ts-ignore
-                message: `${loan[0].walletHolderDetails.firstName} loan has just been approved for payout.`,
+                message: `${loan[0].loanAccountDetails.firstName} loan has just been approved for payout.`,
                 createdAt: payout.createdAt,
-                meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
+                meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
               console.log("Timeline object line 1562:", timelineObject);
               //  Push the new object to the array
@@ -1793,9 +1699,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 id: uuid(),
                 action: "loan payout approved",
                 // @ts-ignore
-                message: `${loan[0].walletHolderDetails.firstName} loan has just been approved for payout.`,
+                message: `${loan[0].loanAccountDetails.firstName} loan has just been approved for payout.`,
                 createdAt: DateTime.now(),
-                meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
+                meta: `amount to repay: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
               console.log("Timeline object line 1595:", timelineObject);
               //  Push the new object to the array
@@ -1815,12 +1721,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 payoutRequestIsExisting[0]
               );
             }
-            // loan = await Loan.query().where('id', loanId)
-            // loan[0].requestType = requestType
-            // loan[0].status = 'active'
-            // loan[0].approvalStatus = 'pending'
-            // loan[0].approvalStatus = 'pending'
-            // await loan[0].save()
+
             console.log(
               "Loan payout data after payout request line 1616:",
               payout
@@ -1829,30 +1730,10 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               "Loan payout data after payout request line 1618:",
               payoutRequestIsExisting[0]
             );
-            // timelineObject = {
-            //   id: uuid(),
-            //   action: 'loan payout initiated',
-            //   // @ts-ignore
-            //   message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payout processing`,
-            //   createdAt: payout.createdAt,
-            //   meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
-            // }
-            // console.log('Timeline object line 1380:', timelineObject)
-            // //  Push the new object to the array
-            // timeline = loan[0].timeline
-            // timeline.push(timelineObject)
-
-            // console.log('Timeline object line 1385:', timeline)
-
-            // // stringify the timeline array
-            // loan[0].timeline = JSON.stringify(timeline)
             await loan[0].save();
           }
 
-          console.log(
-            "Loan data after payout request line 1392:",
-            loan
-          );
+          console.log("Loan data after payout request line 1392:", loan);
           return response.status(200).json({
             status: "OK",
             data: loan.map((inv) => inv.$original),
@@ -1872,7 +1753,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
           });
           console.log("Approval setting line 1241:", settings[0]);
           let approvalRequestIsExisting;
-          let approvalIsAutomated = settings[0].isTerminationAutomated; // isPayoutAutomated
+          let approvalIsAutomated = settings[0].isTerminationAutomated; // isDisbursementAutomated
           if (approvalIsAutomated === false) {
             approvalRequestIsExisting = await Approval.query().where({
               investment_id: loanId,
@@ -1929,10 +1810,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               payout = await Payout.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 1276:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 1276:", payout);
             } else if (
               payoutRequestIsExisting.length > 0 &&
               loan[0].approvalStatus === "approved" &&
@@ -1941,10 +1819,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               console.log("Payout loan data 1:", payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 1285:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 1285:", payout);
             }
             loan[0].status = "active";
             loan[0].approvalStatus = "pending";
@@ -1978,10 +1853,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               payout = await Payout.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 1316:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 1316:", payout);
             } else if (
               payoutRequestIsExisting.length > 0 &&
               loan[0].approvalStatus === "approved" &&
@@ -1990,16 +1862,12 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               console.log("Payout loan data 1:", payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 1325:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 1325:", payout);
             }
 
             loan[0].status = "terminated";
             loan[0].approvalStatus = "approved";
-            loan[0].isPayoutAuthorized = true;
-            loan[0].isTerminationAuthorized = true;
+            loan[0].isLoanApproved = true;
             await loan[0].save();
           }
           // update timeline
@@ -2007,9 +1875,9 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
             id: uuid(),
             action: "loan termination initiated",
             // @ts-ignore
-            message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for termination processing.`,
+            message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for termination processing.`,
             createdAt: DateTime.now(),
-            meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
+            meta: `amount to rrepay: ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
           };
           console.log("Timeline object line 1509:", timelineObject);
           //  Push the new object to the array
@@ -2022,10 +1890,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
           loan[0].timeline = JSON.stringify(timeline);
           await loan[0].save();
 
-          console.log(
-            "Terminated Payout loan data line 1521:",
-            loan
-          );
+          console.log("Terminated Payout loan data line 1521:", loan);
           return response.status(200).json({
             status: "OK",
             data: loan.map((inv) => inv.$original),
@@ -2110,13 +1975,10 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
             loan[0].approvalStatus === "approved" &&
             loan[0].status === "terminated")
         ) {
-          console.log(
-            "loan search data line 1596 :",
-            loan[0].$original
-          );
+          console.log("loan search data line 1596 :", loan[0].$original);
           // @ts-ignore
-          // let isDueForPayout = await dueForPayout(loan[0].startDate, loan[0].duration)
-          // console.log('Is due for payout status :', isDueForPayout)
+          // let isDueForRepayment = await dueForPayout(loan[0].startDate, loan[0].duration)
+          // console.log('Is due for payout status :', isDueForRepayment)
 
           // let payoutIsApproved = true
           // Notify
@@ -2164,10 +2026,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                 payout = await Payout.create(payload);
                 payout.status = "payout";
                 await payout.save();
-                console.log(
-                  "Matured Payout loan data line 1788:",
-                  payout
-                );
+                console.log("Matured Payout loan data line 1788:", payout);
               } else {
                 payoutRequestIsExisting[0].requestType = "payout loan";
                 payoutRequestIsExisting[0].approvalStatus = "approved";
@@ -2179,7 +2038,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               }
 
               // If payment processing is automated
-              let paymentProcessingIsAutomated = settings[0].isPayoutAutomated;
+              let paymentProcessingIsAutomated = settings[0].isDisbursementAutomated;
               if (paymentProcessingIsAutomated === true) {
                 //  Proceed to payout the Total Amount due on maturity
                 loan[0].requestType = "payout payment";
@@ -2379,8 +2238,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
 
                       payout = await Payout.create(payload);
                       payout.status = "payout";
-                      payout.isPayoutAuthorized =
-                        loan[0].isPayoutAuthorized;
+                      payout.isPayoutAuthorized = loan[0].isPayoutAuthorized;
                       payout.isTerminationAuthorized =
                         loan[0].isTerminationAuthorized;
 
@@ -2404,8 +2262,8 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                       await payload.save();
                     }
 
-                    let isPayoutAutomated = settings[0].isPayoutAutomated;
-                    if (isPayoutAutomated === false) {
+                    let isDisbursementAutomated = settings[0].isDisbursementAutomated
+                    if (isDisbursementAutomated === false) {
                       try {
                         let approvalRequestIsDone = await approvalRequest(
                           userId,
@@ -2789,8 +2647,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                           meta: `amount invested: ${
                             loan[0].amount
                           },amount paid: ${
-                            loan[0].interestDueOnLoan +
-                            loan[0].amount
+                            loan[0].interestDueOnLoan + loan[0].amount
                           }, request type : ${loan[0].requestType}`,
                         };
                         console.log(
@@ -2870,8 +2727,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                       break;
                     case "102":
                       // '102' = 'rollover principal plus interest',
-                      amountToBeReinvested =
-                        amount + loan[0].interestDueOnLoan;
+                      amountToBeReinvested = amount + loan[0].interestDueOnLoan;
                       payloadDuration = loan[0].duration;
                       payloadInvestmentType = loan[0].investmentType;
                       //  loan[0].amount = amountToBeReinvested
@@ -3105,10 +2961,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
                   data: loan.map((inv) => inv.$original),
                 });
               }
-              console.log(
-                "Loan data after payout line 2785:",
-                loan
-              );
+              console.log("Loan data after payout line 2785:", loan);
               return response.status(200).json({
                 status: "OK",
                 data: loan.map((inv) => inv.$original),
@@ -3142,18 +2995,12 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               }
               console.log("Payout loan data line 2780:", payload);
               payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log(
-                "Terminated Payout loan data line 2782:",
-                payload
-              );
+              console.log("Terminated Payout loan data line 2782:", payload);
 
               const payout = await Payout.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 2787:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 2787:", payout);
               //  END
               loan = await Loan.query().where("id", loanId);
               loan[0].requestType = requestType;
@@ -3197,28 +3044,19 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               // payload.datePayoutWasDone = new Date().toISOString()
               console.log("Payout loan data line 2825:", payload);
               payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log(
-                "Terminated Payout loan data line 2827:",
-                payload
-              );
+              console.log("Terminated Payout loan data line 2827:", payload);
 
               let payout = await Payout.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log(
-                "Terminated Payout loan data line 2832:",
-                payout
-              );
+              console.log("Terminated Payout loan data line 2832:", payout);
               //  END
               loan = await Loan.query().where("id", loanId);
               loan[0].requestType = requestType;
               loan[0].status = "terminated";
               loan[0].approvalStatus = "approved";
               await loan[0].save();
-              console.log(
-                "Terminated Payout loan data line 2839:",
-                loan
-              );
+              console.log("Terminated Payout loan data line 2839:", loan);
             }
             // update timeline
             timelineObject = {
@@ -3250,9 +3088,7 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
               "no loan matched your search, or payment has been processed.",
             data: {
               paymentStatus: loan.map((inv) => inv.$original.status),
-              amountPaid: loan.map(
-                (inv) => inv.$original.totalAmountToPayout
-              ),
+              amountPaid: loan.map((inv) => inv.$original.totalAmountToPayout),
             },
           });
         }
@@ -3487,14 +3323,14 @@ if (!bvnIsVerified){return response.json({status: "FAILED", message: "BVN is not
     console.log("Rate query: ", request.qs());
     let loan = await Loan.query().where({
       id: request.input("loanId"),
-      user_id: params.userId,
+      walletId: params.walletId,
     });
     console.log(" QUERY RESULT: ", loan);
     if (loan.length > 0) {
       loan = await Loan.query()
         .where({
           id: request.input("loanId"),
-          user_id: params.userId,
+          walletId: params.walletId,
         })
         .delete();
       console.log("Deleted data:", loan);
