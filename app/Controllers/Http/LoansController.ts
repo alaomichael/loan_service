@@ -237,8 +237,7 @@ export default class LoansController {
       //   const loan = await Loan.query().where('status', 'payout')
       // .orWhere('id', params.id)
       // .limit()
-      const { search, limit, walletId, loanId, requestType } =
-        request.qs();
+      const { search, limit, walletId, loanId, requestType } = request.qs();
       console.log("PAYOUT query: ", request.qs());
       const payout = await Payout.all();
       let sortedPayouts = payout;
@@ -382,7 +381,10 @@ export default class LoansController {
         loan[0].repaymentDate = DateTime.now().plus({ days: duration });
         console.log("The currentDate line 336: ", currentDateMs);
         console.log("Time loan was started line 337: ", loan[0].startDate);
-        console.log("Time loan repayment date line 338: ", loan[0].repaymentDate);
+        console.log(
+          "Time loan repayment date line 338: ",
+          loan[0].repaymentDate
+        );
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -894,8 +896,8 @@ export default class LoansController {
     try {
       let { walletId, loanId } = request.qs();
       console.log(" walletId and loanId: ", walletId + " " + loanId);
-      let { amountApproved } = request.all()
-  console.log(" amountApproved line 898: ", amountApproved);
+      let { amountApproved } = request.all();
+      console.log(" amountApproved line 898: ", amountApproved);
       let loan = await Loan.query().where({
         walletId: walletId,
         id: loanId,
@@ -961,8 +963,7 @@ export default class LoansController {
               return response.status(400).json({
                 status: "FAILED",
                 data: loan.map((loan) => loan.$original),
-                message:
-                  "please check your loan parameters",
+                message: "please check your loan parameters",
               });
             }
           } catch (error) {
@@ -1050,22 +1051,6 @@ export default class LoansController {
     // check available rate to apply
     let payloadAmount = payload.amountRequested;
     let payloadDuration = payload.duration;
-    // let investmentRate = async function () {
-    //   try {
-    //     const response = await axios.get(
-    //       `${API_URL}/investments/rates?amount=${payload.amount}&duration=${payload.duration}&investmentType=${payload.investmentType}`
-    //     )
-    //     console.log('The API response: ', response.data)
-    //     if (response.data.status === 'OK' && response.data.data.length > 0) {
-    //       return response.data.data[0].interest_rate
-    //     } else {
-    //       return
-    //     }
-    //   } catch (error) {
-    //     console.error(error)
-    //   }
-    // }
-
     console.log(
       " The Rate return for RATE line 1141: ",
       await generateRate(payloadAmount, payloadDuration)
@@ -1209,6 +1194,36 @@ export default class LoansController {
     return response.status(201).json({ status: "OK", data: loan.$original });
   }
 
+  public async getCreditRecommendations({
+    request,
+    response,
+  }: HttpContextContract) {
+    let payload;
+    // call Okra
+
+    // Call Credit registry
+
+    // give recommendation based on the report of Okra and CreditRegistry, internal algorithm
+
+    // check available rate to apply
+    let payloadAmount = payload.amountRequested;
+    let payloadDuration = payload.duration;
+    console.log(
+      " The Rate return for RATE line 1141: ",
+      await generateRate(payloadAmount, payloadDuration)
+    );
+    let rate = Number(await generateRate(payloadAmount, payloadDuration));
+    console.log(" Rate return line 1151 : ", rate);
+    // @ts-ignore
+    if (rate === undefined || rate.length < 1) {
+      return response.status(400).json({
+        status: "FAILED",
+        message: "no loan rate matched your search, please try again.",
+        data: [],
+      });
+    }
+  }
+
   public async approve({ request, response }: HttpContextContract) {
     try {
       // let loan = await Loan.query().where({
@@ -1240,7 +1255,7 @@ export default class LoansController {
             request.input("isLoanApproved") !== undefined
               ? request.input("isLoanApproved")
               : loan[0].isLoanApproved;
-          console.log("payout :", loanApprovedStatus);
+          console.log("loanApprovedStatus :", loanApprovedStatus);
           if (loan) {
             // send to user
             await loan[0].save();
@@ -1272,8 +1287,7 @@ export default class LoansController {
     response,
   }: HttpContextContract) {
     console.log("LOAN params: ", params);
-    const { loanId, status, repaymentDate, walletId, limit } =
-      request.qs();
+    const { loanId, status, repaymentDate, walletId, limit } = request.qs();
     console.log("LOAN query: ", request.qs());
 
     try {
@@ -1537,7 +1551,7 @@ export default class LoansController {
             // END
             loan[0].status = "active";
             loan[0].approvalStatus = "pending";
-             // Save
+            // Save
             await loan[0].save();
           } else if (approvalIsAutomated === true) {
             if (loan[0].status !== "paid") {
@@ -1967,7 +1981,8 @@ export default class LoansController {
               }
 
               // If payment processing is automated
-              let paymentProcessingIsAutomated = settings[0].isDisbursementAutomated;
+              let paymentProcessingIsAutomated =
+                settings[0].isDisbursementAutomated;
               if (paymentProcessingIsAutomated === true) {
                 //  Proceed to payout the Total Amount due on maturity
                 loan[0].requestType = "payout payment";
@@ -2191,7 +2206,8 @@ export default class LoansController {
                       await payload.save();
                     }
 
-                    let isDisbursementAutomated = settings[0].isDisbursementAutomated
+                    let isDisbursementAutomated =
+                      settings[0].isDisbursementAutomated;
                     if (isDisbursementAutomated === false) {
                       try {
                         let approvalRequestIsDone = await approvalRequest(
@@ -2879,36 +2895,39 @@ export default class LoansController {
       let {
         id,
         walletId,
-loanAccountDetails,
+        loanAccountDetails,
         duration,
-amountRequested,
-amountApproved,
+        amountRequested,
+        amountApproved,
         tagName,
         currencyCode,
-isDisbursementSuccessful,
+        isDisbursementSuccessful,
         long,
         lat,
         interestRate,
         interestDueOnLoan,
-isLoanApproved,
+        isLoanApproved,
         createdAt,
         startDate,
-dateDisbursementWasDone,
+        dateDisbursementWasDone,
         requestType,
         approvalStatus,
         status,
-        repaymentDate
+        repaymentDate,
       } = loan;
 
       console.log("Initial status line 2949: ", status);
-      console.log("Initial dateDisbursementWasDone line 2950: ", dateDisbursementWasDone);
+      console.log(
+        "Initial dateDisbursementWasDone line 2950: ",
+        dateDisbursementWasDone
+      );
       let payload = {
         loanId: id,
         walletId,
         duration,
-      amountRequested,
-amountApproved,
-tagName,
+        amountRequested,
+        amountApproved,
+        tagName,
         currencyCode,
         loanAccountDetails,
         long,
