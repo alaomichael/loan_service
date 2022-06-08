@@ -113,7 +113,7 @@ export default class LoansController {
     } = request.qs();
     console.log("LOAN query: ", request.qs());
     try {
-      let loan = await Loan.query().where("user_id", params.userId);
+      let loan = await Loan.query().where("wallet_id", params.walletId);
       // .orWhere('id', params.id)
       // .limit()
       let sortedInvestments = loan.map((loan) => {
@@ -237,7 +237,7 @@ export default class LoansController {
       //   const loan = await Loan.query().where('status', 'payout')
       // .orWhere('id', params.id)
       // .limit()
-      const { search, limit, userId, loanId, requestType, walletId } =
+      const { search, limit, walletId, loanId, requestType } =
         request.qs();
       console.log("PAYOUT query: ", request.qs());
       const payout = await Payout.all();
@@ -251,10 +251,10 @@ export default class LoansController {
           return payout.walletHolderDetails.lastName!.startsWith(search);
         });
       }
-      if (userId) {
+      if (walletId) {
         sortedPayouts = sortedPayouts.filter((payout) => {
           // @ts-ignore
-          return payout.userId === parseInt(userId);
+          return payout.walletId === parseInt(walletId);
         });
       }
       if (loanId) {
@@ -299,7 +299,7 @@ export default class LoansController {
   public async feedbacks({ params, request, response }: HttpContextContract) {
     console.log("LOAN params line 149: ", params);
     const {
-      userId,
+      walletId,
       loanId,
       requestType,
       approvalStatus,
@@ -312,18 +312,18 @@ export default class LoansController {
     let timelineObject;
     if (
       requestType === "start loan" &&
-      userId &&
+      walletId &&
       loanId &&
       !approvalStatus &&
       !getInvestmentDetails
     ) {
       console.log("LOAN ID", loanId);
-      console.log("USER ID", userId);
+      console.log("WALLET ID", walletId);
       // check the approval for request
       approvals = await Approval.query()
         .where("request_type", requestType)
-        .where("user_id", userId)
-        .where("investment_id", loanId);
+        .where("wallet_id", walletId)
+        .where("loan_id", loanId);
       // check the approval status
       console.log("approvals line 163: ", approvals);
       if (approvals.length < 1) {
@@ -340,7 +340,7 @@ export default class LoansController {
         try {
           loan = await Loan.query().where({
             id: loanId,
-            user_id: userId,
+            wallet_id: walletId,
             request_type: requestType,
             status: "initiated",
           });
@@ -357,7 +357,7 @@ export default class LoansController {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -436,12 +436,12 @@ export default class LoansController {
         // loan = await Loan.query()
         //   .where('status', 'initiated')
         //   .where('request_type', requestType)
-        //   .where('user_id', userId)
+        //   .where('wallet_id', walletId)
         //   .where('id', loanId)
         try {
           loan = await Loan.query().where({
             id: loanId,
-            user_id: userId,
+            wallet_id: walletId,
             request_type: requestType,
             status: "initiated",
           });
@@ -458,7 +458,7 @@ export default class LoansController {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -507,18 +507,18 @@ export default class LoansController {
       }
     } else if (
       requestType === "terminate loan" &&
-      userId &&
+      walletId &&
       loanId &&
       !approvalStatus &&
       !getInvestmentDetails
     ) {
       console.log("LOAN ID", loanId);
-      console.log("USER ID", userId);
+      console.log("WALLET ID", walletId);
       // check the approval for request
       approvals = await Approval.query()
         .where("request_type", requestType)
-        .where("user_id", userId)
-        .where("investment_id", loanId);
+        .where("wallet_id", walletId)
+        .where("loan_id", loanId);
       // check the approval status
       console.log("approvals line 270: ", approvals);
       if (approvals.length < 1) {
@@ -534,7 +534,7 @@ export default class LoansController {
         loan = await Loan.query()
           .where("status", "active")
           .where("requestType", requestType)
-          .where("userId", userId)
+          .where("walletId", walletId)
           .where("id", loanId);
         console.log("LOAN DATA line 285: ", loan);
         if (loan.length < 1) {
@@ -546,7 +546,7 @@ export default class LoansController {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -607,7 +607,7 @@ export default class LoansController {
         loan = await Loan.query()
           .where("status", "active")
           .where("requestType", requestType)
-          .where("userId", userId)
+          .where("walletId", walletId)
           .where("id", loanId);
         console.log("The declined loan line 323: ", loan);
         if (loan.length < 1) {
@@ -619,7 +619,7 @@ export default class LoansController {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -668,17 +668,17 @@ export default class LoansController {
       }
     } else if (
       requestType === "payout loan" &&
-      userId &&
+      walletId &&
       loanId &&
       !approvalStatus &&
       !getInvestmentDetails
     ) {
       console.log("LOAN ID", loanId);
-      console.log("USER ID", userId);
+      console.log("WALLET ID", walletId);
       // check the approval for request
       approvals = await Approval.query()
         .where("requestType", requestType)
-        .where("userId", userId)
+        .where("walletId", walletId)
         .where("loanId", loanId);
       // check the approval status
       console.log("approvals line 353: ", approvals);
@@ -695,14 +695,14 @@ export default class LoansController {
         loan = await Loan.query()
           .where("status", "active")
           .where("requestType", requestType)
-          .where("userId", userId)
+          .where("walletId", walletId)
           .where("id", loanId);
         console.log("LOAN DATA line 368: ", loan);
         if (loan.length < 1) {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -764,7 +764,7 @@ export default class LoansController {
         loan = await Loan.query()
           .where("status", "active")
           .where("requestType", requestType)
-          .where("userId", userId)
+          .where("walletId", walletId)
           .where("id", loanId);
         console.log("The declined loan line 698: ", loan);
         if (loan.length < 1) {
@@ -776,7 +776,7 @@ export default class LoansController {
           loan = await Loan.query()
             // .where('status', 'active')
             .where("requestType", requestType)
-            .where("userId", userId)
+            .where("walletId", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -832,7 +832,7 @@ export default class LoansController {
       let sortedInvestment = loan;
       if (
         requestType &&
-        userId &&
+        walletId &&
         loanId &&
         approvalStatus &&
         getInvestmentDetails === "true"
@@ -841,7 +841,7 @@ export default class LoansController {
         sortedInvestment = sortedInvestment.filter((loan) => {
           return (
             loan.requestType === requestType &&
-            loan.userId === userId &&
+            loan.walletId === walletId &&
             loan.id === loanId &&
             loan.approvalStatus === approvalStatus
           );
@@ -867,10 +867,10 @@ export default class LoansController {
           return approval.requestType === requestType;
         });
       }
-      if (userId) {
-        console.log("USER ID", userId);
+      if (walletId) {
+        console.log("WALLET ID", walletId);
         sortedApproval = sortedApproval.filter((approval) => {
-          return approval.userId === userId;
+          return approval.walletId === walletId;
         });
       }
       if (loanId) {
@@ -1283,13 +1283,13 @@ export default class LoansController {
   public async approve({ request, response }: HttpContextContract) {
     try {
       // let loan = await Loan.query().where({
-      //   user_id: params.id,
+      //   wallet_id: params.id,
       //   id: request.input('loanId'),
       // })
-      const { loanId, userId } = request.qs();
+      const { loanId, walletId } = request.qs();
       console.log("Loan query: ", request.qs());
       let loan = await Loan.query().where({
-        user_id: userId,
+        wallet_id: walletId,
         id: loanId,
       });
       console.log(" Loan QUERY RESULT: ", loan);
@@ -1418,16 +1418,16 @@ export default class LoansController {
   public async payout({ request, response }: HttpContextContract) {
     try {
       // @ts-ignore
-      // let id = request.input('userId')
-      let { userId, loanId } = request.all();
+      // let id = request.input('walletId')
+      let { walletId, loanId } = request.all();
       console.log(
         "Params for update line 1318: " +
-          " userId: " +
-          userId +
+          " walletId: " +
+          walletId +
           ", loanId: " +
           loanId
       );
-      // let loan = await Loan.query().where('user_id', id).where('id', params.id)
+      // let loan = await Loan.query().where('wallet_id', id).where('id', params.id)
       let loan = await Loan.query().where("id", loanId);
       console.log("Loan Info, line 1322: ", loan);
       if (loan.length > 0) {
@@ -1453,7 +1453,7 @@ export default class LoansController {
           //  START
           let payload = loan[0].$original;
           // send to Admin for approval
-          let userId = payload.userId;
+          let walletId = payload.walletId;
           let loanId = payload.id;
           let requestType = "payout loan";
           // let  approvalStatus = 'approved'
@@ -1462,8 +1462,8 @@ export default class LoansController {
           let approvalRequestIsExisting;
           if (approvalIsAutomated === false) {
             approvalRequestIsExisting = await Approval.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
               request_type: requestType,
               //  approval_status: approvalStatus,
             });
@@ -1474,7 +1474,7 @@ export default class LoansController {
             );
             if (approvalRequestIsExisting.length < 1) {
               let approvalRequestIsDone = await approvalRequest(
-                userId,
+                walletId,
                 loanId,
                 requestType
               );
@@ -1501,8 +1501,8 @@ export default class LoansController {
             payload.requestType = requestType;
             // check if payout request is existing
             let payoutRequestIsExisting = await Payout.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
             });
             console.log(
               "Loan payout Request Is Existing data line 1392:",
@@ -1628,8 +1628,8 @@ export default class LoansController {
             payload.requestType = requestType;
             // check if payout request is existing
             let payoutRequestIsExisting = await Payout.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
             });
             console.log(
               "Loan payout Request Is Existing data line 1527:",
@@ -1744,7 +1744,7 @@ export default class LoansController {
           // if the loan has not matured, i.e terminated
           let payload = loan[0].$original;
           // send to Admin for approval
-          let userId = payload.userId;
+          let walletId = payload.walletId;
           let loanId = payload.id;
           let requestType = "terminate loan";
           // let approvalStatus = 'approved'
@@ -1756,8 +1756,8 @@ export default class LoansController {
           let approvalIsAutomated = settings[0].isTerminationAutomated; // isDisbursementAutomated
           if (approvalIsAutomated === false) {
             approvalRequestIsExisting = await Approval.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
               request_type: requestType,
               //  approval_status: approvalStatus,
             });
@@ -1767,7 +1767,7 @@ export default class LoansController {
             );
             if (approvalRequestIsExisting.length < 1) {
               let approvalRequestIsDone = await approvalRequest(
-                userId,
+                walletId,
                 loanId,
                 requestType
               );
@@ -1792,8 +1792,8 @@ export default class LoansController {
             // check if payout request is existing
             let payout;
             let payoutRequestIsExisting = await Payout.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
             });
             console.log(
               "Loan payout Request Is Existing data line 1264:",
@@ -1834,8 +1834,8 @@ export default class LoansController {
             payload.requestType = requestType;
             // check if payout request is existing
             let payoutRequestIsExisting = await Payout.query().where({
-              investment_id: loanId,
-              user_id: userId,
+              loan_id: loanId,
+              wallet_id: walletId,
             });
             console.log(
               "Loan payout Request Is Existing data line 1304:",
@@ -1912,11 +1912,11 @@ export default class LoansController {
   public async processPayment({ request, response }: HttpContextContract) {
     try {
       // @ts-ignore
-      let { userId, loanId } = request.all();
+      let { walletId, loanId } = request.all();
       console.log(
         "Params for update line 1359: " +
-          " userId: " +
-          userId +
+          " walletId: " +
+          walletId +
           ", loanId: " +
           loanId
       );
@@ -1924,7 +1924,7 @@ export default class LoansController {
       try {
         loan = await Loan.query().where({
           id: loanId,
-          user_id: userId,
+          wallet_id: walletId,
         });
       } catch (error) {
         console.error(error);
@@ -2006,8 +2006,8 @@ export default class LoansController {
 
               // check if payout request is existing
               let payoutRequestIsExisting = await Payout.query().where({
-                investment_id: loanId,
-                user_id: userId,
+                loan_id: loanId,
+                wallet_id: walletId,
               });
               console.log(
                 "Loan payout Request Is Existing data line 1631:",
@@ -2103,7 +2103,7 @@ export default class LoansController {
               } else {
                 let requestType = "payout payment";
                 let approvalRequestIsDone = await approvalRequest(
-                  userId,
+                  walletId,
                   loanId,
                   requestType
                 );
@@ -2210,7 +2210,7 @@ export default class LoansController {
                     let payload = investmentData;
                     let payout;
                     let loanId = payload.id;
-                    userId = payload.userId;
+                    walletId = payload.walletId;
                     let requestType = "payout loan";
                     amountToPayoutNow =
                       amount + investmentData.interestDueOnLoan;
@@ -2219,8 +2219,8 @@ export default class LoansController {
                     console.log("Payout loan data line 2091:", payload);
                     // check if payout request is existing
                     let payoutRequestIsExisting = await Payout.query().where({
-                      investment_id: loanId,
-                      user_id: userId,
+                      loan_id: loanId,
+                      wallet_id: walletId,
                     });
                     console.log(
                       "Loan payout Request Is Existing data line 2098:",
@@ -2266,7 +2266,7 @@ export default class LoansController {
                     if (isDisbursementAutomated === false) {
                       try {
                         let approvalRequestIsDone = await approvalRequest(
-                          userId,
+                          walletId,
                           loanId,
                           requestType
                         );
@@ -2422,7 +2422,7 @@ export default class LoansController {
                   //     rolloverDone,
                   //     investmentType,
                   //     duration,
-                  //     userId,
+                  //     walletId,
                   //     tagName,
                   //     currencyCode,
                   //     long,
@@ -2437,7 +2437,7 @@ export default class LoansController {
                   //     rolloverDone,
                   //     investmentType,
                   //     duration,
-                  //     userId,
+                  //     walletId,
                   //     tagName,
                   //     currencyCode,
                   //     long,
@@ -2480,10 +2480,10 @@ export default class LoansController {
                   //   let approvalIsAutomated = settings[0].isInvestmentAutomated
                   //   if (approvalIsAutomated === false) {
                   //     // Send Approval Request to Admin
-                  //     userId = loan.userId
+                  //     walletId = loan.walletId
                   //     let loanId = loan.id
                   //     // let requestType = 'start loan'
-                  //     let approval = await approvalRequest(userId, loanId, requestType)
+                  //     let approval = await approvalRequest(walletId, loanId, requestType)
                   //     console.log(' Approval request return line 2362 : ', approval)
                   //     if (approval === undefined) {
                   //       return response.status(400).json({
@@ -2971,13 +2971,13 @@ export default class LoansController {
             // if the loan is terminated
             let payload = loan[0].$original;
             // send to Admin for approval
-            // let userId = payload.userId
+            // let walletId = payload.walletId
             let loanId = payload.id;
             let requestType = "terminate loan";
             let approvalForTerminationIsAutomated = false;
             if (approvalForTerminationIsAutomated === false) {
               let approvalRequestIsDone = await approvalRequest(
-                userId,
+                walletId,
                 loanId,
                 requestType
               );
@@ -3108,18 +3108,17 @@ export default class LoansController {
     // const { loanId } = request.qs()
     console.log("Rate query: ", request.qs());
     // @ts-ignore
-    let { userId, loanId, walletId } = request.all();
+    let { walletId, loanId } = request.all();
     let loan = await Loan.query()
       .where({
         id: loanId,
-        user_id: userId,
         wallet_id: walletId,
       })
       .andWhereNot({ status: "paid" })
       .first();
     console.log(" QUERY RESULT: ", loan);
     if (loan) {
-      // loan = await Loan.query().where({id: loanId,user_id: userId,})
+      // loan = await Loan.query().where({id: loanId,wallet_id: walletId,})
       let timeline;
       let timelineObject;
       // Check for Successful Transactions
@@ -3129,9 +3128,9 @@ export default class LoansController {
       if (transactionStatus !== "OK") {
         let walletId = loan.walletId;
         let loanId = loan.id;
-        let totalAmountToPayout = loan.totalAmountToPayout;
+        let totalAmountToPayout = loan.amountApproved;
         // @ts-ignore
-        let phone = loan.walletHolderDetails.phone;
+        let phone = loan.loanAccountDetails.phone;
         console.log("Unsuccessful transaction, line 2903");
         return response.json({
           status: "FAILED",
@@ -3150,60 +3149,50 @@ export default class LoansController {
 
       let {
         id,
-        userId,
         walletId,
-        amount,
+loanAccountDetails,
         duration,
-        rolloverType,
-        rolloverTarget,
-        rolloverDone,
-        investmentType,
+amountRequested,
+amountApproved,
         tagName,
         currencyCode,
-        walletHolderDetails,
+
         long,
         lat,
         interestRate,
         interestDueOnLoan,
-        totalAmountToPayout,
+
         createdAt,
         startDate,
-        payoutDate,
-        isPayoutAuthorized,
-        isTerminationAuthorized,
-        isPayoutSuccessful,
+dateDisbursementWasDone,
         requestType,
         approvalStatus,
         status,
-        datePayoutWasDone,
       } = loan;
 
       console.log("Initial status line 2949: ", status);
-      console.log("Initial datePayoutWasDone line 2950: ", datePayoutWasDone);
+      console.log("Initial datePayoutWasDone line 2950: ", dateDisbursementWasDone);
       let payload = {
         loanId: id,
-        userId,
         walletId,
-        amount,
         duration,
-        rolloverType,
-        rolloverTarget,
-        rolloverDone,
-        investmentType,
-        tagName,
+      amountRequested,
+amountApproved,
+
         currencyCode,
-        walletHolderDetails,
+        loanAccountDetails,
         long,
         lat,
         interestRate,
         interestDueOnLoan,
-        totalAmountPaid: totalAmountToPayout,
+        totalAmountPaid: amountApproved,
         createdAt,
         startDate,
         payoutDate,
         isPayoutAuthorized,
         isTerminationAuthorized,
         isPayoutSuccessful,
+        dateDisbursementWasDone,
         requestType,
         approvalStatus,
         status,
@@ -3223,12 +3212,12 @@ export default class LoansController {
       console.log("Payout Payload: ", payload);
 
       // @ts-ignore
-      // let { userId, loanId, walletId } = request.all()
+      // let { walletId, loanId, walletId } = request.all()
       let payoutRecord;
       payoutRecord = await PayoutRecord.query().where({
-        investment_id: payload.loanId,
-        user_id: userId,
+        loan_id: payload.loanId,
         wallet_id: walletId,
+        : ,
         rollover_target: payload.rolloverTarget,
         rollover_done: payload.rolloverDone,
       });
@@ -3264,9 +3253,9 @@ export default class LoansController {
       // Update Payout
       let payout = await Payout.query()
         .where({
-          investment_id: payload.loanId,
-          user_id: userId,
+          loan_id: payload.loanId,
           wallet_id: walletId,
+          : ,
           rollover_target: payload.rolloverTarget,
           investment_type: payload.investmentType,
         })
