@@ -142,58 +142,77 @@ export default class SettingsController {
   public async update({ request, response }: HttpContextContract) {
     try {
       const { id } = request.qs();
-      console.log("Setting query: ", request.qs());
+      // console.log("Setting query: ", request.qs());
 
-      function toBool(string) {
-        if (string === "true") {
-          return true;
-        } else {
-          return false;
-        }
-      }
-      
-      let setting = await Setting.query().where({
-        id: id,
+      // function toBool(string) {
+      //   if (string === "true") {
+      //     return true;
+      //   } else {
+      //     return false;
+      //   }
+      // }
+
+      const settingSchema = schema.create({
+        fundingWalletId: schema.number(),
+        isDisbursementAutomated: schema.boolean(),
+        fundingSourceTerminal: schema.string({ escape: true }, [
+          rules.maxLength(50),
+        ]),
+        isLoanAutomated: schema.boolean(),
+        isTerminationAutomated: schema.boolean(),
+        tagName: schema.string({ escape: true }, [rules.maxLength(100)]),
+        currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
       });
-      console.log(" QUERY RESULT: ", setting);
-      console.log(
-        "isTerminationAutomated line 158",
-        request.input("isTerminationAutomated")
-      );
-      if (setting.length > 0) {
+      const payload: any = await request.validate({ schema: settingSchema });
+      console.log("Request body validation line 167", payload);
+      let setting = await Setting.query()
+        .where({
+          id: id,
+        })
+        .first();
+      if (!setting)
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
+      console.log("Request body line 175", request.body());
+      console.log(" QUERY RESULT: ", setting.isDisbursementAutomated);
+      if (setting) {
         console.log("Investment setting Selected for Update:", setting);
-        if (setting[0]) {
-          setting[0].fundingWalletId = request.input("fundingWalletId")
+        if (setting) {
+          setting.fundingWalletId = request.input("fundingWalletId")
             ? request.input("fundingWalletId")
-            : setting[0].fundingWalletId;
-          setting[0].isDisbursementAutomated = request.input(
-            "isDisbursementAutomated"
-          )
-            ? request.input("isDisbursementAutomated")
-            : setting[0].isDisbursementAutomated;
-          setting[0].fundingSourceTerminal = request.input(
-            "fundingSourceTerminal"
-          )
+            : setting.fundingWalletId;
+
+          setting.isDisbursementAutomated =
+            request.input("isDisbursementAutomated") !==
+              setting.isDisbursementAutomated &&
+            request.input("isDisbursementAutomated") !== undefined &&
+            request.input("isDisbursementAutomated") !== null
+              ? request.input("isDisbursementAutomated")
+              : setting.isDisbursementAutomated;
+
+          setting.fundingSourceTerminal = request.input("fundingSourceTerminal")
             ? request.input("fundingSourceTerminal")
-            : setting[0].fundingSourceTerminal;
-          setting[0].isLoanAutomated = request.input("isLoanAutomated")
+            : setting.fundingSourceTerminal;
+          setting.isLoanAutomated = request.input("isLoanAutomated")
             ? request.input("isLoanAutomated")
-            : setting[0].isLoanAutomated;
-          setting[0].isTerminationAutomated = request.input(
+            : setting.isLoanAutomated;
+          setting.isTerminationAutomated = request.input(
             "isTerminationAutomated"
           )
             ? request.input("isTerminationAutomated")
-            : setting[0].isTerminationAutomated;
-          setting[0].tagName = request.input("tagName")
+            : setting.isTerminationAutomated;
+          setting.tagName = request.input("tagName")
             ? request.input("tagName")
-            : setting[0].tagName;
-          setting[0].currencyCode = request.input("currencyCode")
+            : setting.tagName;
+          setting.currencyCode = request.input("currencyCode")
             ? request.input("currencyCode")
-            : setting[0].currencyCode;
+            : setting.currencyCode;
 
-          await setting[0].save();
+          await setting.save();
 
-          if (setting[0]) {
+          if (setting) {
             // send to user
             console.log(
               "isTerminationAutomated line 189",
@@ -202,7 +221,7 @@ export default class SettingsController {
             console.log("Update Investment setting:", setting);
             return response.json({
               status: "OK",
-              data: setting.map((setting) => setting.$original),
+              data: setting.$original,
             });
           }
           return; // 422
