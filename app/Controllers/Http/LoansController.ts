@@ -922,6 +922,7 @@ export default class LoansController {
       if (loan) {
         console.log("Loan Selected for Update line 1001:", loan.startDate);
         let isDueForRepayment;
+        let requestType;
         if (loan.status !== "active") {
           let createdAt = loan.createdAt;
           let duration = loan.duration;
@@ -933,124 +934,137 @@ export default class LoansController {
 
             if (loan && isOfferAccepted === true) {
               // check loan disbursement setting
-              let setting = await Setting.query().where({tagName: "default setting"}).first()
-              if (!setting) return response.json({status: "FAILED", message:"setting does not exist." })
+              let setting = await Setting.query()
+                .where({ tagName: "default setting" })
+                .first();
+              if (!setting)
+                return response.json({
+                  status: "FAILED",
+                  message: "setting does not exist.",
+                });
               console.log(
                 "isDisbursementAutomated is set to:",
                 setting.isDisbursementAutomated
               );
-               loan.amountApproved;
-               let { isDisbursementAutomated } = setting;
-               if (isDisbursementAutomated === false) {
+              loan.amountApproved;
+              let { isDisbursementAutomated } = setting;
+              if (isDisbursementAutomated === false) {
+                // send to admin for disbursement approval
+                requestType = "loan disbursement";
+                let approval = await approvalRequest(
+                  walletId,
+                  loanId,
+                  requestType
+                );
+                console.log(" Approval request return line 955 : ", approval);
+                if (approval === undefined) {
+                  return response.status(400).json({
+                    status: "FAILED",
+                    message:
+                      "loan approval request was not successful, please try again.",
+                    data: [],
+                  });
+                }
 
-                 // send to admin for disbursement approval
-
-                 // update loan row appropriately
-
-                 // update timeline
-
-                 // notify
-
-                 // send response to user if (loan) {
+                // update loan row appropriately
+                loan.requestType = requestType;
+                loan.approvalStatus = "pending";
+                loan.isOfferAccepted = isOfferAccepted;
                 // update timeline
                 timelineObject = {
                   id: uuid(),
-                  action: "loan updated",
+                  action: "loan offer accepted",
                   // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  message: `${loan.loanAccountDetails.firstName} just accepted the offer made.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
-                console.log("Timeline object line 1041:", timelineObject);
+                console.log("Timeline object line 964:", timelineObject);
                 //  Push the new object to the array
                 timeline = loan.timeline;
                 timeline.push(timelineObject);
-                console.log("Timeline object line 1045:", timeline);
+                console.log("Timeline object line 968:", timeline);
                 // stringify the timeline array
                 loan.timeline = JSON.stringify(timeline);
-                loan.isOfferAccepted = isOfferAccepted;
+
                 // Save
                 await loan.save();
                 console.log("Update Loan:", loan);
+                // notify
+
                 // send to user
                 return response.json({
                   status: "OK",
                   data: loan.$original,
                 });
-              }
-               } else {
+              } else {
+                // if disbursement is automated
+                requestType = "loan disbursement";
                 //  send money to savings account
 
                 // debit loan account
 
                 // update loan row appropriately
-
+                loan.requestType = requestType;
+                loan.approvalStatus = "approved";
+                loan.isOfferAccepted = isOfferAccepted;
                 // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan disbursed",
+                  // @ts-ignore
+                  message: `${loan.loanAccountDetails.firstName} loan has just been disbursed.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+                };
+                console.log("Timeline object line 999:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan.timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1003:", timeline);
+                // stringify the timeline array
+                loan.timeline = JSON.stringify(timeline);
+                loan.isOfferAccepted = isOfferAccepted;
 
+                
+                // Save
+                await loan.save();
+                console.log("Update Loan:", loan);
                 // notify
 
-                // send response to user
-               if (loan) {
-                // update timeline
-                timelineObject = {
-                  id: uuid(),
-                  action: "loan updated",
-                  // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
-                  createdAt: DateTime.now(),
-                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
-                };
-                console.log("Timeline object line 1041:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1045:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
-                loan.isOfferAccepted = isOfferAccepted;
-                // Save
-                await loan.save();
-                console.log("Update Loan:", loan);
                 // send to user
                 return response.json({
                   status: "OK",
                   data: loan.$original,
                 });
               }
-
-               }
-
-            } else  if (loan && isOfferAccepted === false) {
-              // check loan disbursement setting
-              loan.amountApproved;
-              if (loan) {
-                // update timeline
-                timelineObject = {
-                  id: uuid(),
-                  action: "loan offer rejected",
-                  // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} just rejected the offer made.`,
-                  createdAt: DateTime.now(),
-                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
-                };
-                console.log("Timeline object line 1041:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1045:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
-                loan.isOfferAccepted = isOfferAccepted;
-                // Save
-                await loan.save();
-                console.log("Update Loan:", loan);
-                // send to user
-                return response.json({
-                  status: "OK",
-                  data: loan.$original,
-                });
-              }
-              return; // 422
+            } else if (loan && isOfferAccepted === false) {
+              // update timeline
+              timelineObject = {
+                id: uuid(),
+                action: "loan offer rejected",
+                // @ts-ignore
+                message: `${loan.loanAccountDetails.firstName} just rejected the offer made.`,
+                createdAt: DateTime.now(),
+                meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+              };
+              console.log("Timeline object line 1041:", timelineObject);
+              //  Push the new object to the array
+              timeline = loan.timeline;
+              timeline.push(timelineObject);
+              console.log("Timeline object line 1045:", timeline);
+              // stringify the timeline array
+              loan.timeline = JSON.stringify(timeline);
+              // update loan to reflect offer rejection
+              loan.isOfferAccepted = isOfferAccepted;
+              // Save
+              await loan.save();
+              console.log("Update Loan:", loan);
+              // send to user
+              return response.json({
+                status: "OK",
+                data: loan.$original,
+              });
             } else {
               return response.status(400).json({
                 status: "FAILED",
