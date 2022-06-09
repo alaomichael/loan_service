@@ -32,9 +32,14 @@ export default class RatesController {
       sortedRates = sortedRates.filter((rate) => {
         console.log(" Rate Duration:", rate.duration);
         console.log(" Query Duration:", duration);
+        const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
+
+        fruits.includes("🍇"); // true
+        fruits.includes("🍉"); // false
+
         // @ts-ignore
-        return rate.duration === duration;
-      });
+        return rate.duration.includes(duration);
+      })
     }
     if (productName) {
       sortedRates = sortedRates.filter((rate) => {
@@ -80,13 +85,13 @@ export default class RatesController {
       productName: schema.string({ escape: true }, [rules.maxLength(20)]),
       lowestAmount: schema.number(),
       highestAmount: schema.number(),
-      duration: schema.string({ escape: true }, [rules.maxLength(4)]),
+      duration: schema.array().members(schema.number()),
       interestRate: schema.number(),
       tagName: schema.string({ escape: true }, [rules.maxLength(100)]),
       currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
       additionalDetails: schema.object().members({}),
-      long: schema.number(),
-      lat: schema.number(),
+      long: schema.number.optional(),
+      lat: schema.number.optional(),
       status: schema.string({ escape: true }, [rules.maxLength(20)]),
     });
     const payload: any = await request.validate({ schema: rateSchema });
@@ -112,6 +117,21 @@ export default class RatesController {
     try {
       const { productName, rateId } = request.qs();
       console.log("Rate query: ", request.qs());
+        const rateSchema = schema.create({
+          productName: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
+          lowestAmount: schema.number.optional(),
+          highestAmount: schema.number.optional(),
+          duration: schema.object.optional().members({}),
+          interestRate: schema.number.optional(),
+          tagName: schema.string.optional({ escape: true }, [rules.maxLength(100)]),
+          currencyCode: schema.string.optional({ escape: true }, [rules.maxLength(5)]),
+          additionalDetails: schema.object.optional().members({}),
+          long: schema.number.optional(),
+          lat: schema.number.optional(),
+          status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
+        });
+        const payload: any = await request.validate({ schema: rateSchema });
+        console.log("Rate update payload: ", payload);
       // let rate = await Rate.query().where({
       //   product_name: request.input('productName'),
       //   id: request.input('rateId'),
@@ -119,51 +139,53 @@ export default class RatesController {
       let rate = await Rate.query().where({
         product_name: productName,
         id: rateId,
-      });
+      }).first();
       console.log(" QUERY RESULT: ", rate);
-      if (rate.length > 0) {
+      if(!rate)  return response.json({
+        status: "FAILED",
+        message: "No data match your query parameters",
+      });
+      if (rate) {
         console.log("Investment rate Selected for Update:", rate);
         if (rate) {
-          rate[0].productName = request.input("newProductName")
+          rate.productName = request.input("newProductName")
             ? request.input("newProductName")
-            : rate[0].productName;
-          rate[0].lowestAmount = request.input("lowestAmount")
+            : rate.productName;
+          rate.lowestAmount = request.input("lowestAmount")
             ? request.input("lowestAmount")
-            : rate[0].lowestAmount;
-          rate[0].highestAmount = request.input("highestAmount")
+            : rate.lowestAmount;
+          rate.highestAmount = request.input("highestAmount")
             ? request.input("highestAmount")
-            : rate[0].highestAmount;
-          rate[0].duration = request.input("duration")
+            : rate.highestAmount;
+          rate.duration = request.input("duration")
             ? request.input("duration")
-            : rate[0].duration;
-          rate[0].interestRate = request.input("interestRate")
+            : rate.duration;
+          rate.interestRate = request.input("interestRate")
             ? request.input("interestRate")
-            : rate[0].interestRate;
-          rate[0].tagName = request.input("tagName")
+            : rate.interestRate;
+          rate.tagName = request.input("tagName")
             ? request.input("tagName")
-            : rate[0].tagName;
-          rate[0].additionalDetails = request.input("additionalDetails")
+            : rate.tagName;
+          rate.additionalDetails = request.input("additionalDetails")
             ? request.input("additionalDetails")
-            : rate[0].additionalDetails;
-          rate[0].long = request.input("long")
+            : rate.additionalDetails;
+          rate.long = request.input("long")
             ? request.input("long")
-            : rate[0].long;
-          rate[0].lat = request.input("lat")
+            : rate.long;
+          rate.lat = request.input("lat")
             ? request.input("lat")
-            : rate[0].lat;
-          rate[0].status = request.input("status")
+            : rate.lat;
+          rate.status = request.input("status")
             ? request.input("status")
-            : rate[0].status;
+            : rate.status;
 
           if (rate) {
             // send to user
-            await rate[0].save();
+            await rate.save();
             console.log("Update Investment rate:", rate);
             return response.status(200).json({
               status: "OK",
-              data: rate.map((rate) => {
-                return rate.$original;
-              }),
+              data: rate.$original,
             });
           }
           return; // 422

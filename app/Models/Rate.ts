@@ -16,7 +16,7 @@ export default class Rate extends BaseModel {
   public highestAmount: number;
 
   @column()
-  public duration: string;
+  public duration: JSON;
 
   @column()
   public interestRate: number;

@@ -9,7 +9,7 @@ export default class extends BaseSchema {
       table.string("product_name", 50).notNullable().index();
       table.float("lowest_amount", 12).unsigned().notNullable().index();
       table.float("highest_amount", 12).unsigned().notNullable().index();
-      table.string("duration", 5).notNullable().index();
+      table.jsonb("duration").notNullable().index();
       table.string("tag_name", 100).notNullable().index();
       table.string("currency_code", 10).notNullable().index();
       table.jsonb("additional_details").nullable().index();
