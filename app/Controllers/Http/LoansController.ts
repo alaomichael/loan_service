@@ -1008,6 +1008,10 @@ export default class LoansController {
                 loan.requestType = requestType;
                 loan.approvalStatus = "approved";
                 loan.isOfferAccepted = isOfferAccepted;
+                  loan.startDate = DateTime.now(); //.toISODate()
+                  loan.repaymentDate = DateTime.now().plus({
+                    days: parseInt(loan.duration),
+                  });
                 // update timeline
                 timelineObject = {
                   id: uuid(),
@@ -1026,7 +1030,7 @@ export default class LoansController {
                 loan.timeline = JSON.stringify(timeline);
                 loan.isOfferAccepted = isOfferAccepted;
 
-                
+
                 // Save
                 await loan.save();
                 console.log("Update Loan:", loan);
@@ -1502,38 +1506,39 @@ export default class LoansController {
       );
       loan.interestDueOnLoan = amountDueOnRepayment;
       loan.totalAmountToRepay = loan.amountApproved + amountDueOnRepayment;
+      loan.isLoanApproved = true;
       await loan.save();
       console.log("The new loan:", loan);
 
       // Send Loan Payload To Transaction Service
-      let sendToTransactionService = "OK"; //= new SendToTransactionService(loan)
+      let sendToUserForAcceptance = "OK"; //= new SendToTransactionService(loan)
       console.log(
-        " Feedback from Transaction service: ",
-        sendToTransactionService
+        " Feedback from admin: ",
+        sendToUserForAcceptance
       );
-      if (sendToTransactionService === "OK") {
+      if (sendToUserForAcceptance === "OK") {
         // Activate the loan
         loan.amountApproved = amountRecommended;
         loan.requestType = requestType;
-        loan.status = "active";
+        loan.status = "pending";
         loan.approvalStatus = "approved";
-        loan.startDate = DateTime.now(); //.toISODate()
-        loan.repaymentDate = DateTime.now().plus({
-          days: parseInt(loanDuration),
-        });
+        // loan.startDate = DateTime.now(); //.toISODate()
+        // loan.repaymentDate = DateTime.now().plus({
+        //   days: parseInt(loanDuration),
+        // });
         timelineObject = {
           id: uuid(),
-          action: "loan activated",
+          action: "loan offer made",
           // @ts-ignore
-          message: `${loan.loanAccountDetails.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and activated.`,
-          createdAt: loan.startDate,
-          meta: `duration: ${loan.duration}, payout date : ${loan.repaymentDate}`,
+          message: `${loan.loanAccountDetails.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and offer made.`,
+          createdAt: loan.createdAt,
+          meta: `duration: ${loan.duration}`,
         };
-        console.log("Timeline object line 1272:", timelineObject);
+        console.log("Timeline object line 1537:", timelineObject);
         //  Push the new object to the array
         timeline.push(timelineObject);
 
-        console.log("Timeline object line 1276:", timeline);
+        console.log("Timeline object line 1541:", timeline);
 
         // stringify the timeline array
         loan.timeline = JSON.stringify(timeline);
@@ -1553,7 +1558,7 @@ export default class LoansController {
         return response.json({
           status: "FAILED",
           message:
-            "Loan was not successfully sent to Transaction Service, please try again.",
+            "Loan was not successfully sent to user for offer acceptance, please try again.",
           data: loan.$original,
         });
       }
