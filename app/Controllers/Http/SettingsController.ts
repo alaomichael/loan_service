@@ -175,49 +175,48 @@ export default class SettingsController {
           status: "FAILED",
           message: "No data match your query parameters",
         });
-      console.log("Request body line 175", request.body());
+      let {
+        fundingWalletId,
+        isDisbursementAutomated,
+        fundingSourceTerminal,
+        isLoanAutomated,
+        isTerminationAutomated,
+        tagName,
+        currencyCode,
+      } = request.body();
+      console.log("Request body line 175", currencyCode);
       console.log(" QUERY RESULT: ", setting.isDisbursementAutomated);
       if (setting) {
         console.log("Investment setting Selected for Update:", setting);
         if (setting) {
-          setting.fundingWalletId = request.input("fundingWalletId")
-            ? request.input("fundingWalletId")
+          setting.fundingWalletId = fundingWalletId
+            ? fundingWalletId
             : setting.fundingWalletId;
-
           setting.isDisbursementAutomated =
-            request.input("isDisbursementAutomated") !==
-              setting.isDisbursementAutomated &&
-            request.input("isDisbursementAutomated") !== undefined &&
-            request.input("isDisbursementAutomated") !== null
-              ? request.input("isDisbursementAutomated")
+            isDisbursementAutomated !== setting.isDisbursementAutomated &&
+            isDisbursementAutomated !== undefined &&
+            isDisbursementAutomated !== null
+              ? isDisbursementAutomated
               : setting.isDisbursementAutomated;
 
-          setting.fundingSourceTerminal = request.input("fundingSourceTerminal")
-            ? request.input("fundingSourceTerminal")
+          setting.fundingSourceTerminal = fundingSourceTerminal
+            ? fundingSourceTerminal
             : setting.fundingSourceTerminal;
-          setting.isLoanAutomated = request.input("isLoanAutomated")
-            ? request.input("isLoanAutomated")
+          setting.isLoanAutomated = isLoanAutomated
+            ? isLoanAutomated
             : setting.isLoanAutomated;
-          setting.isTerminationAutomated = request.input(
-            "isTerminationAutomated"
-          )
-            ? request.input("isTerminationAutomated")
+          setting.isTerminationAutomated = isTerminationAutomated
+            ? isTerminationAutomated
             : setting.isTerminationAutomated;
-          setting.tagName = request.input("tagName")
-            ? request.input("tagName")
-            : setting.tagName;
-          setting.currencyCode = request.input("currencyCode")
-            ? request.input("currencyCode")
+          setting.tagName = tagName ? tagName : setting.tagName;
+          setting.currencyCode = currencyCode
+            ? currencyCode
             : setting.currencyCode;
 
           await setting.save();
 
           if (setting) {
             // send to user
-            console.log(
-              "isTerminationAutomated line 189",
-              request.input("isTerminationAutomated")
-            );
             console.log("Update Investment setting:", setting);
             return response.json({
               status: "OK",
@@ -235,7 +234,12 @@ export default class SettingsController {
         });
       }
     } catch (error) {
-      console.error(error);
+      console.log(error.messages);
+      // console.error(error.messages);
+      return response.status(404).json({
+        status: "FAILED",
+        message: error.messages.errors,
+      });
     }
     // return // 401
   }

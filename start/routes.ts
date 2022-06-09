@@ -50,7 +50,7 @@ Route.group(() => {
     Route.get("wallets/:walletId", "WalletsController.showByWalletId");
     // Route.get("loans/rates", "LoansController.getLoanRate");;
     Route.get("loans", "LoansController.index");
-    // Route.get("loans/:walletId", "LoansController.showByWalletId");
+    Route.get("loans/:walletId", "LoansController.showByWalletId");
     Route.get("admin/loans/settings", "SettingsController.index");
     Route.get("loans/rates", "RatesController.index");
     Route.get("admin/loans/rates", "RatesController.index");
@@ -59,7 +59,7 @@ Route.group(() => {
       "admin/loans/recommendations",
       "LoansController.getCreditRecommendations"
     );
-    Route.get("loans/:loanId", "LoansController.showByLoanId");
+    Route.get("loans/loan/:loanId", "LoansController.showByLoanId");
 
     // Route.get('investments/payouts', 'InvestmentsController.showPayouts')
     Route.get("investments/payouts", "PayoutsController.index");

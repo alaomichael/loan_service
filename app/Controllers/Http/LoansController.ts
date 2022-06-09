@@ -114,7 +114,9 @@ export default class LoansController {
     } = request.qs();
     console.log("LOAN query: ", request.qs());
     try {
-      let loan = await Loan.query().where("wallet_id", params.walletId);
+      let loan = await Loan.query()
+        .where("wallet_id", params.walletId)
+        .orderBy("createdAt", "desc");
       // .orWhere('id', params.id)
       // .limit()
       let sortedInvestments = loan.map((loan) => {
@@ -194,7 +196,10 @@ export default class LoansController {
     const { loanId } = request.params();
     console.log("LOAN params loanId: ", loanId);
     try {
-      let loan = await Loan.query().where({ id: loanId }).first();
+      let loan = await Loan.query()
+        .where({ id: loanId })
+        .orderBy("createdAt", "desc")
+        .first();
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
@@ -214,7 +219,9 @@ export default class LoansController {
     const { walletId } = request.params();
     console.log("LOAN params walletId: ", walletId);
     try {
-      let loans = await Loan.query().where({ walletId: walletId });
+      let loans = await Loan.query()
+        .where({ walletId: walletId })
+        .orderBy("createdAt", "desc");
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
@@ -1067,7 +1074,6 @@ export default class LoansController {
     //   });
     // }
 
-
     // console.log(
     //   " The Rate return for RATE line 1227: ",
     //   await investmentRate(payloadAmount, payloadDuration)
@@ -1137,76 +1143,76 @@ export default class LoansController {
     // let timeline: any[] = [];
     //  create a new object for the timeline
     let timelineObject;
-   let settings = await Setting.query().where({ tagName: "default setting" });
-   console.log("Approval setting line 910:", settings[0]);
-   let timeline: any[] = [];
+    let settings = await Setting.query().where({ tagName: "default setting" });
+    console.log("Approval setting line 910:", settings[0]);
+    let timeline: any[] = [];
     //  Check if loan activation is automated
     let approvalIsAutomated = settings[0].isLoanAutomated;
     // let approvalIsAutomated = false
     if (approvalIsAutomated === false) {
-console.log(
-      " The Rate return for RATE line 1227: ",
-      await investmentRate(payloadAmount, payloadDuration)
-    );
-    let rate = await investmentRate(payloadAmount, payloadDuration);
-    console.log(" Rate return line 1238 : ", rate);
-    if (rate === undefined || rate.length < 1) {
-      return response.status(400).json({
-        status: "FAILED",
-        message: "no investment rate matched your search, please try again.",
-        data: [],
-      });
-    }
+      console.log(
+        " The Rate return for RATE line 1227: ",
+        await investmentRate(payloadAmount, payloadDuration)
+      );
+      let rate = await investmentRate(payloadAmount, payloadDuration);
+      console.log(" Rate return line 1238 : ", rate);
+      if (rate === undefined || rate.length < 1) {
+        return response.status(400).json({
+          status: "FAILED",
+          message: "no investment rate matched your search, please try again.",
+          data: [],
+        });
+      }
 
-    console.log("Payload line 1160  :", payload);
-    const loan = await Loan.create(payload);
-    loan.interestRate = rate;
+      console.log("Payload line 1160  :", payload);
+      const loan = await Loan.create(payload);
+      loan.interestRate = rate;
 
-    // When the loan has been approved and activated
-    let amount = loan.amountRequested;
-    let loanDuration = loan.duration;
-    let amountDueOnRepayment = await interestDueOnLoan(
-      amount,
-      rate,
-      loanDuration
-    );
-    // @ts-ignore
-    loan.interestDueOnLoan = amountDueOnRepayment;
-    // @ts-ignore
-    loan.totalAmountToRepay = loan.amountRequested + amountDueOnRepayment;
-    await loan.save();
-    console.log("The new loan:", loan);
-
-    // TODO
-    // Send Loan Payload To Admin
-
-    // Send Loan Initiation Message to Queue
-
-    // check if Approval is set to Auto, from Setting Controller
-    let walletId = loan.walletId;
-    let loanId = loan.id;
-    requestType = "start loan";
-    // let settings = await Setting.query().where({ tagName: "default setting" });
-    // console.log("Approval setting line 910:", settings[0]);
-    // let timeline: any[] = [];
-    //  create a new object for the timeline
-    timelineObject = {
-      id: uuid(),
-      action: "loan initiated",
+      // When the loan has been approved and activated
+      let amount = loan.amountRequested;
+      let loanDuration = loan.duration;
+      let amountDueOnRepayment = await interestDueOnLoan(
+        amount,
+        rate,
+        loanDuration
+      );
       // @ts-ignore
-      message: `${loan.loanAccountDetails.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
-      createdAt: loan.createdAt,
-      meta: `duration: ${loan.duration}`,
-    };
-    console.log("Timeline object line 1186:", timelineObject);
-    //  Push the new object to the array
-    timeline.push(timelineObject);
+      loan.interestDueOnLoan = amountDueOnRepayment;
+      // @ts-ignore
+      loan.totalAmountToRepay = loan.amountRequested + amountDueOnRepayment;
+      await loan.save();
+      console.log("The new loan:", loan);
 
-    console.log("Timeline object line 1190:", timeline);
+      // TODO
+      // Send Loan Payload To Admin
 
-    // stringify the timeline array
-    loan.timeline = JSON.stringify(timeline);
-    await loan.save();
+      // Send Loan Initiation Message to Queue
+
+      // check if Approval is set to Auto, from Setting Controller
+      let walletId = loan.walletId;
+      let loanId = loan.id;
+      requestType = "start loan";
+      // let settings = await Setting.query().where({ tagName: "default setting" });
+      // console.log("Approval setting line 910:", settings[0]);
+      // let timeline: any[] = [];
+      //  create a new object for the timeline
+      timelineObject = {
+        id: uuid(),
+        action: "loan initiated",
+        // @ts-ignore
+        message: `${loan.loanAccountDetails.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
+        createdAt: loan.createdAt,
+        meta: `duration: ${loan.duration}`,
+      };
+      console.log("Timeline object line 1186:", timelineObject);
+      //  Push the new object to the array
+      timeline.push(timelineObject);
+
+      console.log("Timeline object line 1190:", timeline);
+
+      // stringify the timeline array
+      loan.timeline = JSON.stringify(timeline);
+      await loan.save();
 
       // Send Approval Request to Admin
       let approval = await approvalRequest(walletId, loanId, requestType);
@@ -1219,21 +1225,20 @@ console.log(
           data: [],
         });
       }
-       let newLoanId = loan.id;
-    // Send to Notificaation Service
-    // @ts-ignore
-    let newLoanEmail = loan.loanAccountDetails.email;
-    Event.emit("new:loan", {
-      id: newLoanId,
-      email: newLoanEmail,
-    });
-    return response.status(201).json({ status: "OK", data: loan.$original });
-
+      let newLoanId = loan.id;
+      // Send to Notificaation Service
+      // @ts-ignore
+      let newLoanEmail = loan.loanAccountDetails.email;
+      Event.emit("new:loan", {
+        id: newLoanId,
+        email: newLoanEmail,
+      });
+      return response.status(201).json({ status: "OK", data: loan.$original });
     } else if (approvalIsAutomated === true) {
       // TODO
       // Get recommendations
       let amountRecommended;
-      amountRecommended = 425000
+      amountRecommended = 425000;
       // call Okra
 
       // call CreditRegistry
@@ -1241,8 +1246,8 @@ console.log(
       // TODO
       payloadAmount = amountRecommended;
       // loan.amountApproved = amountRecommended;
-     payloadDuration = payload.duration;
-     payload.amountApproved = amountRecommended;
+      payloadDuration = payload.duration;
+      payload.amountApproved = amountRecommended;
       // console.log(
       //   " The Rate return for RATE line 1141: ",
       //   await generateRate(payloadAmount, payloadDuration)
@@ -1278,11 +1283,9 @@ console.log(
       // When the loan has been approved and activated
       let amount = loan.amountApproved;
       let loanDuration = loan.duration;
-      let amountDueOnRepayment = Number(await interestDueOnLoan(
-        amount,
-        rate,
-        loanDuration
-      ));
+      let amountDueOnRepayment = Number(
+        await interestDueOnLoan(amount, rate, loanDuration)
+      );
       loan.interestDueOnLoan = amountDueOnRepayment;
       loan.totalAmountToRepay = loan.amountApproved + amountDueOnRepayment;
       await loan.save();
@@ -1321,16 +1324,17 @@ console.log(
         // stringify the timeline array
         loan.timeline = JSON.stringify(timeline);
         await loan.save();
-         let newLoanId = loan.id;
-    // Send to Notificaation Service
-    // @ts-ignore
-    let newLoanEmail = loan.loanAccountDetails.email;
-    Event.emit("new:loan", {
-      id: newLoanId,
-      email: newLoanEmail,
-    });
-    return response.status(201).json({ status: "OK", data: loan.$original });
-
+        let newLoanId = loan.id;
+        // Send to Notificaation Service
+        // @ts-ignore
+        let newLoanEmail = loan.loanAccountDetails.email;
+        Event.emit("new:loan", {
+          id: newLoanId,
+          email: newLoanEmail,
+        });
+        return response
+          .status(201)
+          .json({ status: "OK", data: loan.$original });
       } else {
         return response.json({
           status: "FAILED",
@@ -1342,15 +1346,15 @@ console.log(
     }
     // Save update to database
     // await loan.save();
-  //   let newLoanId = loan.id;
-  //   // Send to Notificaation Service
-  //   // @ts-ignore
-  //   let newLoanEmail = loan.loanAccountDetails.email;
-  //   Event.emit("new:loan", {
-  //     id: newLoanId,
-  //     email: newLoanEmail,
-  //   });
-  //   return response.status(201).json({ status: "OK", data: loan.$original });
+    //   let newLoanId = loan.id;
+    //   // Send to Notificaation Service
+    //   // @ts-ignore
+    //   let newLoanEmail = loan.loanAccountDetails.email;
+    //   Event.emit("new:loan", {
+    //     id: newLoanId,
+    //     email: newLoanEmail,
+    //   });
+    //   return response.status(201).json({ status: "OK", data: loan.$original });
   }
 
   public async getCreditRecommendations({
