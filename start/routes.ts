@@ -88,6 +88,7 @@ Route.group(() => {
     Route.put("loans", "LoansController.update");
     Route.put("admin/loans/rates", "RatesController.update");
     Route.put("admin/loans/approvals", "ApprovalsController.update");
+    Route.put("loans/offers", "LoansController.updateOffer");
 
     Route.put("investments/payouts", "InvestmentsController.payout");
     Route.put("investments/terminates", "InvestmentsController.payout");

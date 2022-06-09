@@ -220,7 +220,7 @@ export default class LoansController {
     console.log("LOAN params walletId: ", walletId);
     try {
       let loans = await Loan.query()
-        .where({ walletId: walletId })
+        .where({ wallet_id: walletId })
         .orderBy("createdAt", "desc");
       // .with('timeline')
       // .orderBy('timeline', 'desc')
@@ -261,21 +261,16 @@ export default class LoansController {
       if (walletId) {
         sortedPayouts = sortedPayouts.filter((payout) => {
           // @ts-ignore
-          return payout.walletId === parseInt(walletId);
+          return payout.walletId === walletId;
         });
       }
       if (loanId) {
         sortedPayouts = sortedPayouts.filter((payout) => {
           // @ts-ignore
-          return payout.loanId === parseInt(loanId);
+          return payout.loanId === loanId;
         });
       }
-      if (walletId) {
-        sortedPayouts = sortedPayouts.filter((payout) => {
-          // @ts-ignore
-          return payout.walletId === parseInt(walletId);
-        });
-      }
+
       if (requestType) {
         sortedPayouts = sortedPayouts.filter((payout) => {
           // @ts-ignore
@@ -363,8 +358,8 @@ export default class LoansController {
           // })
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -457,8 +452,8 @@ export default class LoansController {
           // })
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -533,8 +528,8 @@ export default class LoansController {
       if (approvals[0].approvalStatus === "approved") {
         loan = await Loan.query()
           .where("status", "active")
-          .where("requestType", requestType)
-          .where("walletId", walletId)
+          .where("request_type", requestType)
+          .where("wallet_id", walletId)
           .where("id", loanId);
         console.log("LOAN DATA line 285: ", loan);
         if (loan.length < 1) {
@@ -545,8 +540,8 @@ export default class LoansController {
           // })
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -596,8 +591,8 @@ export default class LoansController {
       ) {
         loan = await Loan.query()
           .where("status", "active")
-          .where("requestType", requestType)
-          .where("walletId", walletId)
+          .where("request_type", requestType)
+          .where("wallet_id", walletId)
           .where("id", loanId);
         console.log("The declined loan line 323: ", loan);
         if (loan.length < 1) {
@@ -608,8 +603,8 @@ export default class LoansController {
           // })
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -667,9 +662,9 @@ export default class LoansController {
       console.log("WALLET ID", walletId);
       // check the approval for request
       approvals = await Approval.query()
-        .where("requestType", requestType)
-        .where("walletId", walletId)
-        .where("loanId", loanId);
+        .where("request_type", requestType)
+        .where("wallet_id", walletId)
+        .where("loan_id", loanId);
       // check the approval status
       console.log("approvals line 353: ", approvals);
       if (approvals.length < 1) {
@@ -684,15 +679,15 @@ export default class LoansController {
       if (approvals[0].approvalStatus === "approved") {
         loan = await Loan.query()
           .where("status", "active")
-          .where("requestType", requestType)
-          .where("walletId", walletId)
+          .where("request_type", requestType)
+          .where("wallet_id", walletId)
           .where("id", loanId);
         console.log("LOAN DATA line 368: ", loan);
         if (loan.length < 1) {
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -753,8 +748,8 @@ export default class LoansController {
       ) {
         loan = await Loan.query()
           .where("status", "active")
-          .where("requestType", requestType)
-          .where("walletId", walletId)
+          .where("request_type", requestType)
+          .where("wallet_id", walletId)
           .where("id", loanId);
         console.log("The declined loan line 698: ", loan);
         if (loan.length < 1) {
@@ -765,8 +760,8 @@ export default class LoansController {
           // })
           loan = await Loan.query()
             // .where('status', 'active')
-            .where("requestType", requestType)
-            .where("walletId", walletId)
+            .where("request_type", requestType)
+            .where("wallet_id", walletId)
             .where("id", loanId);
           return response.json({
             status: "OK",
@@ -900,6 +895,95 @@ export default class LoansController {
     }
   }
 
+  public async updateOffer({ request, response }: HttpContextContract) {
+    try {
+      let { walletId, loanId } = request.qs();
+      console.log(" walletId and loanId: ", walletId + " " + loanId);
+        const walletSchema = schema.create({
+          isOfferAccepted: schema.boolean(),
+         });
+        const payload: any = await request.validate({ schema: walletSchema });
+        console.log("The offer is accepted : ", payload);
+
+      let { isOfferAccepted } = request.only(["isOfferAccepted"]);
+      console.log(" isOfferAccepted line 909: ", isOfferAccepted);
+      let loan = await Loan.query().where({
+        wallet_id: walletId,
+        id: loanId,
+      }).first();
+      console.log(" Loan :", loan)
+      if (loan) {
+        console.log("Loan Selected for Update line 1001:", loan.startDate);
+        let isDueForRepayment;
+        if (loan.status !== "active") {
+          let createdAt = loan.createdAt;
+          let duration = loan.duration;
+          let timeline;
+          let timelineObject;
+          try {
+            isDueForRepayment = await dueForRepayment(createdAt, duration);
+            console.log("Is due for repayment status :", isDueForRepayment);
+            // let newRolloverTarget = request.input("rolloverTarget");
+            // let newRolloverType = request.input("rolloverType");
+            // Restrict update to timed/fixed deposit only
+            if (loan && isDueForRepayment === false) {
+              loan.amountApproved = amountApproved;
+              if (loan) {
+                // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan updated",
+                  // @ts-ignore
+                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+                };
+                console.log("Timeline object line 1041:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan.timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1045:", timeline);
+                // stringify the timeline array
+                loan.timeline = JSON.stringify(timeline);
+                // Save
+                await loan.save();
+                console.log("Update Loan:", loan);
+                // send to user
+                return response.json({
+                  status: "OK",
+                  data: loan.$original,
+                });
+              }
+              return; // 422
+            } else {
+              return response.status(400).json({
+                status: "FAILED",
+                data: loan.map((loan) => loan.$original),
+                message: "please check your loan parameters",
+              });
+            }
+          } catch (error) {
+            console.error("Is due for payout status Error :", error);
+            return response.json({ status: "FAILED", data: error.message });
+          }
+        } else {
+          return response.json({
+            status: "FAILED",
+            data: loan.map((loan) => loan.$original),
+          });
+        }
+      } else {
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    // return // 401
+  }
+
   public async update({ request, response }: HttpContextContract) {
     try {
       let { walletId, loanId } = request.qs();
@@ -907,10 +991,11 @@ export default class LoansController {
       let { amountApproved } = request.all();
       console.log(" amountApproved line 898: ", amountApproved);
       let loan = await Loan.query().where({
-        walletId: walletId,
+        wallet_id: walletId,
         id: loanId,
-      });
-      if (loan.length > 0) {
+      }).first();
+      if(!loan) return response.json({status: "FAILED", message: "loan does not exist, or missing parameter."})
+      if (loan) {
         console.log("Loan Selected for Update line 1001:", loan[0].startDate);
         let isDueForRepayment;
         if (loan[0].status !== "active") {
@@ -1372,7 +1457,7 @@ export default class LoansController {
         wallet_id: walletId,
         id: loanId,
       });
-  console.log("Loan Selected for Update line 1375:", loan);
+      console.log("Loan Selected for Update line 1375:", loan);
       if (loan.length > 0) {
         console.log("Loan Selected for Update line 1377:", loan[0].startDate);
         let payload = loan[0];
@@ -3327,14 +3412,14 @@ export default class LoansController {
     console.log("Rate query: ", request.qs());
     let loan = await Loan.query().where({
       id: request.input("loanId"),
-      walletId: params.walletId,
+      wallet_id: params.walletId,
     });
     console.log(" QUERY RESULT: ", loan);
     if (loan.length > 0) {
       loan = await Loan.query()
         .where({
           id: request.input("loanId"),
-          walletId: params.walletId,
+          wallet_id: params.walletId,
         })
         .delete();
       console.log("Deleted data:", loan);

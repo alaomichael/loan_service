@@ -33,7 +33,7 @@ export default class extends BaseSchema {
       table.date("start_date").nullable().index();
       table.date("repayment_date").nullable().index();
       table.boolean("is_loan_approved").notNullable().defaultTo(false).index();
-      table.boolean("accept_offer").notNullable().defaultTo(false).index();
+      table.boolean("is_offer_accepted").notNullable().defaultTo(false).index();
       table
         .boolean("is_disbursement_successful")
         .notNullable()
@@ -87,6 +87,7 @@ export default class extends BaseSchema {
           "status",
           "timeline",
           "date_disbursement_was_done",
+          "is_offer_accepted",
         ],
         "loan_full_index"
       );

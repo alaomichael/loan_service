@@ -51,6 +51,9 @@ export default class Loan extends BaseModel {
   @column()
   public totalAmountToRepay: number;
 
+  @column()
+  public isOfferAccepted: boolean;
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 
