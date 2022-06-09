@@ -6,14 +6,8 @@ import Event from "@ioc:Adonis/Core/Event";
 export default class RatesController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("Rate params: ", params);
-    const {
-      duration,
-      limit,
-      amount,
-      status,
-      productName,
-      interestRate,
-    } = request.qs();
+    const { duration, limit, amount, status, productName, interestRate } =
+      request.qs();
     console.log("Rate query line 19: ", request.qs());
 
     // const countSuspended = await Rate.query().where('status', 'suspended').getCount()
@@ -39,7 +33,7 @@ export default class RatesController {
 
         // @ts-ignore
         return rate.duration.includes(duration);
-      })
+      });
     }
     if (productName) {
       sortedRates = sortedRates.filter((rate) => {
@@ -68,7 +62,7 @@ export default class RatesController {
     if (sortedRates.length < 1) {
       return response.status(200).json({
         status: "OK",
-        message: "no investment rate matched your search",
+        message: "no loan rate matched your search",
         data: [],
       });
     }
@@ -81,72 +75,93 @@ export default class RatesController {
 
   public async store({ request, response }: HttpContextContract) {
     // const user = await auth.authenticate()
-    const rateSchema = schema.create({
-      productName: schema.string({ escape: true }, [rules.maxLength(20)]),
-      lowestAmount: schema.number(),
-      highestAmount: schema.number(),
-      duration: schema.array().members(schema.number()),
-      interestRate: schema.number(),
-      tagName: schema.string({ escape: true }, [rules.maxLength(100)]),
-      currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
-      additionalDetails: schema.object().members({}),
-      long: schema.number.optional(),
-      lat: schema.number.optional(),
-      status: schema.string({ escape: true }, [rules.maxLength(20)]),
-    });
-    const payload: any = await request.validate({ schema: rateSchema });
-    const rate = await Rate.create(payload);
-    await rate.save();
-    console.log("The new investment:", rate);
+    try {
+      const rateSchema = schema.create({
+        productName: schema.string({ escape: true }, [rules.maxLength(20)]),
+        lowestAmount: schema.number(),
+        highestAmount: schema.number(),
+        duration: schema.array().members(schema.string()),
+        interestRate: schema.number(),
+        tagName: schema.string({ escape: true }, [rules.maxLength(100)]),
+        currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
+        additionalDetails: schema.object().members({}),
+        long: schema.number.optional(),
+        lat: schema.number.optional(),
+        status: schema.string({ escape: true }, [rules.maxLength(20)]),
+      });
+      const payload: any = await request.validate({ schema: rateSchema });
+      let duration = payload.duration;
+      console.log("The new rate duration:", duration);
+      payload.duration = JSON.stringify(duration);
+      const rate = await Rate.create(payload);
+      await rate.save();
+      console.log("The new loan rate:", rate);
 
-    console.log("A New Rate has been Created.");
+      console.log("A New Rate has been Created.");
 
-    // Save Rate new status to Database
-    await rate.save();
-    // Send Rate Creation Message to Queue
+      // Save Rate new status to Database
+      await rate.save();
+      // Send Rate Creation Message to Queue
 
-    // @ts-ignore
-    Event.emit("new:rate", { id: rate.id, extras: rate.additionalDetails });
-    return response.status(200).json({
-      status: "OK",
-      data: rate.$original,
-    });
+      // @ts-ignore
+      Event.emit("new:rate", { id: rate.id, extras: rate.additionalDetails });
+      return response.status(200).json({
+        status: "OK",
+        data: rate.$original,
+      });
+    } catch (error) {
+      console.log(error);
+      console.error(error.messages);
+      return response.status(404).json({
+        status: "FAILED",
+        message: error.messages.errors,
+      });
+    }
   }
 
   public async update({ request, response }: HttpContextContract) {
     try {
       const { productName, rateId } = request.qs();
       console.log("Rate query: ", request.qs());
-        const rateSchema = schema.create({
-          productName: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
-          lowestAmount: schema.number.optional(),
-          highestAmount: schema.number.optional(),
-          duration: schema.object.optional().members({}),
-          interestRate: schema.number.optional(),
-          tagName: schema.string.optional({ escape: true }, [rules.maxLength(100)]),
-          currencyCode: schema.string.optional({ escape: true }, [rules.maxLength(5)]),
-          additionalDetails: schema.object.optional().members({}),
-          long: schema.number.optional(),
-          lat: schema.number.optional(),
-          status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
-        });
-        const payload: any = await request.validate({ schema: rateSchema });
-        console.log("Rate update payload: ", payload);
+      const rateSchema = schema.create({
+        productName: schema.string.optional({ escape: true }, [
+          rules.maxLength(20),
+        ]),
+        lowestAmount: schema.number.optional(),
+        highestAmount: schema.number.optional(),
+        duration: schema.array.optional().members(schema.string()),
+        interestRate: schema.number.optional(),
+        tagName: schema.string.optional({ escape: true }, [
+          rules.maxLength(100),
+        ]),
+        currencyCode: schema.string.optional({ escape: true }, [
+          rules.maxLength(5),
+        ]),
+        additionalDetails: schema.object.optional().members({}),
+        long: schema.number.optional(),
+        lat: schema.number.optional(),
+        status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
+      });
+      const payload: any = await request.validate({ schema: rateSchema });
+      console.log("Rate update payload: ", payload);
       // let rate = await Rate.query().where({
       //   product_name: request.input('productName'),
       //   id: request.input('rateId'),
       // })
-      let rate = await Rate.query().where({
-        product_name: productName,
-        id: rateId,
-      }).first();
+      let rate = await Rate.query()
+        .where({
+          product_name: productName,
+          id: rateId,
+        })
+        .first();
       console.log(" QUERY RESULT: ", rate);
-      if(!rate)  return response.json({
-        status: "FAILED",
-        message: "No data match your query parameters",
-      });
+      if (!rate)
+        return response.json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
       if (rate) {
-        console.log("Investment rate Selected for Update:", rate);
+        console.log("Loan rate Selected for Update:", rate);
         if (rate) {
           rate.productName = request.input("newProductName")
             ? request.input("newProductName")
@@ -169,20 +184,21 @@ export default class RatesController {
           rate.additionalDetails = request.input("additionalDetails")
             ? request.input("additionalDetails")
             : rate.additionalDetails;
-          rate.long = request.input("long")
-            ? request.input("long")
-            : rate.long;
-          rate.lat = request.input("lat")
-            ? request.input("lat")
-            : rate.lat;
+          rate.long = request.input("long") ? request.input("long") : rate.long;
+          rate.lat = request.input("lat") ? request.input("lat") : rate.lat;
           rate.status = request.input("status")
             ? request.input("status")
             : rate.status;
 
           if (rate) {
+            //  do the following to be able to save the array in the database
+            let duration;
+            duration = JSON.stringify(rate.duration);
+            console.log("The new rate duration:", duration);
+            rate.duration = duration;
             // send to user
             await rate.save();
-            console.log("Update Investment rate:", rate);
+            console.log("Updated Loan rate:", rate);
             return response.status(200).json({
               status: "OK",
               data: rate.$original,
@@ -193,15 +209,18 @@ export default class RatesController {
           return response.status(304).json({ status: "FAILED", data: rate });
         }
       } else {
-        return response
-          .status(404)
-          .json({
-            status: "FAILED",
-            message: "No data match your query parameters",
-          });
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
+      console.error(error.messages);
+      return response.status(404).json({
+        status: "FAILED",
+        message: error.messages.errors,
+      });
     }
     // return // 401
   }

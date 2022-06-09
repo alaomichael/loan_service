@@ -242,7 +242,7 @@ export default class SettingsController {
         });
       }
     } catch (error) {
-      // console.log(error.messages);
+      console.log(error);
       console.error(error.messages);
       return response.status(404).json({
         status: "FAILED",
