@@ -45,16 +45,16 @@ export default class SettingsController {
     if (isDisbursementAutomated) {
       sortedSettings = sortedSettings.filter((setting) => {
         // @ts-ignore
-        return setting.isDisbursementAutomated.toString() === isDisbursementAutomated;
+        return (
+          setting.isDisbursementAutomated.toString() === isDisbursementAutomated
+        );
       });
     }
 
     if (isLoanAutomated) {
       sortedSettings = sortedSettings.filter((setting) => {
         // @ts-ignore
-        return (
-          setting.isLoanAutomated.toString() === isLoanAutomated
-        );
+        return setting.isLoanAutomated.toString() === isLoanAutomated;
       });
     }
 
@@ -132,8 +132,8 @@ export default class SettingsController {
     // Send setting Creation Message to Queue
 
     Event.emit("new:setting", {
-        id: setting.id,
-        // @ts-ignore
+      id: setting.id,
+      // @ts-ignore
       extras: setting.additionalDetails,
     });
     return response.json({ status: "OK", data: setting.$original });
@@ -144,17 +144,31 @@ export default class SettingsController {
       const { id } = request.qs();
       console.log("Setting query: ", request.qs());
 
+      function toBool(string) {
+        if (string === "true") {
+          return true;
+        } else {
+          return false;
+        }
+      }
+      
       let setting = await Setting.query().where({
         id: id,
       });
       console.log(" QUERY RESULT: ", setting);
+      console.log(
+        "isTerminationAutomated line 158",
+        request.input("isTerminationAutomated")
+      );
       if (setting.length > 0) {
         console.log("Investment setting Selected for Update:", setting);
-        if (setting) {
+        if (setting[0]) {
           setting[0].fundingWalletId = request.input("fundingWalletId")
             ? request.input("fundingWalletId")
             : setting[0].fundingWalletId;
-          setting[0].isDisbursementAutomated = request.input("isDisbursementAutomated")
+          setting[0].isDisbursementAutomated = request.input(
+            "isDisbursementAutomated"
+          )
             ? request.input("isDisbursementAutomated")
             : setting[0].isDisbursementAutomated;
           setting[0].fundingSourceTerminal = request.input(
@@ -162,9 +176,7 @@ export default class SettingsController {
           )
             ? request.input("fundingSourceTerminal")
             : setting[0].fundingSourceTerminal;
-          setting[0].isLoanAutomated = request.input(
-            "isLoanAutomated"
-          )
+          setting[0].isLoanAutomated = request.input("isLoanAutomated")
             ? request.input("isLoanAutomated")
             : setting[0].isLoanAutomated;
           setting[0].isTerminationAutomated = request.input(
@@ -179,23 +191,29 @@ export default class SettingsController {
             ? request.input("currencyCode")
             : setting[0].currencyCode;
 
-          if (setting) {
+          await setting[0].save();
+
+          if (setting[0]) {
             // send to user
-            await setting[0].save();
+            console.log(
+              "isTerminationAutomated line 189",
+              request.input("isTerminationAutomated")
+            );
             console.log("Update Investment setting:", setting);
-            return setting;
+            return response.json({
+              status: "OK",
+              data: setting.map((setting) => setting.$original),
+            });
           }
           return; // 422
         } else {
           return response.status(304).json({ status: "FAILED", data: setting });
         }
       } else {
-        return response
-          .status(404)
-          .json({
-            status: "FAILED",
-            message: "No data match your query parameters",
-          });
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
       }
     } catch (error) {
       console.error(error);
