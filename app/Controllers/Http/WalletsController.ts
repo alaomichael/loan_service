@@ -15,13 +15,13 @@ export default class WalletsController {
     const {
       currencyCode,
       balance,
-    //   bvn,
-    //   isBvnVerified,
-    //   walletDetails,
-    //   long,
-    //   lat,
+      //   bvn,
+      //   isBvnVerified,
+      //   walletDetails,
+      //   long,
+      //   lat,
       creditRating,
-    //   totalAmountToRepay,
+      //   totalAmountToRepay,
       requestType,
       approvalStatus,
       status,
@@ -104,21 +104,24 @@ export default class WalletsController {
     });
   }
 
-
-  public async showByWalletId({ params, request, response }: HttpContextContract) {
-    console.log('Loan params: ', params)
-    const { walletId } = request.params()
+  public async showByWalletId({
+    params,
+    request,
+    response,
+  }: HttpContextContract) {
+    console.log("Loan params: ", params);
+    const { walletId } = request.params();
     try {
-      let wallet = await Wallet.query()
-        .where({ id: walletId })
-        .first()
-        // .with('timeline')
-        // .orderBy('timeline', 'desc')
-        // .fetch()
-      if (!wallet) return response.status(404).json({ status: 'FAILED' })
-      return response.status(200).json({ status: 'OK', data: wallet.$original })
+      let wallet = await Wallet.query().where({ id: walletId }).first();
+      // .with('timeline')
+      // .orderBy('timeline', 'desc')
+      // .fetch()
+      if (!wallet) return response.status(404).json({ status: "FAILED" });
+      return response
+        .status(200)
+        .json({ status: "OK", data: wallet.$original });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -162,51 +165,97 @@ export default class WalletsController {
 
   public async update({ request, response }: HttpContextContract) {
     try {
-      const {  walletId } = request.qs();
+        const walletSchema = schema.create({
+           currencyCode: schema.string.optional({ escape: true }, [
+            rules.maxLength(5),
+          ]),
+          balance: schema.number.optional(),
+          bvn: schema.string.optional({ escape: true }, [
+            rules.minLength(11),
+            rules.maxLength(11),
+          ]),
+          isBvnVerified: schema.boolean.optional(),
+          tagName: schema.string.optional({ escape: true }, [
+            rules.maxLength(100),
+          ]),
+          long: schema.number.optional(),
+          lat: schema.number.optional(),
+          walletDetails: schema.object.optional().members({
+            name: schema.string.optional({ escape: true }, [
+              rules.maxLength(50),
+            ]),
+            phoneNumber: schema.string.optional({ escape: true }, [
+              rules.maxLength(11),
+            ]),
+            email: schema.string.optional({ escape: true }, [
+              rules.maxLength(50),
+              rules.email(),
+            ]),
+          }),
+          status: schema.string.optional({ escape: true }, [
+            rules.maxLength(20),
+          ]),
+        });
+        const payload: any = await request.validate({ schema: walletSchema });
+        console.log("The new wallet:", payload);
+      const { walletId } = request.qs();
       console.log("Wallet query: ", request.qs());
+      let {
+        currencyCode,
+        balance,
+        bvn,
+        isBvnVerified,
+        walletDetails,
+        long,
+        lat,
+        tagName,
+        creditRating,
+        totalAmountToRepay,
+        status,
+      } = request.body();
       // let wallet = await Wallet.query().where({
       //   product_name: request.input('productName'),
       //   id: request.input('rateId'),
       // })
-      let wallet = await Wallet.query().where({
-        id: walletId,
-      }).first();
+      let wallet = await Wallet.query()
+        .where({
+          id: walletId,
+        })
+        .first();
       console.log(" QUERY RESULT: ", wallet);
       if (wallet !== null) {
         console.log("Wallet wallet Selected for Update:", wallet);
         if (wallet) {
-          wallet.currencyCode = request.input("currencyCode")
-            ? request.input("currencyCode")
+          wallet.currencyCode = currencyCode
+            ? currencyCode
             : wallet.currencyCode;
-          wallet.balance = request.input("balance")
-            ? request.input("balance")
+          wallet.balance = balance
+            ? balance
             : wallet.balance;
-          wallet.bvn = request.input("bvn")
-            ? request.input("bvn")
-            : wallet.bvn;
-          wallet.isBvnVerified = request.input("isBvnVerified")
-            ? request.input("isBvnVerified")
+          wallet.bvn = bvn ? bvn : wallet.bvn;
+          wallet.isBvnVerified =  isBvnVerified !== wallet.isBvnVerified &&
+          isBvnVerified !== undefined &&
+          isBvnVerified !== null
+            ? isBvnVerified
             : wallet.isBvnVerified;
-          wallet.walletDetails = request.input("walletDetails")
-            ? request.input("walletDetails")
+          wallet.walletDetails = walletDetails
+            ? walletDetails
             : wallet.walletDetails;
-          wallet.long = request.input("long")
-            ? request.input("long")
+          wallet.long = long
+            ? long
             : wallet.long;
-          wallet.lat = request.input("lat")
-            ? request.input("lat")
-            : wallet.lat;
-          wallet.tagName = request.input("tagName")
-            ? request.input("tagName")
+          wallet.lat = lat ? lat : wallet.lat;
+          wallet.tagName = tagName
+            ? tagName
             : wallet.tagName;
-          wallet.creditRating = request.input("creditRating")
-            ? request.input("creditRating")
+          wallet.creditRating = creditRating
+            ? creditRating
             : wallet.creditRating;
-          wallet.totalAmountToRepay = request.input("totalAmountToRepay")
-            ? request.input("totalAmountToRepay")
+          wallet.totalAmountToRepay = totalAmountToRepay
+            ? totalAmountToRepay
             : wallet.totalAmountToRepay;
-          wallet.status = request.input("status")
-            ? request.input("status")
+          wallet.status = status
+            ? status
             : wallet.status;
 
           if (wallet) {
@@ -215,7 +264,7 @@ export default class WalletsController {
             console.log("Update Wallet wallet:", wallet);
             return response.status(200).json({
               status: "OK",
-              data:  wallet.$original,
+              data: wallet.$original,
             });
           }
           return; // 422
@@ -229,7 +278,12 @@ export default class WalletsController {
         });
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
+      console.error(error.messages);
+      return response.status(404).json({
+        status: "FAILED",
+        message: error.messages.errors,
+      });
     }
     // return // 401
   }
@@ -246,7 +300,7 @@ export default class WalletsController {
     if (wallet.length > 0) {
       wallet = await Wallet.query()
         .where({
-                id: walletId,
+          id: walletId,
         })
         .delete();
       console.log("Deleted data:", wallet);

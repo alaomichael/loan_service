@@ -153,15 +153,15 @@ export default class SettingsController {
       // }
 
       const settingSchema = schema.create({
-        fundingWalletId: schema.number(),
-        isDisbursementAutomated: schema.boolean(),
-        fundingSourceTerminal: schema.string({ escape: true }, [
+        fundingWalletId: schema.number.optional(),
+        isDisbursementAutomated: schema.boolean.optional(),
+        fundingSourceTerminal: schema.string.optional({ escape: true }, [
           rules.maxLength(50),
         ]),
-        isLoanAutomated: schema.boolean(),
-        isTerminationAutomated: schema.boolean(),
-        tagName: schema.string({ escape: true }, [rules.maxLength(100)]),
-        currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
+        isLoanAutomated: schema.boolean.optional(),
+        isTerminationAutomated: schema.boolean.optional(),
+        tagName: schema.string.optional({ escape: true }, [rules.maxLength(100)]),
+        currencyCode: schema.string.optional({ escape: true }, [rules.maxLength(5)]),
       });
       const payload: any = await request.validate({ schema: settingSchema });
       console.log("Request body validation line 167", payload);
@@ -202,12 +202,20 @@ export default class SettingsController {
           setting.fundingSourceTerminal = fundingSourceTerminal
             ? fundingSourceTerminal
             : setting.fundingSourceTerminal;
-          setting.isLoanAutomated = isLoanAutomated
-            ? isLoanAutomated
-            : setting.isLoanAutomated;
-          setting.isTerminationAutomated = isTerminationAutomated
-            ? isTerminationAutomated
-            : setting.isTerminationAutomated;
+
+          setting.isLoanAutomated =
+            isLoanAutomated !== setting.isLoanAutomated &&
+            isLoanAutomated !== undefined &&
+            isLoanAutomated !== null
+              ? isLoanAutomated
+              : setting.isLoanAutomated;
+
+          setting.isTerminationAutomated =
+            isTerminationAutomated !== setting.isTerminationAutomated &&
+            isTerminationAutomated !== undefined &&
+            isTerminationAutomated !== null
+              ? isTerminationAutomated
+              : setting.isTerminationAutomated;
           setting.tagName = tagName ? tagName : setting.tagName;
           setting.currencyCode = currencyCode
             ? currencyCode
@@ -234,8 +242,8 @@ export default class SettingsController {
         });
       }
     } catch (error) {
-      console.log(error.messages);
-      // console.error(error.messages);
+      // console.log(error.messages);
+      console.error(error.messages);
       return response.status(404).json({
         status: "FAILED",
         message: error.messages.errors,

@@ -1364,15 +1364,17 @@ export default class LoansController {
     //  START
     try {
       let { walletId, loanId } = request.qs();
-      console.log(" walletId and loanId: ", walletId + " " + loanId);
+      console.log(" walletId and loanId: ", walletId + "  " + loanId);
+
       let amountApproved;
 
       let loan = await Loan.query().where({
-        walletId: walletId,
+        wallet_id: walletId,
         id: loanId,
       });
+  console.log("Loan Selected for Update line 1375:", loan);
       if (loan.length > 0) {
-        console.log("Loan Selected for Update line 1258:", loan[0].startDate);
+        console.log("Loan Selected for Update line 1377:", loan[0].startDate);
         let payload = loan[0];
         // call Okra
 
@@ -1400,11 +1402,11 @@ export default class LoansController {
         //   });
         // }
         console.log(
-          " The Rate return for RATE line 1227: ",
+          " The Rate return for RATE line 1403: ",
           await investmentRate(payloadAmount, payloadDuration)
         );
         let rate = await investmentRate(payloadAmount, payloadDuration);
-        console.log(" Rate return line 1238 : ", rate);
+        console.log(" Rate return line 1407 : ", rate);
         if (rate === undefined || rate.length < 1) {
           return response.status(400).json({
             status: "FAILED",
@@ -1426,7 +1428,7 @@ export default class LoansController {
             if (loan && isDueForRepayment === false) {
               loan[0].amountApproved = amountRecommended; // amountApproved;
               amountApproved = loan[0].amountApproved;
-              console.log(" amountApproved line 1270: ", amountApproved);
+              console.log(" amountApproved line 1429: ", amountApproved);
               // Recalculate the interestRate and totalAmountToRepay
               loan[0].interestRate = rate;
               // When the loan has been approved and activated
@@ -1440,19 +1442,6 @@ export default class LoansController {
                 loan[0].amountApproved + amountDueOnRepayment;
               await loan[0].save();
               console.log("The new loan:", loan[0]);
-
-              // Todo
-              // Update Timeline
-              // Retrieve the current timeline
-
-              // Turn Timeline string to json
-
-              // push the update to the array
-
-              // Turn Timeline json to string
-
-              // save the timeline to the loan object
-
               if (loan) {
                 // update timeline
                 timelineObject = {
@@ -1463,11 +1452,11 @@ export default class LoansController {
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
                 };
-                console.log("Timeline object line 1297:", timelineObject);
+                console.log("Timeline object line 1453:", timelineObject);
                 //  Push the new object to the array
                 timeline = loan[0].timeline;
                 timeline.push(timelineObject);
-                console.log("Timeline object line 1301:", timeline);
+                console.log("Timeline object line 1457:", timeline);
                 // stringify the timeline array
                 loan[0].timeline = JSON.stringify(timeline);
                 // Save
