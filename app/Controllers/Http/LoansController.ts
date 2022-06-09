@@ -899,19 +899,213 @@ export default class LoansController {
     try {
       let { walletId, loanId } = request.qs();
       console.log(" walletId and loanId: ", walletId + " " + loanId);
-        const walletSchema = schema.create({
-          isOfferAccepted: schema.boolean(),
-         });
-        const payload: any = await request.validate({ schema: walletSchema });
-        console.log("The offer is accepted : ", payload);
+      const walletSchema = schema.create({
+        isOfferAccepted: schema.boolean(),
+      });
+      const payload: any = await request.validate({ schema: walletSchema });
+      console.log("The offer is accepted : ", payload);
 
       let { isOfferAccepted } = request.only(["isOfferAccepted"]);
       console.log(" isOfferAccepted line 909: ", isOfferAccepted);
-      let loan = await Loan.query().where({
-        wallet_id: walletId,
-        id: loanId,
-      }).first();
-      console.log(" Loan :", loan)
+      let loan = await Loan.query()
+        .where({
+          wallet_id: walletId,
+          id: loanId,
+        })
+        .first();
+      console.log(" Loan :", loan);
+      if (!loan)
+        return response.json({
+          status: "FAILED",
+          message: "loan does not exist, or invalid parameter.",
+        });
+      if (loan) {
+        console.log("Loan Selected for Update line 1001:", loan.startDate);
+        let isDueForRepayment;
+        if (loan.status !== "active") {
+          let createdAt = loan.createdAt;
+          let duration = loan.duration;
+          let timeline;
+          let timelineObject;
+          try {
+            isDueForRepayment = await dueForRepayment(createdAt, duration);
+            console.log("Is due for repayment status :", isDueForRepayment);
+
+            if (loan && isOfferAccepted === true) {
+              // check loan disbursement setting
+              let setting = await Setting.query().where({tagName: "default setting"}).first()
+              if (!setting) return response.json({status: "FAILED", message:"setting does not exist." })
+              console.log(
+                "isDisbursementAutomated is set to:",
+                setting.isDisbursementAutomated
+              );
+               loan.amountApproved;
+               let { isDisbursementAutomated } = setting;
+               if (isDisbursementAutomated === false) {
+
+                 // send to admin for disbursement approval
+
+                 // update loan row appropriately
+
+                 // update timeline
+
+                 // notify
+
+                 // send response to user if (loan) {
+                // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan updated",
+                  // @ts-ignore
+                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+                };
+                console.log("Timeline object line 1041:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan.timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1045:", timeline);
+                // stringify the timeline array
+                loan.timeline = JSON.stringify(timeline);
+                loan.isOfferAccepted = isOfferAccepted;
+                // Save
+                await loan.save();
+                console.log("Update Loan:", loan);
+                // send to user
+                return response.json({
+                  status: "OK",
+                  data: loan.$original,
+                });
+              }
+               } else {
+                //  send money to savings account
+
+                // debit loan account
+
+                // update loan row appropriately
+
+                // update timeline
+
+                // notify
+
+                // send response to user
+               if (loan) {
+                // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan updated",
+                  // @ts-ignore
+                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+                };
+                console.log("Timeline object line 1041:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan.timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1045:", timeline);
+                // stringify the timeline array
+                loan.timeline = JSON.stringify(timeline);
+                loan.isOfferAccepted = isOfferAccepted;
+                // Save
+                await loan.save();
+                console.log("Update Loan:", loan);
+                // send to user
+                return response.json({
+                  status: "OK",
+                  data: loan.$original,
+                });
+              }
+
+               }
+
+            } else  if (loan && isOfferAccepted === false) {
+              // check loan disbursement setting
+              loan.amountApproved;
+              if (loan) {
+                // update timeline
+                timelineObject = {
+                  id: uuid(),
+                  action: "loan offer rejected",
+                  // @ts-ignore
+                  message: `${loan.loanAccountDetails.firstName} just rejected the offer made.`,
+                  createdAt: DateTime.now(),
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
+                };
+                console.log("Timeline object line 1041:", timelineObject);
+                //  Push the new object to the array
+                timeline = loan.timeline;
+                timeline.push(timelineObject);
+                console.log("Timeline object line 1045:", timeline);
+                // stringify the timeline array
+                loan.timeline = JSON.stringify(timeline);
+                loan.isOfferAccepted = isOfferAccepted;
+                // Save
+                await loan.save();
+                console.log("Update Loan:", loan);
+                // send to user
+                return response.json({
+                  status: "OK",
+                  data: loan.$original,
+                });
+              }
+              return; // 422
+            } else {
+              return response.status(400).json({
+                status: "FAILED",
+                data: loan.$original,
+                message: "please check your loan parameters",
+              });
+            }
+          } catch (error) {
+            console.log(error);
+            console.error(error.messages);
+            return response.json({
+              status: "FAILED",
+              message: error.messages.errors,
+            });
+          }
+        } else {
+          return response.json({
+            status: "FAILED",
+            data: loan.$original,
+          });
+        }
+      } else {
+        return response.status(404).json({
+          status: "FAILED",
+          message: "No data match your query parameters",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      console.error(error.messages);
+      return response.json({
+        status: "FAILED",
+        message: error.messages.errors,
+      });
+    }
+    // return // 401
+  }
+
+  public async update({ request, response }: HttpContextContract) {
+    try {
+      let { walletId, loanId } = request.qs();
+      console.log(" walletId and loanId: ", walletId + " " + loanId);
+      let { amountApproved } = request.all();
+      console.log(" amountApproved line 898: ", amountApproved);
+      let loan = await Loan.query()
+        .where({
+          wallet_id: walletId,
+          id: loanId,
+        })
+        .first();
+      if (!loan)
+        return response.json({
+          status: "FAILED",
+          message: "loan does not exist, or missing parameter.",
+        });
       if (loan) {
         console.log("Loan Selected for Update line 1001:", loan.startDate);
         let isDueForRepayment;
@@ -928,6 +1122,20 @@ export default class LoansController {
             // Restrict update to timed/fixed deposit only
             if (loan && isDueForRepayment === false) {
               loan.amountApproved = amountApproved;
+              // loan.amount = request.input('amount')
+              // loan.investmentType = request.input('investmentType')
+              // Todo
+              // Update Timeline
+              // Retrieve the current timeline
+
+              // Turn Timeline string to json
+
+              // push the update to the array
+
+              // Turn Timeline json to string
+
+              // save the timeline to the loan object
+
               if (loan) {
                 // update timeline
                 timelineObject = {
@@ -958,115 +1166,22 @@ export default class LoansController {
             } else {
               return response.status(400).json({
                 status: "FAILED",
-                data: loan.map((loan) => loan.$original),
+                data: loan.$original,
                 message: "please check your loan parameters",
               });
             }
           } catch (error) {
-            console.error("Is due for payout status Error :", error);
-            return response.json({ status: "FAILED", data: error.message });
+            console.log(error);
+            console.error(error.messages);
+            return response.json({
+              status: "FAILED",
+              message: error.messages.errors,
+            });
           }
         } else {
           return response.json({
             status: "FAILED",
-            data: loan.map((loan) => loan.$original),
-          });
-        }
-      } else {
-        return response.status(404).json({
-          status: "FAILED",
-          message: "No data match your query parameters",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    // return // 401
-  }
-
-  public async update({ request, response }: HttpContextContract) {
-    try {
-      let { walletId, loanId } = request.qs();
-      console.log(" walletId and loanId: ", walletId + " " + loanId);
-      let { amountApproved } = request.all();
-      console.log(" amountApproved line 898: ", amountApproved);
-      let loan = await Loan.query().where({
-        wallet_id: walletId,
-        id: loanId,
-      }).first();
-      if(!loan) return response.json({status: "FAILED", message: "loan does not exist, or missing parameter."})
-      if (loan) {
-        console.log("Loan Selected for Update line 1001:", loan[0].startDate);
-        let isDueForRepayment;
-        if (loan[0].status !== "active") {
-          let createdAt = loan[0].createdAt;
-          let duration = loan[0].duration;
-          let timeline;
-          let timelineObject;
-          try {
-            isDueForRepayment = await dueForRepayment(createdAt, duration);
-            console.log("Is due for repayment status :", isDueForRepayment);
-            // let newRolloverTarget = request.input("rolloverTarget");
-            // let newRolloverType = request.input("rolloverType");
-            // Restrict update to timed/fixed deposit only
-            if (loan && isDueForRepayment === false) {
-              loan[0].amountApproved = amountApproved;
-              // loan[0].amount = request.input('amount')
-              // loan[0].investmentType = request.input('investmentType')
-              // Todo
-              // Update Timeline
-              // Retrieve the current timeline
-
-              // Turn Timeline string to json
-
-              // push the update to the array
-
-              // Turn Timeline json to string
-
-              // save the timeline to the loan object
-
-              if (loan) {
-                // update timeline
-                timelineObject = {
-                  id: uuid(),
-                  action: "loan updated",
-                  // @ts-ignore
-                  message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
-                  createdAt: DateTime.now(),
-                  meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
-                };
-                console.log("Timeline object line 1041:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan[0].timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1045:", timeline);
-                // stringify the timeline array
-                loan[0].timeline = JSON.stringify(timeline);
-                // Save
-                await loan[0].save();
-                console.log("Update Loan:", loan);
-                // send to user
-                return response.json({
-                  status: "OK",
-                  data: loan.map((loan) => loan.$original),
-                });
-              }
-              return; // 422
-            } else {
-              return response.status(400).json({
-                status: "FAILED",
-                data: loan.map((loan) => loan.$original),
-                message: "please check your loan parameters",
-              });
-            }
-          } catch (error) {
-            console.error("Is due for payout status Error :", error);
-            return response.json({ status: "FAILED", data: error.message });
-          }
-        } else {
-          return response.json({
-            status: "FAILED",
-            data: loan.map((loan) => loan.$original),
+            data: loan.$original,
           });
         }
       } else {
@@ -1453,14 +1568,21 @@ export default class LoansController {
 
       let amountApproved;
 
-      let loan = await Loan.query().where({
-        wallet_id: walletId,
-        id: loanId,
-      });
+      let loan = await Loan.query()
+        .where({
+          wallet_id: walletId,
+          id: loanId,
+        })
+        .first();
       console.log("Loan Selected for Update line 1375:", loan);
-      if (loan.length > 0) {
-        console.log("Loan Selected for Update line 1377:", loan[0].startDate);
-        let payload = loan[0];
+      if (!loan)
+        return response.json({
+          status: "FAILED",
+          message: "loan does not exist, or missing parameter.",
+        });
+      if (loan) {
+        console.log("Loan Selected for Update line 1377:", loan.startDate);
+        let payload = loan;
         // call Okra
 
         // Call Credit registry
@@ -1502,62 +1624,62 @@ export default class LoansController {
         }
 
         let isDueForRepayment;
-        if (loan[0].status !== "active") {
-          let createdAt = loan[0].createdAt;
-          let duration = loan[0].duration;
+        if (loan.status !== "active") {
+          let createdAt = loan.createdAt;
+          let duration = loan.duration;
           let timeline;
           let timelineObject;
           try {
             isDueForRepayment = await dueForRepayment(createdAt, duration);
             console.log("Is due for repayment status :", isDueForRepayment);
             if (loan && isDueForRepayment === false) {
-              loan[0].amountApproved = amountRecommended; // amountApproved;
-              amountApproved = loan[0].amountApproved;
+              loan.amountApproved = amountRecommended; // amountApproved;
+              amountApproved = loan.amountApproved;
               console.log(" amountApproved line 1429: ", amountApproved);
               // Recalculate the interestRate and totalAmountToRepay
-              loan[0].interestRate = rate;
+              loan.interestRate = rate;
               // When the loan has been approved and activated
-              let amount = loan[0].amountApproved;
-              let loanDuration = loan[0].duration;
+              let amount = loan.amountApproved;
+              let loanDuration = loan.duration;
               let amountDueOnRepayment = Number(
                 await interestDueOnLoan(amount, rate, loanDuration)
               );
-              loan[0].interestDueOnLoan = amountDueOnRepayment;
-              loan[0].totalAmountToRepay =
-                loan[0].amountApproved + amountDueOnRepayment;
-              await loan[0].save();
-              console.log("The new loan:", loan[0]);
+              loan.interestDueOnLoan = amountDueOnRepayment;
+              loan.totalAmountToRepay =
+                loan.amountApproved + amountDueOnRepayment;
+              await loan.save();
+              console.log("The new loan:", loan);
               if (loan) {
                 // update timeline
                 timelineObject = {
                   id: uuid(),
                   action: "loan updated",
                   // @ts-ignore
-                  message: `${loan[0].loanAccountDetails.firstName} loan has just been updated.`,
+                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
-                  meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+                  meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
                 console.log("Timeline object line 1453:", timelineObject);
                 //  Push the new object to the array
-                timeline = loan[0].timeline;
+                timeline = loan.timeline;
                 timeline.push(timelineObject);
                 console.log("Timeline object line 1457:", timeline);
                 // stringify the timeline array
-                loan[0].timeline = JSON.stringify(timeline);
+                loan.timeline = JSON.stringify(timeline);
                 // Save
-                await loan[0].save();
+                await loan.save();
                 console.log("Update Loan:", loan);
                 // send to user
                 return response.json({
                   status: "OK",
-                  data: loan.map((loan) => loan.$original),
+                  data: loan.$original,
                 });
               }
               return; // 422
             } else {
               return response.status(400).json({
                 status: "FAILED",
-                data: loan.map((loan) => loan.$original),
+                data: loan.$original,
                 message: "please check your loan parameters",
               });
             }
@@ -1568,7 +1690,7 @@ export default class LoansController {
         } else {
           return response.json({
             status: "FAILED",
-            data: loan.map((loan) => loan.$original),
+            data: loan.$original,
           });
         }
       } else {
@@ -1591,37 +1713,39 @@ export default class LoansController {
       // })
       const { loanId, walletId } = request.qs();
       console.log("Loan query: ", request.qs());
-      let loan = await Loan.query().where({
-        wallet_id: walletId,
-        id: loanId,
-      });
+      let loan = await Loan.query()
+        .where({
+          wallet_id: walletId,
+          id: loanId,
+        })
+        .first();
       console.log(" Loan QUERY RESULT: ", loan);
-      if (loan.length > 0) {
+      if (loan) {
         console.log("Loan Selected for Update:", loan);
         let isDueForRepayment = await dueForRepayment(
-          loan[0].startDate,
-          loan[0].duration
+          loan.startDate,
+          loan.duration
         );
         console.log("Is due for payout status :", isDueForRepayment);
         // Restrict update to timed/fixed deposit only
-        // if (loan && loan[0].investmentType !== 'debenture' && isDueForRepayment === false)
+        // if (loan && loan.investmentType !== 'debenture' && isDueForRepayment === false)
         if (loan) {
-          loan[0].status = request.input("status")
+          loan.status = request.input("status")
             ? request.input("status")
-            : loan[0].status;
+            : loan.status;
           let loanApprovedStatus = request.input("isLoanApproved");
-          loan[0].isLoanApproved =
+          loan.isLoanApproved =
             request.input("isLoanApproved") !== undefined
               ? request.input("isLoanApproved")
-              : loan[0].isLoanApproved;
+              : loan.isLoanApproved;
           console.log("loanApprovedStatus :", loanApprovedStatus);
           if (loan) {
             // send to user
-            await loan[0].save();
+            await loan.save();
             console.log("Update Loan:", loan);
             return response.status(200).json({
               status: "OK",
-              data: loan.map((inv) => inv.$original),
+              data: loan.$original,
             });
           }
           return; // 422
@@ -3415,6 +3539,7 @@ export default class LoansController {
       wallet_id: params.walletId,
     });
     console.log(" QUERY RESULT: ", loan);
+
     if (loan.length > 0) {
       loan = await Loan.query()
         .where({
