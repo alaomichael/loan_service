@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linking a bank account</title>
+  </head>
+    <body onload="buildWithOptions()" style="background-color:#fff;height:100vh">
+      <script src="https://cdn.okra.ng/v2/bundle.js"></script>
+      <script type="text/javascript">
+          function buildWithOptions(){
+              Okra.buildWithOptions({
+                name: 'Sandbox Test',
+                env: 'production-sandbox',
+                key: '<your-secret-key-in-your-dashboard>',
+                token: '<your-client-token-in-your-dashboard>',
+                products: ['auth', 'identity', 'balance', 'transactions' ],
+                onSuccess: function(data){
+                      console.log('data', data)
+                  },
+                onClose: function(){
+                      console.log('close widget')
+                  }
+              })
+          }
+      </script>
+    </body>
+</html>
