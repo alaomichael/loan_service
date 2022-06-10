@@ -357,11 +357,11 @@ export default class LoansController {
           //   status: 'FAILED',
           //   message: 'No loan activation approval data matched your query, please try again',
           // })
-          loan = await Loan.query()
-            // .where('status', 'active')
-            .where("request_type", requestType)
-            .where("wallet_id", walletId)
-            .where("id", loanId);
+          // loan = await Loan.query()
+          //   // .where('status', 'active')
+          //   .where("request_type", requestType)
+          //   .where("wallet_id", walletId)
+          //   .where("id", loanId);
           return response.json({
             status: "OK",
             message:
@@ -371,22 +371,23 @@ export default class LoansController {
           });
         }
         loan[0].approvalStatus = approvals.approvalStatus;
+        loan[0].isLoanApproved = true;
         // TODO
         // send loan details to Transaction Service
         // on success
 
         // update status of loan
         // update request date
-        loan[0].status = "active";
+        loan[0].status = "processing disbursement";
         let currentDateMs = DateTime.now().toISO();
         // @ts-ignore
         loan[0].startDate = DateTime.now().toISO();
         let duration = parseInt(loan[0].duration);
         loan[0].repaymentDate = DateTime.now().plus({ days: duration });
         console.log("The currentDate line 387: ", currentDateMs);
-        console.log("Time loan was started line 388: ", loan[0].startDate);
+        console.log("The loan was started line 388: ", loan[0].startDate);
         console.log(
-          "Time loan repayment date line 390: ",
+          "The loan repayment date line 390: ",
           loan[0].repaymentDate
         );
         // update timeline
@@ -394,7 +395,7 @@ export default class LoansController {
           id: uuid(),
           action: "loan activated",
           // @ts-ignore
-          message: `${loan[0].walletHolderDetails.firstName} loan has just been activated.`,
+          message: `${loan[0].loanAccountDetails.firstName} loan has just been activated.`,
           createdAt: DateTime.now(),
           meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
@@ -571,14 +572,14 @@ export default class LoansController {
         //  Push the new object to the array
         timeline = loan[0].timeline;
         timeline.push(timelineObject);
-        console.log("Timeline object line 533:", timeline);
+        console.log("Timeline object line 574:", timeline);
         // stringify the timeline array
         loan[0].timeline = JSON.stringify(timeline);
         // Save
         await loan[0].save();
 
         // send notification
-        console.log("Updated loan Status line 540: ", loan);
+        console.log("Updated loan Status line 581: ", loan);
         return response.json({
           status: "OK",
           data: loan.map((inv) => inv.$original),
@@ -592,7 +593,7 @@ export default class LoansController {
           .where("request_type", requestType)
           .where("wallet_id", walletId)
           .where("id", loanId);
-        console.log("The declined loan line 323: ", loan);
+        console.log("The declined loan line 595: ", loan);
         if (loan.length < 1) {
           // return response.json({
           //   status: 'FAILED',
