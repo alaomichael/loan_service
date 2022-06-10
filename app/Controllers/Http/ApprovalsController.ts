@@ -160,6 +160,16 @@ export default class ApprovalsController {
       const { loanId, walletId } = request.qs();
       console.log("Approval query: ", request.qs());
 
+       const approvalSchema = schema.create({
+         walletId: schema.string(),
+         loanId: schema.string(),
+         approvalStatus: schema.string({ escape: true }, [rules.maxLength(50)]),
+         remark: schema.string.optional({ escape: true }, [rules.maxLength(50)]),
+       });
+       const payload: any = await request.validate({ schema: approvalSchema });
+       console.log(" payload : ", payload);
+
+
       let approval = await Approval.query().where({
         loan_id: loanId,
         wallet_id: walletId,
@@ -243,7 +253,7 @@ export default class ApprovalsController {
                 );
               }
             } else if (
-              approval[0].requestType === "payout loan" &&
+              approval[0].requestType === "disburse loan" &&
               approval[0].approvalStatus === "approved"
             ) {
               // newStatus = 'payout'
@@ -272,7 +282,7 @@ export default class ApprovalsController {
               // Save the updated loan
               await loan[0].save();
             } else if (
-              approval[0].requestType === "payout loan" &&
+              approval[0].requestType === "disburse loan" &&
               approval[0].approvalStatus === "declined"
             ) {
               // newStatus = 'active'
@@ -310,7 +320,12 @@ export default class ApprovalsController {
           });
       }
     } catch (error) {
-      console.error(error);
+       console.log(error);
+       console.error(error.messages);
+       return response.status(404).json({
+         status: "FAILED",
+         message: error.messages.errors,
+       });
     }
     // return // 401
   }

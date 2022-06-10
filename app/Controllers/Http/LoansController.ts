@@ -299,25 +299,25 @@ export default class LoansController {
   }
 
   public async feedbacks({ params, request, response }: HttpContextContract) {
-    console.log("LOAN params line 149: ", params);
+    console.log("LOAN params line 302: ", params);
     const {
       walletId,
       loanId,
       requestType,
       approvalStatus,
-      getInvestmentDetails,
+      getLoanDetails,
     } = request.qs();
-    console.log("LOAN query line 151: ", request.qs());
+    console.log("LOAN query line 310: ", request.qs());
     let loan = await Loan.all();
     let approvals;
     let timeline;
     let timelineObject;
     if (
-      requestType === "start loan" &&
+      requestType === "request loan" &&
       walletId &&
       loanId &&
       !approvalStatus &&
-      !getInvestmentDetails
+      !getLoanDetails
     ) {
       console.log("LOAN ID", loanId);
       console.log("WALLET ID", walletId);
@@ -325,19 +325,20 @@ export default class LoansController {
       approvals = await Approval.query()
         .where("request_type", requestType)
         .where("wallet_id", walletId)
-        .where("loan_id", loanId);
+        .where("loan_id", loanId)
+        .first();
       // check the approval status
-      console.log("approvals line 163: ", approvals);
-      if (approvals.length < 1) {
+      console.log("approvals line 330: ", approvals);
+      if (!approvals) {
         return response.json({
           status: "FAILED",
           message:
             "No loan approval request data matched your query, please try again",
         });
       }
-      console.log("approvals line 170: ", approvals[0].approvalStatus);
-      //  if approved update loan status to active, update startDate,  and start loan
-      if (approvals[0].approvalStatus === "approved") {
+      console.log("approvals line 338: ", approvals.approvalStatus);
+      //  if approved update loan status to active, update startDate,  and request loan
+      if (approvals.approvalStatus === "approved") {
         //  loan
         try {
           loan = await Loan.query().where({
@@ -350,7 +351,7 @@ export default class LoansController {
           console.error(error);
           return response.json({ status: "FAILED", message: error.message });
         }
-        console.log("LOAN DATA line 305: ", loan);
+        console.log("LOAN DATA line 355: ", loan);
         if (loan.length < 1) {
           // return response.json({
           //   status: 'FAILED',
@@ -365,27 +366,27 @@ export default class LoansController {
             status: "OK",
             message:
               "No loan activation approval data matched your query, please try again",
-            approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map((loan) => loan.$original),
+            // approvaldata: approvals.map((approval) => approval.$original),
+            // loandata: loan.map((loan) => loan.$original),
           });
         }
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // TODO
         // send loan details to Transaction Service
         // on success
 
         // update status of loan
-        // update start date
+        // update request date
         loan[0].status = "active";
         let currentDateMs = DateTime.now().toISO();
         // @ts-ignore
         loan[0].startDate = DateTime.now().toISO();
         let duration = parseInt(loan[0].duration);
         loan[0].repaymentDate = DateTime.now().plus({ days: duration });
-        console.log("The currentDate line 336: ", currentDateMs);
-        console.log("Time loan was started line 337: ", loan[0].startDate);
+        console.log("The currentDate line 387: ", currentDateMs);
+        console.log("Time loan was started line 388: ", loan[0].startDate);
         console.log(
-          "Time loan repayment date line 338: ",
+          "Time loan repayment date line 390: ",
           loan[0].repaymentDate
         );
         // update timeline
@@ -395,19 +396,19 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan has just been activated.`,
           createdAt: DateTime.now(),
-          meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+          meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
-        console.log("Timeline object line 348:", timelineObject);
+        console.log("Timeline object line 402:", timelineObject);
         //  Push the new object to the array
         timeline = loan[0].timeline; //JSON.parse(loan[0].timeline)
         timeline.push(timelineObject);
-        console.log("Timeline object line 352:", timeline);
+        console.log("Timeline object line 406:", timeline);
         // stringify the timeline array
         loan[0].timeline = JSON.stringify(timeline);
         // Save
         await loan[0].save();
         // Send notification
-        console.log("Updated loan Status line 358: ", loan);
+        console.log("Updated loan Status line 412: ", loan);
         // START
         //  const requestUrl = Env.get('CERTIFICATE_URL') + loan.id
         //  await new PuppeteerServices(requestUrl, {
@@ -426,7 +427,7 @@ export default class LoansController {
         });
       } else if (
         approvals.length > 0 &&
-        approvals[0].approvalStatus === "declined"
+        approvals.approvalStatus === "declined"
       ) {
         // loan = await Loan.query()
         //   .where('status', 'initiated')
@@ -444,28 +445,28 @@ export default class LoansController {
           console.error(error);
           return response.json({ status: "FAILED", message: error.message });
         }
-        console.log("The declined loan line 239: ", loan);
-        if (loan.length < 1) {
+        console.log("The declined loan line 451: ", loan);
+        if (!loan) {
           // return response.json({
           //   status: 'FAILED',
           //   message: 'No loan activation decline data matched your query, please try again',
           // })
-          loan = await Loan.query()
-            // .where('status', 'active')
-            .where("request_type", requestType)
-            .where("wallet_id", walletId)
-            .where("id", loanId);
+          // loan = await Loan.query()
+          //   // .where('status', 'active')
+          //   .where("request_type", requestType)
+          //   .where("wallet_id", walletId)
+          //   .where("id", loanId);
           return response.json({
             status: "OK",
             message:
               "No loan activation decline data matched your query, please try again",
-            approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map((loan) => loan.$original),
+            // approvaldata: approvals.map((approval) => approval.$original),
+            // investmentdata: loan.map((loan) => loan.$original),
           });
         }
 
         // loan[0].status = 'declined'
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -473,23 +474,20 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].loanAccountDetails.firstName} loan has just been declined.`,
           createdAt: DateTime.now(),
-          meta: `amount declined: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
+          meta: `amount declined: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
-        console.log("Timeline object line 429:", timelineObject);
+        console.log("Timeline object line 482:", timelineObject);
         //  Push the new object to the array
         timeline = loan[0].timeline;
         timeline.push(timelineObject);
-        console.log("Timeline object line 433:", timeline);
+        console.log("Timeline object line 486:", timeline);
         // stringify the timeline array
         loan[0].timeline = JSON.stringify(timeline);
         // Save
         await loan[0].save();
-
-        // await Save
-        await loan[0].save();
         // send notification
         console.log(
-          "LOAN DATA line 443: ",
+          "LOAN DATA line 493: ",
           loan.map((inv) => inv.$original)
         );
 
@@ -505,7 +503,7 @@ export default class LoansController {
       walletId &&
       loanId &&
       !approvalStatus &&
-      !getInvestmentDetails
+      !getLoanDetails
     ) {
       console.log("LOAN ID", loanId);
       console.log("WALLET ID", walletId);
@@ -513,19 +511,19 @@ export default class LoansController {
       approvals = await Approval.query()
         .where("request_type", requestType)
         .where("wallet_id", walletId)
-        .where("loan_id", loanId);
+        .where("loan_id", loanId).first();
       // check the approval status
       console.log("approvals line 270: ", approvals);
-      if (approvals.length < 1) {
+      if (!approvals) {
         return response.json({
           status: "FAILED",
           message:
             "No loan approval request data matched your query, please try again",
         });
       }
-      console.log("approvals line 277: ", approvals[0].approvalStatus);
-      //  if approved update loan status to terminated, update startDate,  and start loan
-      if (approvals[0].approvalStatus === "approved") {
+      console.log("approvals line 277: ", approvals.approvalStatus);
+      //  if approved update loan status to terminated, update startDate,  and request loan
+      if (approvals.approvalStatus === "approved") {
         loan = await Loan.query()
           .where("status", "active")
           .where("request_type", requestType)
@@ -551,7 +549,7 @@ export default class LoansController {
             investmentdata: loan.map((loan) => loan.$original),
           });
         }
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // TODO
         // send loan details to Transaction Service
         // on success
@@ -587,7 +585,7 @@ export default class LoansController {
         });
       } else if (
         approvals.length > 0 &&
-        approvals[0].approvalStatus === "declined"
+        approvals.approvalStatus === "declined"
       ) {
         loan = await Loan.query()
           .where("status", "active")
@@ -610,13 +608,13 @@ export default class LoansController {
             status: "OK",
             message:
               "No loan termination decline data matched your query,or the feedback has been applied,or please try again",
-            approvaldata: approvals.map((approval) => approval.$original),
-            investmentdata: loan.map((loan) => loan.$original),
+            // approvaldata: approvals.map((approval) => approval.$original),
+            // loandata: loan.map((loan) => loan.$original),
           });
         }
 
         // loan[0].status = 'declined'
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -624,7 +622,7 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan termination has just been declined.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount requested: ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 583:", timelineObject);
         //  Push the new object to the array
@@ -652,11 +650,11 @@ export default class LoansController {
         });
       }
     } else if (
-      requestType === "payout loan" &&
+      requestType === "disburse loan" &&
       walletId &&
       loanId &&
       !approvalStatus &&
-      !getInvestmentDetails
+      !getLoanDetails
     ) {
       console.log("LOAN ID", loanId);
       console.log("WALLET ID", walletId);
@@ -664,19 +662,19 @@ export default class LoansController {
       approvals = await Approval.query()
         .where("request_type", requestType)
         .where("wallet_id", walletId)
-        .where("loan_id", loanId);
+        .where("loan_id", loanId).first();
       // check the approval status
       console.log("approvals line 353: ", approvals);
-      if (approvals.length < 1) {
+      if (!approvals) {
         return response.json({
           status: "FAILED",
           message:
             "No loan payout request data matched your query, please try again",
         });
       }
-      console.log("approvals line 345: ", approvals[0].approvalStatus);
-      //  if approved update loan status to active, update startDate,  and start loan
-      if (approvals[0].approvalStatus === "approved") {
+      console.log("approvals line 345: ", approvals.approvalStatus);
+      //  if approved update loan status to active, update startDate,  and request loan
+      if (approvals.approvalStatus === "approved") {
         loan = await Loan.query()
           .where("status", "active")
           .where("request_type", requestType)
@@ -697,7 +695,7 @@ export default class LoansController {
             investmentdata: loan.map((loan) => loan.$original),
           });
         }
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // TODO
         // send loan details to Transaction Service
         // on success
@@ -716,7 +714,7 @@ export default class LoansController {
 
         // console.log('The currentDate line 372: ', currentDateMs)
         // console.log('Time loan was started line 373: ', loan[0].startDate)
-        console.log("Time loan payout date line 390: ", loan[0].payoutDate);
+        console.log("Time loan payout date line 390: ", loan[0].repaymentDate);
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -724,7 +722,7 @@ export default class LoansController {
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan has just been approved for payout.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount requested: ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 676:", timelineObject);
         //  Push the new object to the array
@@ -743,8 +741,8 @@ export default class LoansController {
           data: loan.map((inv) => inv.$original),
         });
       } else if (
-        approvals.length > 0 &&
-        approvals[0].approvalStatus === "declined"
+        approvals &&
+        approvals.approvalStatus === "declined"
       ) {
         loan = await Loan.query()
           .where("status", "active")
@@ -773,7 +771,7 @@ export default class LoansController {
         }
 
         // loan[0].status = 'declined'
-        loan[0].approvalStatus = approvals[0].approvalStatus;
+        loan[0].approvalStatus = approvals.approvalStatus;
         // update timeline
         timelineObject = {
           id: uuid(),
@@ -820,7 +818,7 @@ export default class LoansController {
         walletId &&
         loanId &&
         approvalStatus &&
-        getInvestmentDetails === "true"
+        getLoanDetails === "true"
       ) {
         console.log("Request Type", requestType);
         sortedInvestment = sortedInvestment.filter((loan) => {
@@ -1333,7 +1331,7 @@ export default class LoansController {
     // // check if Approval is set to Auto, from Setting Controller
     // let walletId = loan.walletId;
     // let loanId = loan.id;
-    // let requestType = "start loan";
+    // let requestType = "request loan";
     // let settings = await Setting.query().where({ tagName: "default setting" });
     // console.log("Approval setting line 910:", settings[0]);
     // let timeline: any[] = [];
@@ -1409,7 +1407,7 @@ export default class LoansController {
       // check if Approval is set to Auto, from Setting Controller
       let walletId = loan.walletId;
       let loanId = loan.id;
-      requestType = "start loan";
+      requestType = "request loan";
       // let settings = await Setting.query().where({ tagName: "default setting" });
       // console.log("Approval setting line 910:", settings[0]);
       // let timeline: any[] = [];
@@ -2460,7 +2458,7 @@ export default class LoansController {
               );
               if (
                 payoutRequestIsExisting.length < 1 &&
-                // loan[0].requestType !== 'start loan' &&
+                // loan[0].requestType !== 'request loan' &&
                 loan[0].approvalStatus !== "pending" &&
                 loan[0].status !== "initiated"
               ) {
@@ -2674,7 +2672,7 @@ export default class LoansController {
                     );
                     if (
                       payoutRequestIsExisting.length < 1 &&
-                      // loan[0].requestType !== 'start loan' &&
+                      // loan[0].requestType !== 'request loan' &&
                       payload.approvalStatus !== "pending" &&
                       payload.status !== "initiated"
                     ) {
