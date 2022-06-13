@@ -7,8 +7,16 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
       table.text("wallet_id").unsigned().nullable().index();
+      table.text("user_id").unsigned().nullable().index();
       table.float("balance", 255).unsigned().notNullable().index();
-      table.float("amount_loanable", 255).unsigned().notNullable().index();
+       table.float("recommendation", 255).unsigned().notNullable().index().defaultTo(4500);
+       table
+        .float("amount_loanable", 255)
+        .unsigned()
+        .notNullable()
+        .index()
+        .defaultTo(4500);
+         table.timestamp("recommendation_updated_at", { useTz: true });
       table
         .enum("last_loan_duration", [
           "0",
