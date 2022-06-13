@@ -7,6 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
       table.text("wallet_id").unsigned().nullable().index();
+       table.text("user_id").unsigned().nullable().index();
       table.float("amount_requested", 255).unsigned().notNullable().index();
       table.float("amount_approved", 255).unsigned().notNullable().index();
       table
@@ -19,6 +20,7 @@ export default class extends BaseSchema {
       table.string("bvn", 11).notNullable().index();
       table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
       table.jsonb("loan_account_details").notNullable().index();
+table.float("loan_account_balance").unsigned().nullable();
       table.float("long").unsigned().nullable();
       table.float("lat").unsigned().nullable();
       table.float("credit_rating").unsigned().nullable();
