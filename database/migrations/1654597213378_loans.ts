@@ -5,20 +5,18 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
+      table.uuid("id").primary().index().unique().notNullable();
+
       table
-        .uuid("id")
-        .primary()
-        .unique()
-        .index()
+        .float("amount_approved", 255)
+        .unsigned()
         .notNullable()
-        .defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
-      // .uuid("uuid").primary().index().unique().notNullable();
-      table.float("amount_approved", 255).unsigned().notNullable().defaultTo(0).index();
-      table.text("wallet_id").unsigned().nullable().index();
-      table.float("amount_requested", 255).unsigned().notNullable().index();
+        .defaultTo(0)
+        .index();
+      table.text("wallet_id").nullable().index();
+      table.float("amount_requested").unsigned().notNullable().index();
       table
         .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
-        .unsigned()
         .notNullable()
         .index();
       table.string("tag_name", 255).notNullable();
@@ -26,12 +24,12 @@ export default class extends BaseSchema {
       table.string("bvn", 11).notNullable().index();
       table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
       // table.jsonb("loan_account_details").notNullable().index();
-      table.float("long").unsigned().nullable();
-      table.float("lat").unsigned().nullable();
-      table.float("credit_rating").unsigned().nullable();
-      table.float("interest_rate").unsigned().nullable();
-      table.float("interest_due_on_loan").unsigned().nullable();
-      table.float("total_amount_to_repay").unsigned().nullable().index();
+      table.float("long").nullable();
+      table.float("lat").nullable();
+      table.float("credit_rating").nullable();
+      table.float("interest_rate").nullable();
+      table.float("interest_due_on_loan").nullable();
+      table.float("total_amount_to_repay").nullable().index();
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
@@ -80,7 +78,6 @@ export default class extends BaseSchema {
           "currency_code",
           "bvn",
           "is_bvn_verified",
-          // "loan_account_details",
           "credit_rating",
           "interest_rate",
           "interest_due_on_loan",
@@ -105,3 +102,6 @@ export default class extends BaseSchema {
     this.schema.dropTable(this.tableName);
   }
 }
+// function uuid(): import("knex").Knex.Value {
+//   throw new Error("Function not implemented.");
+//}

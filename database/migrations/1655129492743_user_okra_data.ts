@@ -6,7 +6,7 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.text("wallet_id").unsigned().nullable().index();
+      table.text("wallet_id", 'string').unsigned().nullable().index();
       table.text("user_id").unsigned().nullable().index();
       table.float("amount_requested", 255).unsigned().notNullable().index();
       table.float("amount_approved", 255).unsigned().notNullable().index();
