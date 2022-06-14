@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
-import { column, beforeCreate, BaseModel } from "@ioc:Adonis/Lucid/Orm";
+import { column, beforeCreate, BaseModel, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
+import LoanTenure from "./LoanTenure";
 
 export default class Rate extends BaseModel {
   @column({ isPrimary: true })
@@ -16,7 +17,7 @@ export default class Rate extends BaseModel {
   public highestAmount: number;
 
   @column()
-  public duration: JSON;
+  public durationId: string;
 
   @column()
   public interestRate: number;
@@ -44,6 +45,10 @@ export default class Rate extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+
+  @hasMany(()=> LoanTenure, {foreignKey: "rateId"})
+  public loanTenures:HasMany<typeof LoanTenure>;
 
   @beforeCreate()
   public static assignUuid(rate: Rate) {

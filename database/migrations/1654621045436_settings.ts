@@ -6,7 +6,7 @@ export default class Settings extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.text("funding_wallet_id").unsigned().notNullable().index();
+      table.string("funding_wallet_id",255).notNullable().index();
       table
         .boolean("is_disbursement_automated")
         .notNullable()

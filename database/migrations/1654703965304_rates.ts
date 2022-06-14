@@ -1,4 +1,4 @@
-import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
   protected tableName = "rates";
@@ -9,10 +9,10 @@ export default class extends BaseSchema {
       table.string("product_name", 50).notNullable().index();
       table.float("lowest_amount", 12).unsigned().notNullable().index();
       table.float("highest_amount", 12).unsigned().notNullable().index();
-      table.jsonb("duration").notNullable().index();
+      // table.string("duration").notNullable().index();
       table.string("tag_name", 100).notNullable().index();
       table.string("currency_code", 10).notNullable().index();
-      table.jsonb("additional_details").nullable().index();
+      table.string("additional_details").nullable().index();
       table.float("long").unsigned().nullable().index();
       table.float("lat").unsigned().nullable().index();
       table.float("interest_rate").unsigned().nullable().index();
@@ -30,14 +30,9 @@ export default class extends BaseSchema {
           "product_name",
           "lowest_amount",
           "highest_amount",
-          "duration",
           "tag_name",
           "currency_code",
           "additional_details",
-          "long",
-          "lat",
-          "status",
-          "interest_rate",
         ],
         "rate_full_index"
       );

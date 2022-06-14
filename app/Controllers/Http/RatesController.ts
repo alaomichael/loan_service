@@ -24,7 +24,7 @@ export default class RatesController {
 
     if (duration) {
       sortedRates = sortedRates.filter((rate) => {
-        console.log(" Rate Duration:", rate.duration);
+        console.log(" Rate Duration:", rate.durationId);
         console.log(" Query Duration:", duration);
         const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
 
@@ -32,7 +32,7 @@ export default class RatesController {
         fruits.includes("🍉"); // false
 
         // @ts-ignore
-        return rate.duration.includes(duration);
+        return rate.durationId.includes(duration);
       });
     }
     if (productName) {
@@ -90,11 +90,14 @@ export default class RatesController {
         status: schema.string({ escape: true }, [rules.maxLength(20)]),
       });
       const payload: any = await request.validate({ schema: rateSchema });
-      let duration = payload.duration;
-      console.log("The new rate duration:", duration);
-      payload.duration = JSON.stringify(duration);
+
+      // let duration = payload.duration;
+      // console.log("The new rate duration:", duration);
+      // payload.duration = JSON.stringify(duration);
+
       const rate = await Rate.create(payload);
       await rate.save();
+      
       console.log("The new loan rate:", rate);
 
       console.log("A New Rate has been Created.");

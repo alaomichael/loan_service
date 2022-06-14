@@ -13,8 +13,7 @@ export default class SettingsController {
       fundingSourceTerminal,
       isLoanAutomated,
       isTerminationAutomated,
-      investmentType,
-      tagName,
+           tagName,
       currencyCode,
       limit,
     } = request.qs();
@@ -35,14 +34,7 @@ export default class SettingsController {
       });
     }
 
-    if (investmentType) {
-      sortedSettings = sortedSettings.filter((setting) => {
-        // @ts-ignore
-        return setting.investmentType!.includes(investmentType);
-      });
-    }
-
-    if (isDisbursementAutomated) {
+   if (isDisbursementAutomated) {
       sortedSettings = sortedSettings.filter((setting) => {
         // @ts-ignore
         return (
@@ -94,7 +86,7 @@ export default class SettingsController {
     if (sortedSettings.length < 1) {
       return response.status(200).json({
         status: "OK",
-        message: "no investment setting matched your search",
+        message: "no loan setting matched your search",
         data: [],
       });
     }
@@ -122,7 +114,7 @@ export default class SettingsController {
     const setting = await Setting.create(payload);
 
     await setting.save();
-    console.log("The new investment:", setting);
+    console.log("The new loan:", setting);
 
     // TODO
     console.log("A New setting has been Created.");
@@ -187,7 +179,7 @@ export default class SettingsController {
       console.log("Request body line 175", currencyCode);
       console.log(" QUERY RESULT: ", setting.isDisbursementAutomated);
       if (setting) {
-        console.log("Investment setting Selected for Update:", setting);
+        console.log("loan setting Selected for Update:", setting);
         if (setting) {
           setting.fundingWalletId = fundingWalletId
             ? fundingWalletId
@@ -225,7 +217,7 @@ export default class SettingsController {
 
           if (setting) {
             // send to user
-            console.log("Update Investment setting:", setting);
+            console.log("Update loan setting:", setting);
             return response.json({
               status: "OK",
               data: setting.$original,

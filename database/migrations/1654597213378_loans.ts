@@ -13,7 +13,7 @@ export default class extends BaseSchema {
         .notNullable()
         .defaultTo(0)
         .index();
-      table.text("wallet_id").nullable().index();
+      table.string("wallet_id",255).nullable().index();
       table.float("amount_requested").unsigned().notNullable().index();
       table
         .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
@@ -60,9 +60,7 @@ export default class extends BaseSchema {
         .defaultTo("pending")
         .index();
       table.string("status", 255).notNullable().defaultTo("initiated").index();
-      table.jsonb("timeline").nullable().index();
-
-      // table.timestamp('date_payout_was_done', { useTz: true })
+      table.string("timeline").nullable().index();
       table.string("date_disbursement_was_done").nullable().index();
       table.timestamp("updated_at", { useTz: true });
 
@@ -79,20 +77,7 @@ export default class extends BaseSchema {
           "bvn",
           "is_bvn_verified",
           "credit_rating",
-          "interest_rate",
-          "interest_due_on_loan",
-          "total_amount_to_repay",
-          "repayment_date",
-          "is_loan_approved",
-          "is_repayment_successful",
-          "is_disbursement_successful",
-          "request_type",
-          "approval_status",
-          "status",
-          "timeline",
-          "date_disbursement_was_done",
-          "is_offer_accepted",
-        ],
+             ],
         "loan_full_index"
       );
     });

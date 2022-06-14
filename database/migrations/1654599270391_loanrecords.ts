@@ -6,21 +6,21 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.text("wallet_id").unsigned().nullable().index();
-       table.text("user_id").unsigned().nullable().index();
+      table.string("wallet_id",255).nullable().index();
+       table.string("user_id",255).nullable().index();
       table.float("amount_requested", 255).unsigned().notNullable().index();
       table.float("amount_approved", 255).unsigned().notNullable().index();
       table
         .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
-        .unsigned()
+
         .notNullable()
         .index();
       table.string("tag_name", 255).notNullable();
       table.string("currency_code", 10).notNullable().index();
       table.string("bvn", 11).notNullable().index();
       table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
-      table.jsonb("loan_account_details").notNullable().index();
-table.float("loan_account_balance").unsigned().nullable();
+      table.string("loan_account_details").notNullable().index();
+table.float("loan_account_balance").nullable();
       table.float("long").unsigned().nullable();
       table.float("lat").unsigned().nullable();
       table.float("credit_rating").unsigned().nullable();
@@ -60,7 +60,7 @@ table.float("loan_account_balance").unsigned().nullable();
         .defaultTo("pending")
         .index();
       table.string("status", 255).notNullable().defaultTo("initiated").index();
-      table.jsonb("timeline").nullable().index();
+      table.string("timeline").nullable().index();
 
       // table.timestamp('date_payout_was_done', { useTz: true })
       table.string("date_disbursement_was_done").nullable().index();
@@ -79,22 +79,8 @@ table.float("loan_account_balance").unsigned().nullable();
           "currency_code",
           "bvn",
           "is_bvn_verified",
-          "loan_account_details",
-          "credit_rating",
-          "interest_rate",
-          "interest_due_on_loan",
-          "total_amount_to_repay",
-          "repayment_date",
-          "is_repayment_successful",
-          "is_disbursement_successful",
-          "request_type",
-          "approval_status",
-          "status",
-          "timeline",
-          "date_disbursement_was_done",
-          "date_repayment_was_done",
-        ],
-        "loanrecord_full_index"
+                    ],
+        "loanrecord_index"
       );
     });
   }

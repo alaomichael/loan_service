@@ -6,13 +6,13 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.text("wallet_id", 'string').unsigned().nullable().index();
-      table.text("user_id").unsigned().nullable().index();
+      table.string("wallet_id",255).nullable().index();
+      table.string("user_id",255).nullable().index();
       table.float("amount_requested", 255).unsigned().notNullable().index();
       table.float("amount_approved", 255).unsigned().notNullable().index();
       table
         .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
-        .unsigned()
+
         .notNullable()
         .index();
       table.string("tag_name", 255).notNullable();
@@ -56,7 +56,7 @@ export default class extends BaseSchema {
         .defaultTo("pending")
         .index();
       table.string("status", 255).notNullable().defaultTo("initiated").index();
-      table.jsonb("timeline").nullable().index();
+      table.string("timeline_id").nullable().index();
 
       // table.timestamp('date_payout_was_done', { useTz: true })
       table.string("date_disbursement_was_done").nullable().index();
@@ -76,18 +76,9 @@ export default class extends BaseSchema {
           "bvn",
           "is_bvn_verified",
           "credit_rating",
-          "interest_rate",
-          "interest_due_on_loan",
-          "total_amount_to_repay",
-          "repayment_date",
-          "is_repayment_successful",
-          "is_disbursement_successful",
-          "request_type",
-          "approval_status",
-          "status",
-          "timeline",
+
         ],
-        "user_okra_data_full_index"
+        "user_okra_data_index"
       );
     });
   }

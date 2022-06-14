@@ -6,17 +6,22 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.text("wallet_id").unsigned().nullable().index();
-      table.text("user_id").unsigned().nullable().index();
+      table.string("wallet_id",255).nullable().index();
+      table.string("user_id",255).nullable().index();
       table.float("balance", 255).unsigned().notNullable().index();
-       table.float("recommendation", 255).unsigned().notNullable().index().defaultTo(4500);
-       table
+      table
+        .float("recommendation", 255)
+        .unsigned()
+        .notNullable()
+        .index()
+        .defaultTo(4500);
+      table
         .float("amount_loanable", 255)
         .unsigned()
         .notNullable()
         .index()
         .defaultTo(4500);
-         table.timestamp("recommendation_updated_at", { useTz: true });
+      table.timestamp("recommendation_updated_at", { useTz: true });
       table
         .enum("last_loan_duration", [
           "0",
@@ -28,7 +33,7 @@ export default class extends BaseSchema {
           "60",
           "90",
         ])
-        .unsigned()
+
         .notNullable()
         .index();
       table.string("tag_name", 255).notNullable();
@@ -41,8 +46,8 @@ export default class extends BaseSchema {
       table
         .integer("total_amount_of_loans_yet_to_be_repaid", 255)
         .notNullable();
-      table.jsonb("loan_history").notNullable().index();
-      table.float("long").unsigned().nullable();
+      table.string("loan_history").notNullable().index();
+      table.float("long").nullable();
       table.float("lat").unsigned().nullable();
       table.float("credit_rating").unsigned().nullable();
 
@@ -52,8 +57,8 @@ export default class extends BaseSchema {
       table.timestamp("created_at", { useTz: true }).index();
       table.boolean("is_defaulter").notNullable().defaultTo(false).index();
       table.boolean("is_first_loan").notNullable().defaultTo(false).index();
-       table.string("status", 255).notNullable().defaultTo("initiated").index();
-      table.jsonb("timeline").nullable().index();
+      table.string("status", 255).notNullable().defaultTo("initiated").index();
+      table.string("timeline").nullable().index();
 
       // table.timestamp('date_payout_was_done', { useTz: true })
       table.timestamp("updated_at", { useTz: true });
@@ -67,20 +72,8 @@ export default class extends BaseSchema {
           "amount_loanable",
           "last_loan_duration",
           "tag_name",
-          "currency_code",
           "bvn",
           "is_bvn_verified",
-          "total_number_of_loans_collected",
-          "total_amount_of_loans_collected",
-          "total_amount_of_loans_repaid",
-          "total_amount_of_loans_yet_to_be_repaid",
-          "loan_history",
-          "long",
-          "lat",
-          "credit_rating",
-          "is_defaulter",
-          "is_first_loan",
-          "status",
         ],
         "loanability_full_index"
       );

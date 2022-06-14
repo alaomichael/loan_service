@@ -9,7 +9,7 @@ export default class extends BaseSchema {
       table.float("balance", 255).unsigned().notNullable().index();
       table.string("bvn", 11).notNullable().index();
       table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
-      table.jsonb("wallet_details").nullable().index();
+      table.string("wallet_details").nullable().index();
       table.string("tag_name", 10).nullable().index();
       table.float("long").unsigned().nullable();
       table.float("lat").unsigned().nullable();
@@ -31,7 +31,7 @@ export default class extends BaseSchema {
         .defaultTo("pending")
         .index();
       table.string("status", 255).notNullable().defaultTo("initiated").index();
-      table.jsonb("timeline").nullable().index();
+      table.string("timeline_id").nullable().index();
 
       // table.timestamp('date_payout_was_done', { useTz: true })
       table.timestamp("updated_at", { useTz: true });
