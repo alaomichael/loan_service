@@ -100,7 +100,7 @@ export default class SettingsController {
   public async store({ request, response }: HttpContextContract) {
     // const user = await auth.authenticate()
     const settingSchema = schema.create({
-      fundingWalletId: schema.number(),
+      fundingWalletId: schema.string(),
       isDisbursementAutomated: schema.boolean(),
       fundingSourceTerminal: schema.string({ escape: true }, [
         rules.maxLength(50),
@@ -145,7 +145,7 @@ export default class SettingsController {
       // }
 
       const settingSchema = schema.create({
-        fundingWalletId: schema.number.optional(),
+        fundingWalletId: schema.string.optional(),
         isDisbursementAutomated: schema.boolean.optional(),
         fundingSourceTerminal: schema.string.optional({ escape: true }, [
           rules.maxLength(50),
@@ -167,51 +167,53 @@ export default class SettingsController {
           status: "FAILED",
           message: "No data match your query parameters",
         });
-      let {
-        fundingWalletId,
-        isDisbursementAutomated,
-        fundingSourceTerminal,
-        isLoanAutomated,
-        isTerminationAutomated,
-        tagName,
-        currencyCode,
-      } = request.body();
-      console.log("Request body line 175", currencyCode);
+      // let {
+      //   fundingWalletId,
+      //   isDisbursementAutomated,
+      //   fundingSourceTerminal,
+      //   isLoanAutomated,
+      //   isTerminationAutomated,
+      //   tagName,
+      //   currencyCode,
+      // } = request.body();
+      // console.log("Request body line 175", currencyCode);
       console.log(" QUERY RESULT: ", setting.isDisbursementAutomated);
       if (setting) {
         console.log("loan setting Selected for Update:", setting);
         if (setting) {
-          setting.fundingWalletId = fundingWalletId
-            ? fundingWalletId
-            : setting.fundingWalletId;
-          setting.isDisbursementAutomated =
-            isDisbursementAutomated !== setting.isDisbursementAutomated &&
-            isDisbursementAutomated !== undefined &&
-            isDisbursementAutomated !== null
-              ? isDisbursementAutomated
-              : setting.isDisbursementAutomated;
+          // setting.fundingWalletId = fundingWalletId
+          //   ? fundingWalletId
+          //   : setting.fundingWalletId;
+          // setting.isDisbursementAutomated =
+          //   isDisbursementAutomated !== setting.isDisbursementAutomated &&
+          //   isDisbursementAutomated !== undefined &&
+          //   isDisbursementAutomated !== null
+          //     ? isDisbursementAutomated
+          //     : setting.isDisbursementAutomated;
 
-          setting.fundingSourceTerminal = fundingSourceTerminal
-            ? fundingSourceTerminal
-            : setting.fundingSourceTerminal;
+          // setting.fundingSourceTerminal = fundingSourceTerminal
+          //   ? fundingSourceTerminal
+          //   : setting.fundingSourceTerminal;
 
-          setting.isLoanAutomated =
-            isLoanAutomated !== setting.isLoanAutomated &&
-            isLoanAutomated !== undefined &&
-            isLoanAutomated !== null
-              ? isLoanAutomated
-              : setting.isLoanAutomated;
+          // setting.isLoanAutomated =
+          //   isLoanAutomated !== setting.isLoanAutomated &&
+          //   isLoanAutomated !== undefined &&
+          //   isLoanAutomated !== null
+          //     ? isLoanAutomated
+          //     : setting.isLoanAutomated;
 
-          setting.isTerminationAutomated =
-            isTerminationAutomated !== setting.isTerminationAutomated &&
-            isTerminationAutomated !== undefined &&
-            isTerminationAutomated !== null
-              ? isTerminationAutomated
-              : setting.isTerminationAutomated;
-          setting.tagName = tagName ? tagName : setting.tagName;
-          setting.currencyCode = currencyCode
-            ? currencyCode
-            : setting.currencyCode;
+          // setting.isTerminationAutomated =
+          //   isTerminationAutomated !== setting.isTerminationAutomated &&
+          //   isTerminationAutomated !== undefined &&
+          //   isTerminationAutomated !== null
+          //     ? isTerminationAutomated
+          //     : setting.isTerminationAutomated;
+          // setting.tagName = tagName ? tagName : setting.tagName;
+          // setting.currencyCode = currencyCode
+          //   ? currencyCode
+          //   : setting.currencyCode;
+
+          setting.merge(payload);
 
           await setting.save();
 

@@ -53,6 +53,7 @@ Route.group(() => {
     Route.get("admin/loans", "LoansController.index");
     Route.get("admin/loans/settings", "SettingsController.index");
     Route.get("loans/rates", "RatesController.index");
+    Route.get("loans/rates/:id", "RatesController.show");
     Route.get("admin/loans/rates", "RatesController.index");
     Route.get("admin/loans/approvals", "ApprovalsController.index");
     Route.get(

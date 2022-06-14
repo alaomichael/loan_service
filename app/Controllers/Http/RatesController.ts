@@ -25,7 +25,7 @@ export default class RatesController {
 
     if (duration) {
       sortedRates = sortedRates.filter((rate) => {
-        console.log(" Rate Duration:", rate.durationId);
+        console.log(" Rate Duration:", rate);
         console.log(" Query Duration:", duration);
         const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
 
@@ -72,6 +72,29 @@ export default class RatesController {
       status: "OK",
       data: sortedRates.map((rate) => rate.$original),
     });
+  }
+
+  public async show({ request,params, response }: HttpContextContract) {
+const rate = await Rate.query().where({id:params.id}).first()
+
+    if (!rate) {
+  return response.status(200).json({
+    status: "OK",
+    message: "no loan rate matched your search",
+    data: [],
+  });
+}
+
+const rateTenure = await rate.preload('loanTenures');
+console.log(" Rate tenures: ", rateTenure);
+
+const rateTenureId = rate.loanTenures.map((tenure)=>  tenure.$extras.pivot_rate_id)
+console.log(" Rate Tenure Id: ", rateTenureId);
+// return rate(s)
+return response.status(200).json({
+  status: "OK",
+  data: rate.$original,
+});
   }
 
   public async store({ request, response }: HttpContextContract) {
@@ -129,7 +152,7 @@ export default class RatesController {
 
       tenures.forEach(async (tenure) => {
         let duration = await LoanTenure.create({ tenure, rateId: rate.id });
-    
+
         console.log("The new duration is: ", duration);
       });
       // Save Rate new status to Database
