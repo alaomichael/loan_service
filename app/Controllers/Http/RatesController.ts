@@ -74,27 +74,35 @@ export default class RatesController {
     });
   }
 
-  public async show({ request,params, response }: HttpContextContract) {
-const rate = await Rate.query().where({id:params.id}).first()
+  public async show({ request, params, response }: HttpContextContract) {
+    console.log("Params :", request.qs());
+    const rate = await Rate.query()
+      .where({ id: params.id })
+      .preload("loanTenures")
+      .first();
 
     if (!rate) {
-  return response.status(200).json({
-    status: "OK",
-    message: "no loan rate matched your search",
-    data: [],
-  });
-}
+      return response.status(200).json({
+        status: "OK",
+        message: "no loan rate matched your search",
+        data: [],
+      });
+    }
 
-const rateTenure = await rate.preload('loanTenures');
-console.log(" Rate tenures: ", rateTenure);
-
-const rateTenureId = rate.loanTenures.map((tenure)=>  tenure.$extras.pivot_rate_id)
-console.log(" Rate Tenure Id: ", rateTenureId);
-// return rate(s)
-return response.status(200).json({
-  status: "OK",
-  data: rate.$original,
-});
+    // const rateTenure = await rate.load("loanTenures");
+    // console.log(" Rate tenures: ", rateTenure);
+    console.log(" Rate ================= : ", await rate.$preloaded.loanTenures[0]);
+//@ts-ignore
+    const rateTenureId = await rate.$preloaded.loanTenures.map(
+      (tenure) => tenure.$preloaded.$original
+      // tenure.$extras.pivot_rate_id
+    );
+    console.log(" Rate Tenure Id: ", rateTenureId);
+    // return rate(s)
+    return response.status(200).json({
+      status: "OK",
+      data: rate.$original,
+    });
   }
 
   public async store({ request, response }: HttpContextContract) {

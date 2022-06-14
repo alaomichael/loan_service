@@ -46,9 +46,14 @@ export default class Rate extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
 
+  @hasMany(() => LoanTenure,  {localKey: 'id'})
+  public loanTenures: HasMany<typeof LoanTenure>;
 
-  @hasMany(()=> LoanTenure, {foreignKey: "rateId"})
-  public loanTenures:HasMany<typeof LoanTenure>;
+  // @hasMany(() => LoanTenure, { foreignKey: "rateId" })
+  // public loanTenures: HasMany<typeof LoanTenure>;
+
+  // @hasOne(() => LoanTenure)
+  // public loanTenure: HasOne<typeof LoanTenure>;
 
   @beforeCreate()
   public static assignUuid(rate: Rate) {
