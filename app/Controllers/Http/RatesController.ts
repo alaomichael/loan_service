@@ -2,6 +2,7 @@ import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Rate from "App/Models/Rate";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
+import LoanTenure from "App/Models/LoanTenure";
 
 export default class RatesController {
   public async index({ params, request, response }: HttpContextContract) {
@@ -90,18 +91,47 @@ export default class RatesController {
         status: schema.string({ escape: true }, [rules.maxLength(20)]),
       });
       const payload: any = await request.validate({ schema: rateSchema });
-
+      const tenures = payload.duration;
       // let duration = payload.duration;
       // console.log("The new rate duration:", duration);
       // payload.duration = JSON.stringify(duration);
+      let {
+        productName,
+        lowestAmount,
+        highestAmount,
+        interestRate,
+        tagName,
+        currencyCode,
+        additionalDetails,
+        long,
+        lat,
+        status,
+      } = payload;
 
-      const rate = await Rate.create(payload);
+      let payload2 = {
+        productName,
+        lowestAmount,
+        highestAmount,
+        interestRate,
+        tagName,
+        currencyCode,
+        additionalDetails,
+        long,
+        lat,
+        status,
+      };
+      const rate = await Rate.create(payload2);
       await rate.save();
-      
+
       console.log("The new loan rate:", rate);
 
       console.log("A New Rate has been Created.");
 
+      tenures.forEach(async (tenure) => {
+        let duration = await LoanTenure.create({ tenure, rateId: rate.id });
+    
+        console.log("The new duration is: ", duration);
+      });
       // Save Rate new status to Database
       await rate.save();
       // Send Rate Creation Message to Queue
