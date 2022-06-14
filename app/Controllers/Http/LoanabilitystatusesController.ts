@@ -21,7 +21,6 @@ import {
   // @ts-ignore
 } from "App/Helpers/utils";
 
-import Approval from "App/Models/Approval";
 import Wallet from "App/Models/Wallet";
 export default class LoanabilitystatusesController {
   public async store({ request, response }: HttpContextContract) {
@@ -45,7 +44,7 @@ export default class LoanabilitystatusesController {
       creditRating: schema.number.optional(),
       isDefaulter: schema.boolean.optional(),
       isFirstLoan: schema.boolean.optional(),
-      status: schema.string.optional({ escape: true }, [rules.maxLength(5)]),
+      status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
       timeline: schema.string.optional({ escape: true }),
     });
     const payload: any = await request.validate({ schema: investmentSchema });
@@ -62,8 +61,6 @@ export default class LoanabilitystatusesController {
     } else {
       payload.isBvnVerified = true;
     }
-
-
 
   console.log("Payload line 69  :", payload);
   const loan = await Loanabilitystatus.create(payload);

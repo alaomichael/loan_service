@@ -6,11 +6,11 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.string("product_name", 50).notNullable().index();
+      table.string("product_name", 50).notNullable().unique().index();
       table.float("lowest_amount", 12).unsigned().notNullable().index();
       table.float("highest_amount", 12).unsigned().notNullable().index();
       // table.string("duration").notNullable().index();
-      table.string("tag_name", 100).notNullable().index();
+      table.string("tag_name", 100).notNullable().unique().index();
       table.string("currency_code", 10).notNullable().index();
       table.string("additional_details").nullable().index();
       table.float("long").unsigned().nullable().index();

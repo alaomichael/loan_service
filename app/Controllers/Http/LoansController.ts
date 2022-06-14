@@ -1366,7 +1366,8 @@ export default class LoansController {
     //  Check if loan activation is automated
     let approvalIsAutomated = settings[0].isLoanAutomated;
     // let approvalIsAutomated = false
-    if (approvalIsAutomated === false) {
+    console.log("Approval setting line 1369:", approvalIsAutomated);
+    if (approvalIsAutomated === false || approvalIsAutomated.toString() === "0") {
       console.log(
         " The Rate return for RATE line 1227: ",
         await investmentRate(payloadAmount, payloadDuration)
@@ -1451,7 +1452,11 @@ export default class LoansController {
         email: newLoanEmail,
       });
       return response.status(201).json({ status: "OK", data: loan.$original });
-    } else if (approvalIsAutomated === true) {
+    } else if (
+      approvalIsAutomated === true ||
+      // @ts-ignore
+      approvalIsAutomated.toString() === "1"
+    ) {
       // TODO
       // Get recommendations
       let amountRecommended;
@@ -1511,10 +1516,7 @@ export default class LoansController {
 
       // Send Loan Payload To Transaction Service
       let sendToUserForAcceptance = "OK"; //= new SendToTransactionService(loan)
-      console.log(
-        " Feedback from admin: ",
-        sendToUserForAcceptance
-      );
+      console.log(" Feedback from admin: ", sendToUserForAcceptance);
       if (sendToUserForAcceptance === "OK") {
         // Activate the loan
         loan.amountApproved = amountRecommended;

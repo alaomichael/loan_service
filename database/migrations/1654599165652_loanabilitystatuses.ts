@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid("id").primary().index().unique().notNullable();
       table.string("wallet_id",255).nullable().index();
       table.string("user_id",255).nullable().index();
-      table.float("balance", 255).unsigned().nullable().index();
+      table.float("balance", 255).unsigned().nullable().defaultTo(0).index();
       table
         .float("recommendation", 255)
         .unsigned()
@@ -71,7 +71,6 @@ export default class extends BaseSchema {
           "balance",
           "amount_loanable",
           "last_loan_duration",
-          "tag_name",
           "bvn",
           "is_bvn_verified",
         ],

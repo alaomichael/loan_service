@@ -36,9 +36,9 @@ Route.group(() => {
     Route.post("loans", "LoansController.store");
     Route.post("admin/loans/settings", "SettingsController.store");
     Route.post("admin/loans/rates", "RatesController.store");
-     Route.get(
+     Route.post(
        "admin/loans/recommendations",
-       "LoansController.getCreditRecommendations"
+       "LoanabilitystatusesController.store"
      );
 
     Route.post("investments/approvals", "ApprovalsController.store");
@@ -57,6 +57,7 @@ Route.group(() => {
     Route.get("admin/loans", "LoansController.index");
     Route.get("admin/loans/settings", "SettingsController.index");
     Route.get("loans/rates", "RatesController.index");
+     Route.get("loans/rates/:id", "RatesController.show");
     Route.get("admin/loans/rates", "RatesController.index");
     Route.get("admin/loans/rates/:id", "RatesController.show");
     Route.get("admin/loans/approvals", "ApprovalsController.index");

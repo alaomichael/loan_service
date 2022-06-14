@@ -26,9 +26,6 @@ export default class Loanabilitystatus extends BaseModel {
   public lastLoanDuration: "7" | "14" | "21" | "30" | "45" | "60" | "90";
 
   @column()
-  public tagName: string;
-
-  @column()
   public currencyCode: string;
 
   @column()

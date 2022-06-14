@@ -3,6 +3,12 @@ import Rate from "App/Models/Rate";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import LoanTenure from "App/Models/LoanTenure";
+const Env = require("@ioc:Adonis/Core/Env");
+const axios = require("axios").default;
+// const JSJoda = require('js-joda')
+// const LocalDate = JSJoda.LocalDate
+// const Moment = require('moment')
+const API_URL = Env.get("API_URL");
 
 export default class RatesController {
   public async index({ params, request, response }: HttpContextContract) {
@@ -15,8 +21,13 @@ export default class RatesController {
     // console.log('Terminated Investment count: ', countSuspended)
     // const rate = await Rate.query().offset(0).limit(1)
     let rate = await Rate.all();
-    let tenuresResult = getTenures(rate);
-console.log("Tenures Result: ", tenuresResult);
+    let tenuresResult;
+  //   try {
+  //            tenuresResult = foo(rate);
+  // console.log("Tenures Result: ", tenuresResult);
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
     async function getTenures(rate) {
       var data = await rate.map(async (rate)=>{
           //@ts-ignore
@@ -29,16 +40,54 @@ console.log("Tenures Result: ", tenuresResult);
           );
           console.log(" Rate Tenures : ", rateTenure);
           // return rate(s)
-          let rateData1 = await { ...rate.$original, loanTenures: rateTenure };
+          let rateData1 =  { ...rate.$original, loanTenures: rateTenure };
           console.log(" Rate Tenures with data : ", rateData1);
-          return await rateData1;
+          return rateData1;
           //  return singleRate;
         })
-      console.log(" preload Rate with Tenures : ", await data);
+      console.log(" Preload Rate with Tenures : ", data);
       // code here only executes _after_ the request is done
       return data; // 'data' is defined
     }
-    let sortedRates = await rate;
+let payloadAmount = 45000
+let payloadDuration = 90
+const address = await foo(rate)
+// axios.get(`${API_URL}/loans/wallets`)
+  .then((response) =>
+  {
+    console.log("Response ========================== :", response.data)
+   return response})
+  .then((user) => {
+    return user.data//.address;
+  });
+
+const printAddress = async () => {
+  const a = await address;
+  console.log("   RATE RESULT *******************  ",a);
+};
+
+printAddress();
+
+
+    // function successCallback(result) {
+    //   console.log("Rate ready at URL: " + result);
+    // }
+
+    function failureCallback(error) {
+      console.error("Error getting rate: " + error);
+    }
+    async function foo(rate) {
+      try {
+        const result = await getTenures(rate);
+        // const newResult = await doSomethingElse(result);
+        // const finalResult = await doThirdThing(newResult);
+        console.log(`Got the final result: ${result}`);
+        return result;
+      } catch (error) {
+        failureCallback(error);
+      }
+    }
+    let sortedRates = await tenuresResult;
     if (amount) {
       // @ts-ignore
       sortedRates = await Rate.query()
@@ -56,7 +105,7 @@ console.log("Tenures Result: ", tenuresResult);
         fruits.includes("🍉"); // false
 
         // @ts-ignore
-        return rate.loanTenures.includes(duration);
+        // return rate.loanTenures.find(duration);
       });
     }
     if (productName) {
