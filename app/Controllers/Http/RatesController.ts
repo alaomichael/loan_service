@@ -14,8 +14,26 @@ export default class RatesController {
     // const countSuspended = await Rate.query().where('status', 'suspended').getCount()
     // console.log('Terminated Investment count: ', countSuspended)
     // const rate = await Rate.query().offset(0).limit(1)
-    const rate = await Rate.all();
-    let sortedRates = rate;
+    let rate = await Rate.all();
+    let preloadRate = await rate.map(async (rate)=>{
+      //@ts-ignore
+      let id = rate.id;
+     let singleRate = await Rate.query().where({ id: id }).preload("loanTenures").first();
+ console.log(" Rate singleRate : ", singleRate);
+      //@ts-ignore
+      const rateTenure = singleRate.$preloaded.loanTenures.map(
+        (tenure) => tenure.$original.tenure
+      );
+      console.log(" Rate Tenures : ", rateTenure);
+      // return rate(s)
+      let rateData1 = { ...rate.$original, loanTenures: rateTenure };
+      console.log(" Rate Tenures with data : ", rateData1);
+      return rateData1;
+      //  return singleRate;
+    })
+  console.log(" preload Rate with Tenures : ", await preloadRate);
+    // let sortedRates = rate;
+     let sortedRates = await preloadRate;
     if (amount) {
       // @ts-ignore
       sortedRates = await Rate.query()
@@ -33,7 +51,7 @@ export default class RatesController {
         fruits.includes("🍉"); // false
 
         // @ts-ignore
-        return rate.durationId.includes(duration);
+        return rate.loanTenures.includes(duration);
       });
     }
     if (productName) {
@@ -68,9 +86,26 @@ export default class RatesController {
       });
     }
     // return rate(s)
+    let rateData = sortedRates
+    //  = sortedRates.map(async (rate)=>{
+    //   let id = rate.id;
+    //   //@ts-ignore
+    //   rate = await Rate.query().where({ id: id }).preload("loanTenures");
+    //   // .first();
+    //   //@ts-ignore
+    //   const rateTenure = rate.$preloaded.loanTenures.map(
+    //     (tenure) => tenure.$original.tenure
+    //   );
+    //   console.log(" Rate Tenures : ", rateTenure);
+    //   // return rate(s)
+    //   let rateData1 = { ...rate.$original, loanTenures: rateTenure };
+    //   console.log(" Rate Tenures : ", rateData1);
+    //   return rateData1;
+    // })
+
     return response.status(200).json({
       status: "OK",
-      data: sortedRates.map((rate) => rate.$original),
+      data: rateData, //.map((rate) => rate.$original),
     });
   }
 
@@ -91,17 +126,20 @@ export default class RatesController {
 
     // const rateTenure = await rate.load("loanTenures");
     // console.log(" Rate tenures: ", rateTenure);
-    console.log(" Rate ================= : ", await rate.$preloaded.loanTenures[0]);
-//@ts-ignore
-    const rateTenureId = await rate.$preloaded.loanTenures.map(
-      (tenure) => tenure.$preloaded.$original
-      // tenure.$extras.pivot_rate_id
+    console.log(
+      " Rate ================= : ",
+      await rate.$preloaded.loanTenures[0]
     );
-    console.log(" Rate Tenure Id: ", rateTenureId);
+    //@ts-ignore
+    const rateTenure = await rate.$preloaded.loanTenures.map(
+      (tenure) => tenure.$original.tenure
+    );
+    console.log(" Rate Tenures : ", rateTenure);
     // return rate(s)
+    let rateData = { ...rate.$original, loanTenures: rateTenure };
     return response.status(200).json({
       status: "OK",
-      data: rate.$original,
+      data: rateData,
     });
   }
 
