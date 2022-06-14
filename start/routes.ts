@@ -36,6 +36,10 @@ Route.group(() => {
     Route.post("loans", "LoansController.store");
     Route.post("admin/loans/settings", "SettingsController.store");
     Route.post("admin/loans/rates", "RatesController.store");
+     Route.get(
+       "admin/loans/recommendations",
+       "LoansController.getCreditRecommendations"
+     );
 
     Route.post("investments/approvals", "ApprovalsController.store");
     Route.post("admin/investments", "InvestmentsController.store");

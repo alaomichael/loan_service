@@ -15,38 +15,6 @@ export default class RatesController {
     // console.log('Terminated Investment count: ', countSuspended)
     // const rate = await Rate.query().offset(0).limit(1)
     let rate = await Rate.all();
-    // let promiseResult = await new Promise(async (resolve, reject) => {
-    //   let preloadRate = await rate.map(async (rate) => {
-    //     //@ts-ignore
-    //     let id = rate.id;
-    //     let singleRate = await Rate.query()
-    //       .where({ id: id })
-    //       .preload("loanTenures")
-    //       .first();
-    //     //  console.log(" Rate singleRate : ", singleRate);
-    //     //@ts-ignore
-    //     const rateTenure = await singleRate.$preloaded.loanTenures.map(
-    //       (tenure) => tenure.$original.tenure
-    //     );
-    //     console.log(" Rate Tenures : ", rateTenure);
-    //     // return rate(s)
-    //     let rateData1 = await { ...rate.$original, loanTenures: rateTenure };
-    //     console.log(" Rate Tenures with data : ", rateData1);
-    //     return await rateData1;
-    //     //  return singleRate;
-    //   });
-    //   console.log(" preload Rate with Tenures : ", await preloadRate);
-
-    //   resolve(preloadRate);
-
-    //   if (!preloadRate) {
-    //     (err) => {
-    //       console.log("Error:", err);
-    //       reject(err);
-    //     };
-    //   }
-    // });
-
     let tenuresResult = getTenures(rate);
 console.log("Tenures Result: ", tenuresResult);
     async function getTenures(rate) {
@@ -70,24 +38,6 @@ console.log("Tenures Result: ", tenuresResult);
       // code here only executes _after_ the request is done
       return data; // 'data' is defined
     }
-    //     let preloadRate = await rate.map(async (rate)=>{
-    //       //@ts-ignore
-    //       let id = rate.id;
-    //      let singleRate = await Rate.query().where({ id: id }).preload("loanTenures").first();
-    // //  console.log(" Rate singleRate : ", singleRate);
-    //       //@ts-ignore
-    //       const rateTenure = await singleRate.$preloaded.loanTenures.map(
-    //         (tenure) => tenure.$original.tenure
-    //       );
-    //       console.log(" Rate Tenures : ", rateTenure);
-    //       // return rate(s)
-    //       let rateData1 = await { ...rate.$original, loanTenures: rateTenure };
-    //       console.log(" Rate Tenures with data : ", rateData1);
-    //       return await rateData1;
-    //       //  return singleRate;
-    //     })
-    //   console.log(" preload Rate with Tenures : ", await preloadRate);
-    //     // let sortedRates = rate;
     let sortedRates = await rate;
     if (amount) {
       // @ts-ignore
@@ -142,25 +92,9 @@ console.log("Tenures Result: ", tenuresResult);
     }
     // return rate(s)
     let rateData = await sortedRates;
-    //  = sortedRates.map(async (rate)=>{
-    //   let id = rate.id;
-    //   //@ts-ignore
-    //   rate = await Rate.query().where({ id: id }).preload("loanTenures");
-    //   // .first();
-    //   //@ts-ignore
-    //   const rateTenure = rate.$preloaded.loanTenures.map(
-    //     (tenure) => tenure.$original.tenure
-    //   );
-    //   console.log(" Rate Tenures : ", rateTenure);
-    //   // return rate(s)
-    //   let rateData1 = { ...rate.$original, loanTenures: rateTenure };
-    //   console.log(" Rate Tenures : ", rateData1);
-    //   return rateData1;
-    // })
-
     return response.status(200).json({
       status: "OK",
-      data: rateData, //.map((rate) => rate.$original),
+      data: rateData.map((rate) => rate.$original),
     });
   }
 

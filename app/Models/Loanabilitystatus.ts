@@ -11,7 +11,13 @@ export default class Loanabilitystatus extends BaseModel {
   public walletId: string;
 
   @column()
+  public userId: string;
+
+  @column()
   public balance: number;
+
+  @column()
+  public recommendation: number;
 
   @column()
   public amountLoanable: number;
@@ -44,7 +50,7 @@ export default class Loanabilitystatus extends BaseModel {
   public totalAmountOfLoansYetToBeRepaid: number;
 
   @column()
-  public loanHistory: JSON;
+  public loanHistory: string;
 
   @column()
   public long: number;

@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid("id").primary().index().unique().notNullable();
       table.string("wallet_id",255).nullable().index();
       table.string("user_id",255).nullable().index();
-      table.float("balance", 255).unsigned().notNullable().index();
+      table.float("balance", 255).unsigned().nullable().index();
       table
         .float("recommendation", 255)
         .unsigned()
@@ -35,19 +35,20 @@ export default class extends BaseSchema {
         ])
 
         .notNullable()
+        .defaultTo(0)
         .index();
-      table.string("tag_name", 255).notNullable();
-      table.string("currency_code", 10).notNullable().index();
-      table.string("bvn", 11).notNullable().index();
+      table.string("currency_code", 10).notNullable().defaultTo('NGN').index();
+      table.string("bvn", 11).nullable().index();
       table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
-      table.integer("total_number_of_loans_collected", 255).notNullable();
-      table.integer("total_amount_of_loans_collected", 255).notNullable();
-      table.integer("total_amount_of_loans_repaid", 255).notNullable();
+      table.integer("total_number_of_loans_collected", 255).notNullable().defaultTo(0);
+      table.integer("total_amount_of_loans_collected", 255).notNullable().defaultTo(0);
+      table.integer("total_amount_of_loans_repaid", 255).notNullable().defaultTo(0);
       table
         .integer("total_amount_of_loans_yet_to_be_repaid", 255)
-        .notNullable();
-      table.string("loan_history").notNullable().index();
-      table.float("long").nullable();
+        .notNullable()
+        .defaultTo(0);
+      table.string("loan_history").nullable().index();
+      table.float("long").unsigned().nullable();
       table.float("lat").unsigned().nullable();
       table.float("credit_rating").unsigned().nullable();
 
@@ -60,7 +61,6 @@ export default class extends BaseSchema {
       table.string("status", 255).notNullable().defaultTo("initiated").index();
       table.string("timeline").nullable().index();
 
-      // table.timestamp('date_payout_was_done', { useTz: true })
       table.timestamp("updated_at", { useTz: true });
 
       // indexes
