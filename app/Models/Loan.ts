@@ -31,9 +31,6 @@ export default class Loan extends BaseModel {
   public isBvnVerified: boolean;
 
   @column()
-  public loanAccountDetails: JSON;
-
-  @column()
   public long: number;
 
   @column()

@@ -138,12 +138,14 @@ export default class ProductsController {
       // @ts-ignore
       sortedProducts = await Product.query()
         .where("lowest_amount", "<=", amount)
-        .andWhere("highest_amount", ">=", amount);
+        .andWhere("highest_amount", ">=", amount)
+        .preload("loanTenures");
     }
 
     if (duration) {
-      sortedProducts = await sortedProducts.filter((product) => {
-        console.log(" Product Duration:", product);
+      sortedProducts = await sortedProducts.filter(async (product) => {
+          // @ts-ignore
+          console.log(" Product Duration:", await product.$preloaded.loanTenures.map((product) => product.tenure));
         console.log(" Query Duration:", duration);
         const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
 
@@ -151,7 +153,7 @@ export default class ProductsController {
         fruits.includes("🍉"); // false
 
         // @ts-ignore
-        // return product.loanTenures.find(duration);
+        return await product.$preloaded.loanTenures.map((product) => product.tenure).includes(duration);
       });
     }
     if (productName) {
@@ -191,10 +193,11 @@ export default class ProductsController {
     return response.status(200).json({
       status: "OK",
       data: productData.map((product) => {
-          console.log("Preloaded Tenures :",product.$preloaded.loanTenures[0].tenure);
+          console.log("Preloaded Tenures :",product.$preloaded.loanTenures[0]);
          let singleProduct = {
            product: product.$original,
-           tenure: product.$preloaded.loanTenures,
+           // @ts-ignore
+           tenure: product.$preloaded.loanTenures.map((product) => product.tenure),
          };
 return singleProduct;
         }),
@@ -305,10 +308,10 @@ return singleProduct;
       });
     } catch (error) {
       console.log(error);
-      console.error(error.messages);
+    //   console.error(error.messages);
       return response.status(404).json({
         status: "FAILED",
-        message: error.messages.errors,
+        message: error,
       });
     }
   }

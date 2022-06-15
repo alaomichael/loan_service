@@ -1239,15 +1239,28 @@ export default class LoansController {
     // const user = await auth.authenticate()
     const loanSchema = schema.create({
       walletId: schema.string(),
+      userId: schema.string.optional(),
       amountRequested: schema.number(),
-      duration: schema.enum(["7", "14", "21", "30", "45", "60", "90"]),
+      duration: schema.enum([
+        "7",
+        "14",
+        "21",
+        "30",
+        "45",
+        "60",
+        "90",
+        "120",
+        "150",
+        "180",
+        "210",
+      ]),
       tagName: schema.string({ escape: true }, [rules.maxLength(150)]),
       currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
       bvn: schema.string({ escape: true }, [
         rules.minLength(11),
         rules.maxLength(11),
       ]),
-      loanAccountDetails: schema.object().members({
+      loanAccountDetails: schema.object.optional().members({
         firstName: schema.string(),
         lastName: schema.string(),
         email: schema.string([rules.email()]),
@@ -1276,90 +1289,8 @@ export default class LoansController {
     // check available rate to apply
     let payloadAmount = payload.amountRequested;
     let payloadDuration = payload.duration;
-    // console.log(
-    //   " The Rate return for RATE line 1141: ",
-    //   await generateRate(payloadAmount, payloadDuration)
-    // );
-    // let rate = Number(await generateRate(payloadAmount, payloadDuration));
-    // console.log(" Rate return line 1151 : ", rate);
-    // // @ts-ignore
-    // if (rate === undefined || rate.length < 1) {
-    //   return response.status(400).json({
-    //     status: "FAILED",
-    //     message: "no loan rate matched your search, please try again.",
-    //     data: [],
-    //   });
-    // }
-
-    // console.log(
-    //   " The Rate return for RATE line 1227: ",
-    //   await loanRate(payloadAmount, payloadDuration)
-    // );
-    // let rate = await loanRate(payloadAmount, payloadDuration);
-    // console.log(" Rate return line 1238 : ", rate);
-    // if (rate === undefined || rate.length < 1) {
-    //   return response.status(400).json({
-    //     status: "FAILED",
-    //     message: "no investment rate matched your search, please try again.",
-    //     data: [],
-    //   });
-    // }
-
-    // console.log("Payload line 1160  :", payload);
-    // const loan = await Loan.create(payload);
-    // loan.interestRate = rate;
-
-    // // When the loan has been approved and activated
-    // let amount = loan.amountRequested;
-    // let loanDuration = loan.duration;
-    // let amountDueOnRepayment = await interestDueOnLoan(
-    //   amount,
-    //   rate,
-    //   loanDuration
-    // );
-    // // @ts-ignore
-    // loan.interestDueOnLoan = amountDueOnRepayment;
-    // // @ts-ignore
-    // loan.totalAmountToRepay = loan.amountRequested + amountDueOnRepayment;
-    // await loan.save();
-    // console.log("The new loan:", loan);
-
-    // // TODO
-    // // Send Loan Payload To Admin
-
-    // // Send Loan Initiation Message to Queue
-
-    // // check if Approval is set to Auto, from Setting Controller
-    // let walletId = loan.walletId;
-    // let loanId = loan.id;
-    // let requestType = "request loan";
-    // let settings = await Setting.query().where({ tagName: "default setting" });
-    // console.log("Approval setting line 910:", settings[0]);
-    // let timeline: any[] = [];
-    // //  create a new object for the timeline
-    // let timelineObject = {
-    //   id: uuid(),
-    //   action: "loan initiated",
-    //   // @ts-ignore
-    //   message: `${loan.loanAccountDetails.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
-    //   createdAt: loan.createdAt,
-    //   meta: `duration: ${loan.duration}`,
-    // };
-    // console.log("Timeline object line 1222:", timelineObject);
-    // //  Push the new object to the array
-    // timeline.push(timelineObject);
-
-    // console.log("Timeline object line 1226:", timeline);
-
-    // // stringify the timeline array
-    // loan.timeline = JSON.stringify(timeline);
-    // await loan.save();
     let requestType;
-    // let settings = await Setting.query().where({ tagName: "default setting" });
-    // console.log("Approval setting line 910:", settings[0]);
-    // let timeline: any[] = [];
-    //  create a new object for the timeline
-    let timelineObject;
+     let timelineObject;
     let settings = await Setting.query().where({ tagName: "default setting" });
     console.log("Approval setting line 910:", settings[0]);
     let timeline: any[] = [];
@@ -1564,18 +1495,7 @@ export default class LoansController {
         });
       }
     }
-    // Save update to database
-    // await loan.save();
-    //   let newLoanId = loan.id;
-    //   // Send to Notificaation Service
-    //   // @ts-ignore
-    //   let newLoanEmail = loan.loanAccountDetails.email;
-    //   Event.emit("new:loan", {
-    //     id: newLoanId,
-    //     email: newLoanEmail,
-    //   });
-    //   return response.status(201).json({ status: "OK", data: loan.$original });
-  }
+    }
 
   public async getCreditRecommendations({
     request,
