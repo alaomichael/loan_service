@@ -144,8 +144,11 @@ export default class ProductsController {
 
     if (duration) {
       sortedProducts = await sortedProducts.filter(async (product) => {
-          // @ts-ignore
-          console.log(" Product Duration:", await product.$preloaded.loanTenures.map((product) => product.tenure));
+          console.log(
+              " Product Duration %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+              // @ts-ignore
+            await product.$preloaded.loanTenures.map((product) =>
+              {return product.tenure.includes(duration)}));
         console.log(" Query Duration:", duration);
         const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
 

@@ -15,8 +15,8 @@ export default class extends BaseSchema {
     .index()
     .onDelete("CASCADE");
       table.string("action", 100).notNullable().index();
-      table.text("message").nullable().index().defaultTo("pending");
-      table.text("meta").nullable().index();
+      table.string("message",255).nullable();
+      table.string("meta",255).nullable();
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */

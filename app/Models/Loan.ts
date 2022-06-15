@@ -35,21 +35,7 @@ export default class Loan extends BaseModel {
   public amountApproved: number;
 
   @column()
-  public duration:
-    | "7"
-    | "14"
-    | "21"
-    | "30"
-    | "45"
-    | "60"
-    | "90"
-    | "120"
-    | "150"
-    | "180"
-    | "210"
-    | "240"
-    | "270"
-    | "300";
+  public duration: string;
 
   @column()
   public tagName: string;
