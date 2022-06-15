@@ -12,7 +12,7 @@ const API_URL = Env.get("API_URL");
 export default class ProductsController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("Product params: ", params);
-    const { duration, limit, amount, status, productName, interestRate } =
+    const { duration, limit, amount, status, productName, interestRate, testing } =
       request.qs();
     console.log("Product query line 19: ", request.qs());
 
@@ -22,149 +22,62 @@ export default class ProductsController {
     let products = await Product.query().preload("loanTenures");
 
     console.log("products Result, line 23: ", products);
-    let tenuresResult;
-    //   try {
-    //            tenuresResult = foo(product);
-    // console.log("Tenures Result: ", tenuresResult);
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // async function getTenures(product) {
-    //   var data = await product.map(async (product) => {
-    //     //@ts-ignore
-    //     let id = product.id;
-    //     let singleProduct = await Product.query()
-    //       .where({ id: id })
-    //       .preload("loanTenures")
-    //       .first();
-    //     //  console.log(" Product singleProduct : ", singleProduct);
-    //     //@ts-ignore
-    //     const rateTenure = await singleProduct.$preloaded.loanTenures.map(
-    //       (tenure) => tenure.$original.tenure
-    //     );
-    //     console.log(" Product Tenures : ", rateTenure);
-    //     // return product(s)
-    //     let rateData1 = { ...product.$original, loanTenures: rateTenure };
-    //     console.log(" Product Tenures with data : ", rateData1);
-    //     return rateData1;
-    //     //  return singleProduct;
-    //   });
-    //   console.log(" Preload Product with Tenures : ", data);
-    //   // code here only executes _after_ the request is done
-    //   return data; // 'data' is defined
-    // }
-
-    // function successCallback(result) {
-    //   console.log("Product ready at URL: " + result);
-    //   return result;
-    // }
-
-    // function failureCallback(error) {
-    //   console.error("Error getting product: " + error);
-    // }
-    // async function foo(product) {
-    //   try {
-    //     const result = await getTenures(product).then(successCallback(response));
-    //     // const newResult = await doSomethingElse(result);
-    //     // const finalResult = await doThirdThing(newResult);
-    //     console.log(`Got the final result: await ${result}`);
-    //     return result;
-    //   } catch (error) {
-    //     failureCallback(error);
-    //   }
-    // }
-    // const address = await foo(product)
-    //   // axios.get(`${API_URL}/loans/wallets`)
-    //   .then((response) => {
-    //     console.log("Response ========================== :", response);
-    //     return response;
-    //   })
-    //   .then((user) => {
-    //     return user; //.address;
-    //   });
-
-    // const printAddress = async () => {
-    //   const a = await address;
-    //   console.log("   RATE RESULT *******************  ", a);
-    //   return a;
-    // };
-
-    // let itIsWorking = await printAddress();
-    // console.log("Product ready at itIsWorking: " + (await itIsWorking));
-
-    // const repaymentDueDate =  (product) => {
-    //   return new Promise( (resolve, reject) => {
-    //     if (!product) {
-    //       reject(new Error("Incomplete parameters or out of range"));
-    //     }
-    //     // let payoutDueDate;
-    //     var data =  product.map( async (singleProduct) => {
-    //       //@ts-ignore
-    //       let id = singleProduct.id;
-    //       let singleProductTenure = await Product.query()
-    //         .where({ id: id })
-    //         .preload("loanTenures")
-    //         .first();
-    //       //  console.log(" Product singleProduct : ", singleProduct);
-    //       //@ts-ignore
-    //       const rateTenure =  singleProductTenure!.$preloaded.loanTenures.map(
-    //         (tenure) => tenure.$original.tenure
-    //       );
-    //       console.log(" Product Tenures : ", rateTenure);
-    //       // return product(s)
-    //       let rateData1 =  { ...singleProductTenure!.$original, loanTenures: rateTenure };
-    //       console.log(" Product Tenures with data : ", rateData1);
-    //       return rateData1;
-    //       //  return singleProduct;
-    //     });
-    //     console.log(" Preload Product with Tenures line 119 : ", data);
-    //     // code here only executes _after_ the request is done
-    //     // return data;
-    //     return resolve(data);
-    //   });
-    // };
-
-    // console.log(
-    //   " Product repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: ",
-    //   await repaymentDueDate(product)
-    // );
-
-    //    " Product repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: "
-    //    await repaymentDueDate(product).finally(() => {})
-
     let sortedProducts = products;
     if (amount) {
       // @ts-ignore
       sortedProducts = await Product.query()
         .where("lowest_amount", "<=", amount)
         .andWhere("highest_amount", ">=", amount)
-        .preload("loanTenures", (query) => query.where("tenure", duration));
+        .preload("loanTenures");
     }
 
     if (duration) {
       // @ts-ignore
-      sortedProducts = await Product.query().preload("loanTenures", (query) =>
-        query.where("tenure", duration)
-      );
-      console.log(
-        " Product sortedProducts line 149 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-        sortedProducts
-      );
-      sortedProducts = sortedProducts.filter((product) => {
+      //   sortedProducts = await sortedProducts.filter(async (product) => {
+      //     console.log(
+      //       " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+      //       // @ts-ignore
+      //       product.$preloaded.loanTenures.map((data) => data.tenure)
+      //     );
+      //     // @ts-ignore
+      //     let preloadedTenure = await product.$preloaded.loanTenures.map(
+      //       (data) => data.tenure
+      //     );
+      //     console.log(
+      //       " Product preloadedTenure line 160 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+      //       preloadedTenure
+      //     );
+      //     return preloadedTenure //=== duration;
+      //   });
+      // @ts-ignore
+        sortedProducts = await Product.query()
+          .preload("loanTenures", (query) => query.where("tenure", duration))
+          .then((results) =>
+            results.filter((product) => {
+              console.log(
+                " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+                // @ts-ignore
+                product.$preloaded.loanTenures.map((data) => data.tenure)
+              );
+              // @ts-ignore
+              let preloadedTenure = product.$preloaded.loanTenures.map(
+                (data) => data.tenure
+              );
+              console.log(
+                " Product preloadedTenure line 160 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+                preloadedTenure
+              );
+              return preloadedTenure == duration;
+            })
+          );
         console.log(
-          " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-          product.$preloaded
+          " Product sortedProducts line 167 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+          sortedProducts
         );
-        // @ts-ignore
-        //   return product.$preloaded.tenure!.includes(duration);
-      });
-       console.log(
-         " Product sortedProducts line 162 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-         sortedProducts
-       );
+       
     }
 
-    if (amount && duration) {
+    if (testing) {
       // @ts-ignore
       sortedProducts = await Product.query()
         .where("lowest_amount", "<=", amount)
@@ -222,9 +135,7 @@ export default class ProductsController {
         data: [],
       });
     }
-    // return product(s)
     let productData = await sortedProducts;
-    //  { ...product.$original, loanTenures: productTenure };
     return response.status(200).json({
       status: "OK",
       data: productData.map((product) => {
@@ -232,7 +143,7 @@ export default class ProductsController {
         let singleProduct = {
           product: product.$original,
           // @ts-ignore
-          tenure: product.$preloaded.loanTenures.map(
+          loanTenure: product.$preloaded.loanTenures.map(
             (product) => product.tenure
           ),
         };
