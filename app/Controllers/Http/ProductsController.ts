@@ -19,8 +19,7 @@ export default class ProductsController {
     // const countSuspended = await Product.query().where('status', 'suspended').getCount()
     // console.log('Terminated Investment count: ', countSuspended)
     // const product = await Product.query().offset(0).limit(1)
-    let products = await Product.query()
-      .preload("loanTenures")
+    let products = await Product.query().preload("loanTenures");
 
     console.log("products Result, line 23: ", products);
     let tenuresResult;
@@ -139,25 +138,58 @@ export default class ProductsController {
       sortedProducts = await Product.query()
         .where("lowest_amount", "<=", amount)
         .andWhere("highest_amount", ">=", amount)
-        .preload("loanTenures");
+        .preload("loanTenures", (query) => query.where("tenure", duration));
     }
 
     if (duration) {
-      sortedProducts = await sortedProducts.filter(async (product) => {
-          console.log(
-              " Product Duration %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-              // @ts-ignore
-            await product.$preloaded.loanTenures.map((product) =>
-              {return product.tenure.includes(duration)}));
-        console.log(" Query Duration:", duration);
-        const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
-
-        fruits.includes("🍇"); // true
-        fruits.includes("🍉"); // false
-
+      // @ts-ignore
+      sortedProducts = await Product.query().preload("loanTenures", (query) =>
+        query.where("tenure", duration)
+      );
+      console.log(
+        " Product sortedProducts line 149 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+        sortedProducts
+      );
+      sortedProducts = sortedProducts.filter((product) => {
+        console.log(
+          " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+          product.$preloaded
+        );
         // @ts-ignore
-        return await product.$preloaded.loanTenures.map((product) => product.tenure).includes(duration);
+        //   return product.$preloaded.tenure!.includes(duration);
       });
+       console.log(
+         " Product sortedProducts line 162 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+         sortedProducts
+       );
+    }
+
+    if (amount && duration) {
+      // @ts-ignore
+      sortedProducts = await Product.query()
+        .where("lowest_amount", "<=", amount)
+        .andWhere("highest_amount", ">=", amount)
+        .preload("loanTenures", (query) => query.where("tenure", duration));
+      //   sortedProducts = await sortedProducts.filter(async (product) => {
+      //     console.log(
+      //       " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+      //       // @ts-ignore
+      //       await product.$preloaded.loanTenures.map((product) => {
+      //         return product.tenure;
+      //       })
+      //     );
+      //     console.log(" Query Duration:", duration);
+      //     const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
+
+      //     fruits.includes("🍇"); // true
+      //     fruits.includes("🍉"); // false
+
+      //     // @ts-ignore
+      //     return product.$preloaded.loanTenures.map((product) =>
+      //      {return product.tenure.includes(duration)}
+      //     );
+      //   });
+      console.log(" The just sorted product line 164 :", sortedProducts);
     }
     if (productName) {
       sortedProducts = sortedProducts.filter((product) => {
@@ -196,14 +228,16 @@ export default class ProductsController {
     return response.status(200).json({
       status: "OK",
       data: productData.map((product) => {
-          console.log("Preloaded Tenures :",product.$preloaded.loanTenures[0]);
-         let singleProduct = {
-           product: product.$original,
-           // @ts-ignore
-           tenure: product.$preloaded.loanTenures.map((product) => product.tenure),
-         };
-return singleProduct;
-        }),
+        console.log("Preloaded Tenures :", product.$preloaded.loanTenures[0]);
+        let singleProduct = {
+          product: product.$original,
+          // @ts-ignore
+          tenure: product.$preloaded.loanTenures.map(
+            (product) => product.tenure
+          ),
+        };
+        return singleProduct;
+      }),
     });
   }
 
@@ -295,7 +329,10 @@ return singleProduct;
       console.log("A New Product has been Created.");
 
       tenures.forEach(async (tenure) => {
-        let duration = await LoanTenure.create({ tenure, productId: product.id });
+        let duration = await LoanTenure.create({
+          tenure,
+          productId: product.id,
+        });
 
         console.log("The new duration is: ", duration);
       });
@@ -304,14 +341,17 @@ return singleProduct;
       // Send Product Creation Message to Queue
 
       // @ts-ignore
-      Event.emit("new:product", { id: product.id, extras: product.additionalDetails });
+      Event.emit("new:product", {
+        id: product.id,
+        extras: product.additionalDetails,
+      });
       return response.status(200).json({
         status: "OK",
         data: product.$original,
       });
     } catch (error) {
       console.log(error);
-    //   console.error(error.messages);
+      //   console.error(error.messages);
       return response.status(404).json({
         status: "FAILED",
         message: error,
@@ -372,9 +412,9 @@ return singleProduct;
           product.highestAmount = request.input("highestAmount")
             ? request.input("highestAmount")
             : product.highestAmount;
-        //   product.duration = request.input("duration")
-        //     ? request.input("duration")
-        //     : product.duration;
+          //   product.duration = request.input("duration")
+          //     ? request.input("duration")
+          //     : product.duration;
           product.interestRate = request.input("interestRate")
             ? request.input("interestRate")
             : product.interestRate;
@@ -384,8 +424,12 @@ return singleProduct;
           product.additionalDetails = request.input("additionalDetails")
             ? request.input("additionalDetails")
             : product.additionalDetails;
-          product.long = request.input("long") ? request.input("long") : product.long;
-          product.lat = request.input("lat") ? request.input("lat") : product.lat;
+          product.long = request.input("long")
+            ? request.input("long")
+            : product.long;
+          product.lat = request.input("lat")
+            ? request.input("lat")
+            : product.lat;
           product.status = request.input("status")
             ? request.input("status")
             : product.status;
