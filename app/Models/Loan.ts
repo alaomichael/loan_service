@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
-import { column, beforeCreate, BaseModel } from "@ioc:Adonis/Lucid/Orm";
+import { column, beforeCreate, BaseModel, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
+import Timeline from "./Timeline";
 
 export default class Loan extends BaseModel {
   @column({ isPrimary: true })
@@ -34,7 +35,21 @@ export default class Loan extends BaseModel {
   public amountApproved: number;
 
   @column()
-  public duration: "7" | "14" | "21" | "30" | "45" | "60" | "90" |"120" |"150" |"180" | "210"|"240"|"270" |"300";
+  public duration:
+    | "7"
+    | "14"
+    | "21"
+    | "30"
+    | "45"
+    | "60"
+    | "90"
+    | "120"
+    | "150"
+    | "180"
+    | "210"
+    | "240"
+    | "270"
+    | "300";
 
   @column()
   public tagName: string;
@@ -99,14 +114,14 @@ export default class Loan extends BaseModel {
   @column()
   public status: string;
 
-  @column()
-  public timeline: string;
-
   @column.dateTime({ autoCreate: false })
   public dateDisbursementWasDone: DateTime;
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @hasMany(() => Timeline, { localKey: "id" })
+  public timelines: HasMany<typeof Timeline>;
 
   @beforeCreate()
   public static assignUuid(loan: Loan) {

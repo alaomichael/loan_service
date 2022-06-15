@@ -225,11 +225,14 @@ export default class LoansController {
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
-      if (!loans || loans.length < 0)
-        return response.status(404).json({ status: "FAILED" });
-      return response
+      console.log("Loans result :", loans)
+      if (loans.length > 0){
+        return response
         .status(200)
         .json({ status: "OK", data: loans.map((loan) => loan.$original) });
+       } else { return response
+         .status(404)
+         .json({ status: "FAILED", message: "Invalid request" });};
     } catch (error) {
       console.log(error);
     }
@@ -393,6 +396,7 @@ export default class LoansController {
         // update timeline
         timelineObject = {
           id: uuid(),
+          loanId: loan[0].id,
           action: "loan activated",
           // @ts-ignore
           message: `${loan[0].firstName} loan has just been activated.`,
