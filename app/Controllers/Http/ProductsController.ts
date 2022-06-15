@@ -12,7 +12,7 @@ const API_URL = Env.get("API_URL");
 export default class ProductsController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("Product params: ", params);
-    const { duration, limit, amount, status, productName, interestRate, testing } =
+    const { duration, limit, amount, status, productName, interestRate } =
       request.qs();
     console.log("Product query line 19: ", request.qs());
 
@@ -32,23 +32,6 @@ export default class ProductsController {
     }
 
     if (duration) {
-      // @ts-ignore
-      //   sortedProducts = await sortedProducts.filter(async (product) => {
-      //     console.log(
-      //       " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-      //       // @ts-ignore
-      //       product.$preloaded.loanTenures.map((data) => data.tenure)
-      //     );
-      //     // @ts-ignore
-      //     let preloadedTenure = await product.$preloaded.loanTenures.map(
-      //       (data) => data.tenure
-      //     );
-      //     console.log(
-      //       " Product preloadedTenure line 160 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-      //       preloadedTenure
-      //     );
-      //     return preloadedTenure //=== duration;
-      //   });
       // @ts-ignore
         sortedProducts = await Product.query()
           .preload("loanTenures", (query) => query.where("tenure", duration))
@@ -74,37 +57,40 @@ export default class ProductsController {
           " Product sortedProducts line 167 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
           sortedProducts
         );
-       
+
     }
 
-    if (testing) {
-      // @ts-ignore
-      sortedProducts = await Product.query()
-        .where("lowest_amount", "<=", amount)
-        .andWhere("highest_amount", ">=", amount)
-        .preload("loanTenures", (query) => query.where("tenure", duration));
-      //   sortedProducts = await sortedProducts.filter(async (product) => {
-      //     console.log(
-      //       " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
-      //       // @ts-ignore
-      //       await product.$preloaded.loanTenures.map((product) => {
-      //         return product.tenure;
-      //       })
-      //     );
-      //     console.log(" Query Duration:", duration);
-      //     const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
+     if (duration && amount) {
+       // @ts-ignore
+       sortedProducts = await Product.query()
+         .where("lowest_amount", "<=", amount)
+         .andWhere("highest_amount", ">=", amount)
+         .preload("loanTenures", (query) => query.where("tenure", duration))
+         .then((results) =>
+           results.filter((product) => {
+             console.log(
+               " Product Duration 01 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+               // @ts-ignore
+               product.$preloaded.loanTenures.map((data) => data.tenure)
+             );
+             // @ts-ignore
+             let preloadedTenure = product.$preloaded.loanTenures.map(
+               (data) => data.tenure
+             );
+             console.log(
+               " Product preloadedTenure line 160 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+               preloadedTenure
+             );
+             return preloadedTenure == duration;
+           })
+         );
+       console.log(
+         " Product sortedProducts line 167 %%%%%%%%%%%%%%%%%%%%%%%%%%%% :",
+         sortedProducts
+       );
+     }
 
-      //     fruits.includes("🍇"); // true
-      //     fruits.includes("🍉"); // false
-
-      //     // @ts-ignore
-      //     return product.$preloaded.loanTenures.map((product) =>
-      //      {return product.tenure.includes(duration)}
-      //     );
-      //   });
-      console.log(" The just sorted product line 164 :", sortedProducts);
-    }
-    if (productName) {
+     if (productName) {
       sortedProducts = sortedProducts.filter((product) => {
         // @ts-ignore
         return product.productName!.includes(productName);
