@@ -10,13 +10,31 @@ export default class Loan extends BaseModel {
   public walletId: string;
 
   @column()
+  public userId: string;
+
+  @column()
+  public firstName: string;
+
+  @column()
+  public lastName: string;
+
+  @column()
+  public phone: string;
+
+  @column()
+  public email: string;
+
+  @column()
+  public loanAccountId: string;
+
+  @column()
   public amountRequested: number;
 
   @column()
   public amountApproved: number;
 
   @column()
-  public duration: "7" | "14" | "21" | "30" | "45" | "60" | "90";
+  public duration: "7" | "14" | "21" | "30" | "45" | "60" | "90" |"120" |"150" |"180" | "210"|"240"|"270" |"300";
 
   @column()
   public tagName: string;

@@ -48,9 +48,9 @@ export default class LoansController {
     if (search) {
       sortedInvestments = sortedInvestments.filter((loan) => {
         // @ts-ignore
-        // console.log(' Sorted :', loan.loanAccountDetails.lastName!.startsWith(search))
+        // console.log(' Sorted :', loan.lastName!.startsWith(search))
         // @ts-ignore
-        return loan.loanAccountDetails.lastName!.startsWith(search);
+        return loan.lastName!.startsWith(search);
       });
     }
     if (requestType) {
@@ -94,7 +94,7 @@ export default class LoansController {
     Event.emit("list:investments", {
       id: loan[0].id,
       // @ts-ignore
-      email: loan[0].loanAccountDetails.email,
+      email: loan[0].email,
     });
     // return loan
     console.log(" SORTED LOAN line 78" + sortedInvestments);
@@ -395,7 +395,7 @@ export default class LoansController {
           id: uuid(),
           action: "loan activated",
           // @ts-ignore
-          message: `${loan[0].loanAccountDetails.firstName} loan has just been activated.`,
+          message: `${loan[0].firstName} loan has just been activated.`,
           createdAt: DateTime.now(),
           meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
@@ -473,7 +473,7 @@ export default class LoansController {
           id: uuid(),
           action: "loan declined",
           // @ts-ignore
-          message: `${loan[0].loanAccountDetails.firstName} loan has just been declined.`,
+          message: `${loan[0].firstName} loan has just been declined.`,
           createdAt: DateTime.now(),
           meta: `amount declined: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
@@ -974,7 +974,7 @@ export default class LoansController {
                   id: uuid(),
                   action: "loan offer accepted",
                   // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} just accepted the offer made.`,
+                  message: `${loan.firstName} just accepted the offer made.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
@@ -1016,7 +1016,7 @@ export default class LoansController {
                   id: uuid(),
                   action: "loan disbursed",
                   // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} loan has just been disbursed.`,
+                  message: `${loan.firstName} loan has just been disbursed.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
@@ -1047,7 +1047,7 @@ export default class LoansController {
                 id: uuid(),
                 action: "loan offer rejected",
                 // @ts-ignore
-                message: `${loan.loanAccountDetails.firstName} just rejected the offer made.`,
+                message: `${loan.firstName} just rejected the offer made.`,
                 createdAt: DateTime.now(),
                 meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
               };
@@ -1159,7 +1159,7 @@ export default class LoansController {
                   id: uuid(),
                   action: "loan updated",
                   // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  message: `${loan.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
@@ -1240,6 +1240,11 @@ export default class LoansController {
     const loanSchema = schema.create({
       walletId: schema.string(),
       userId: schema.string.optional(),
+      firstName: schema.string(),
+      lastName: schema.string.optional(),
+      phone: schema.string(),
+      email: schema.string(),
+      loanAccountId: schema.string.optional(),
       amountRequested: schema.number(),
       duration: schema.enum([
         "7",
@@ -1349,7 +1354,7 @@ export default class LoansController {
         id: uuid(),
         action: "loan initiated",
         // @ts-ignore
-        message: `${loan.loanAccountDetails.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
+        message: `${loan.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
         createdAt: loan.createdAt,
         meta: `duration: ${loan.duration}`,
       };
@@ -1377,7 +1382,7 @@ export default class LoansController {
       let newLoanId = loan.id;
       // Send to Notificaation Service
       // @ts-ignore
-      let newLoanEmail = loan.loanAccountDetails.email;
+      let newLoanEmail = loan.email;
       Event.emit("new:loan", {
         id: newLoanId,
         email: newLoanEmail,
@@ -1462,7 +1467,7 @@ export default class LoansController {
           id: uuid(),
           action: "loan offer made",
           // @ts-ignore
-          message: `${loan.loanAccountDetails.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and offer made.`,
+          message: `${loan.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and offer made.`,
           createdAt: loan.createdAt,
           meta: `duration: ${loan.duration}`,
         };
@@ -1478,7 +1483,7 @@ export default class LoansController {
         let newLoanId = loan.id;
         // Send to Notificaation Service
         // @ts-ignore
-        let newLoanEmail = loan.loanAccountDetails.email;
+        let newLoanEmail = loan.email;
         Event.emit("new:loan", {
           id: newLoanId,
           email: newLoanEmail,
@@ -1595,7 +1600,7 @@ export default class LoansController {
                   id: uuid(),
                   action: "loan updated",
                   // @ts-ignore
-                  message: `${loan.loanAccountDetails.firstName} loan has just been updated.`,
+                  message: `${loan.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
@@ -1907,7 +1912,7 @@ export default class LoansController {
                 id: uuid(),
                 action: "loan payout initiated",
                 // @ts-ignore
-                message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for payout processing.`,
+                message: `${loan[0].firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
@@ -1941,7 +1946,7 @@ export default class LoansController {
                 id: uuid(),
                 action: "loan payout initiated",
                 // @ts-ignore
-                message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for payout processing.`,
+                message: `${loan[0].firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
@@ -2032,7 +2037,7 @@ export default class LoansController {
                 id: uuid(),
                 action: "loan payout approved",
                 // @ts-ignore
-                message: `${loan[0].loanAccountDetails.firstName} loan has just been approved for payout.`,
+                message: `${loan[0].firstName} loan has just been approved for payout.`,
                 createdAt: payout.createdAt,
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
@@ -2065,7 +2070,7 @@ export default class LoansController {
                 id: uuid(),
                 action: "loan payout approved",
                 // @ts-ignore
-                message: `${loan[0].loanAccountDetails.firstName} loan has just been approved for payout.`,
+                message: `${loan[0].firstName} loan has just been approved for payout.`,
                 createdAt: DateTime.now(),
                 meta: `amount to repay: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
@@ -2241,7 +2246,7 @@ export default class LoansController {
             id: uuid(),
             action: "loan termination initiated",
             // @ts-ignore
-            message: `${loan[0].loanAccountDetails.firstName} loan has just been sent for termination processing.`,
+            message: `${loan[0].firstName} loan has just been sent for termination processing.`,
             createdAt: DateTime.now(),
             meta: `amount to rrepay: ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
           };
@@ -3298,7 +3303,7 @@ export default class LoansController {
         let loanId = loan.id;
         let totalAmountToPayout = loan.amountApproved;
         // @ts-ignore
-        let phone = loan.loanAccountDetails.phone;
+        let phone = loan.phone;
         console.log("Unsuccessful transaction, line 2903");
         return response.json({
           status: "FAILED",

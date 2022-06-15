@@ -14,9 +14,15 @@ export default class extends BaseSchema {
         .defaultTo(0)
         .index();
       table.string("wallet_id",255).nullable().index();
+      table.string("user_id", 255).nullable().index();
+      table.string("first_name", 255).notNullable().index();
+      table.string("last_name", 255).nullable().index();
+      table.string("phone", 255).notNullable().index();
+      table.string("email", 255).notNullable().index();
+      table.string("loan_account_id", 255).nullable().index();
       table.float("amount_requested").unsigned().notNullable().index();
       table
-        .enum("duration", ["7", "14", "21", "30", "45", "60", "90"])
+        .enum("duration", ["7", "14", "21", "30", "45", "60", "90","120","150","180", "210","240","270","300"])
         .notNullable()
         .index();
       table.string("tag_name", 255).notNullable();
