@@ -6,8 +6,8 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.uuid("id").primary().index().unique().notNullable();
-  table
+    table.uuid("id").primary().index().unique().notNullable();
+    table
     .uuid("loan_id")
     .references("id")
     .inTable("loans")

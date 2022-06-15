@@ -24,6 +24,7 @@ import {
 
 import Approval from "App/Models/Approval";
 import Wallet from "App/Models/Wallet";
+import Timeline from "App/Models/Timeline";
 export default class LoansController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("LOAN params: ", params);
@@ -405,11 +406,18 @@ export default class LoansController {
         };
         console.log("Timeline object line 402:", timelineObject);
         //  Push the new object to the array
-        timeline = loan[0].timeline; //JSON.parse(loan[0].timeline)
-        timeline.push(timelineObject);
-        console.log("Timeline object line 406:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+        // timeline = loan[0].timeline; //JSON.parse(loan[0].timeline)
+        // timeline.push(timelineObject);
+        // console.log("Timeline object line 406:", timeline);
+        // // stringify the timeline array
+        // loan[0].timeline = JSON.stringify(timeline);
+
+        //  create a new object for the timeline
+
+        let newTimeline = await Timeline.create(timelineObject);
+
+        console.log(" NEW TIMELINE line 419 :", newTimeline);
+
         // Save
         await loan[0].save();
         // Send notification
@@ -476,6 +484,7 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan declined",
+          loanId: loan[0].id,
           // @ts-ignore
           message: `${loan[0].firstName} loan has just been declined.`,
           createdAt: DateTime.now(),
@@ -483,11 +492,25 @@ export default class LoansController {
         };
         console.log("Timeline object line 482:", timelineObject);
         //  Push the new object to the array
-        timeline = loan[0].timeline;
-        timeline.push(timelineObject);
-        console.log("Timeline object line 486:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+        // timeline = loan[0].timeline;
+        // timeline.push(timelineObject);
+        // console.log("Timeline object line 486:", timeline);
+        // // stringify the timeline array
+        // loan[0].timeline = JSON.stringify(timeline);
+
+        //  create a new object for the timeline
+
+        //  Push the new object to the array
+        // timeline.push(timelineObject);
+
+        // console.log("Timeline object line 1190:", timeline);
+
+        // // stringify the timeline array
+        // loan.timeline = JSON.stringify(timeline);
+
+        let newTimeline = await Timeline.create(timelineObject);
+
+        console.log(" NEW TIMELINE line 1383 :", newTimeline);
         // Save
         await loan[0].save();
         // send notification
@@ -567,18 +590,15 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan terminated",
+          loanId: loan[0].id,
           // @ts-ignore
-          message: `${loan[0].walletHolderDetails.firstName} loan has just been terminated.`,
+          message: `${loan[0].firstName} loan has just been terminated.`,
           createdAt: DateTime.now(),
           meta: `amount approved: ${loan[0].currencyCode} ${loan[0].amountApproved}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 529:", timelineObject);
-        //  Push the new object to the array
-        timeline = loan[0].timeline;
-        timeline.push(timelineObject);
-        console.log("Timeline object line 574:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+       let newTimeline = await Timeline.create(timelineObject);
+       console.log("new Timeline object line 601:", newTimeline);
         // Save
         await loan[0].save();
 
@@ -624,18 +644,15 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan termination declined",
+          loanId: loan[0].id,
           // @ts-ignore
           message: `${loan[0].walletHolderDetails.firstName} loan termination has just been declined.`,
           createdAt: DateTime.now(),
           meta: `amount requested: ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
-        console.log("Timeline object line 583:", timelineObject);
-        //  Push the new object to the array
-        timeline = loan[0].timeline;
-        timeline.push(timelineObject);
-        console.log("Timeline object line 587:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+        console.log("Timeline object line 653:", timelineObject);
+               let newTimeline = await Timeline.create(timelineObject);
+               console.log("new Timeline object line 655:", newTimeline);
         // Save
         await loan[0].save();
 
@@ -724,18 +741,15 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan payout approved",
+          loanId: loan[0].id,
           // @ts-ignore
-          message: `${loan[0].walletHolderDetails.firstName} loan has just been approved for payout.`,
+          message: `${loan[0].firstName} loan has just been approved for payout.`,
           createdAt: DateTime.now(),
           meta: `amount requested: ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
-        console.log("Timeline object line 676:", timelineObject);
-        //  Push the new object to the array
-        timeline = loan[0].timeline;
-        timeline.push(timelineObject);
-        console.log("Timeline object line 680:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+        console.log("Timeline object line 750:", timelineObject);
+              let newTimeline = await Timeline.create(timelineObject);
+              console.log("new Timeline object line 752:", newTimeline);
         // Save
         await loan[0].save();
 
@@ -781,18 +795,15 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan payout declined",
+          loanId:loan[0].id,
           // @ts-ignore
-          message: `${loan[0].walletHolderDetails.firstName} loan payout has just been declined.`,
+          message: `${loan[0].firstName} loan payout has just been declined.`,
           createdAt: DateTime.now(),
-          meta: `amount invested: ${loan[0].amount}, request type : ${loan[0].requestType}`,
+          meta: `amount requested: ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
-        console.log("Timeline object line 730:", timelineObject);
-        //  Push the new object to the array
-        timeline = loan[0].timeline;
-        timeline.push(timelineObject);
-        console.log("Timeline object line 734:", timeline);
-        // stringify the timeline array
-        loan[0].timeline = JSON.stringify(timeline);
+        console.log("Timeline object line 804:", timelineObject);
+           let newTimeline = await Timeline.create(timelineObject);
+           console.log("new Timeline object line 806:", newTimeline);
         // Save
         await loan[0].save();
 
@@ -977,18 +988,15 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan offer accepted",
+                  loanId: loan.id,
                   // @ts-ignore
                   message: `${loan.firstName} just accepted the offer made.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
-                console.log("Timeline object line 964:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 968:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
+                console.log("Timeline object line 997:", timelineObject);
+                     let newTimeline = await Timeline.create(timelineObject);
+                     console.log("new Timeline object line 999:", newTimeline);
 
                 // Save
                 await loan.save();
@@ -1019,21 +1027,16 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan disbursed",
+                  loanId: loan.id,
                   // @ts-ignore
                   message: `${loan.firstName} loan has just been disbursed.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
-                console.log("Timeline object line 999:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1003:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
+                console.log("Timeline object line 1036:", timelineObject);
+                      let newTimeline = await Timeline.create(timelineObject);
+                      console.log("new Timeline object line 1038:", newTimeline);
                 loan.isOfferAccepted = isOfferAccepted;
-
-
                 // Save
                 await loan.save();
                 console.log("Update Loan:", loan);
@@ -1050,18 +1053,15 @@ export default class LoansController {
               timelineObject = {
                 id: uuid(),
                 action: "loan offer rejected",
+                loanId: loan.id,
                 // @ts-ignore
                 message: `${loan.firstName} just rejected the offer made.`,
                 createdAt: DateTime.now(),
                 meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
               };
-              console.log("Timeline object line 1041:", timelineObject);
-              //  Push the new object to the array
-              timeline = loan.timeline;
-              timeline.push(timelineObject);
-              console.log("Timeline object line 1045:", timeline);
-              // stringify the timeline array
-              loan.timeline = JSON.stringify(timeline);
+              console.log("Timeline object line 1062:", timelineObject);
+                    let newTimeline = await Timeline.create(timelineObject);
+                    console.log("new Timeline object line 1064:", newTimeline);
               // update loan to reflect offer rejection
               loan.isOfferAccepted = isOfferAccepted;
               // Save
@@ -1162,18 +1162,15 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan updated",
+                  loanId: loan.id,
                   // @ts-ignore
                   message: `${loan.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
-                console.log("Timeline object line 1041:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1045:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
+                console.log("Timeline object line 1171:", timelineObject);
+                     let newTimeline = await Timeline.create(timelineObject);
+                     console.log("new Timeline object line 1173:", newTimeline);
                 // Save
                 await loan.save();
                 console.log("Update Loan:", loan);
@@ -1262,6 +1259,11 @@ export default class LoansController {
         "150",
         "180",
         "210",
+        "240",
+        "270",
+        "300",
+        "330",
+        "360"
       ]),
       tagName: schema.string({ escape: true }, [rules.maxLength(150)]),
       currencyCode: schema.string({ escape: true }, [rules.maxLength(5)]),
@@ -1357,6 +1359,7 @@ export default class LoansController {
       timelineObject = {
         id: uuid(),
         action: "loan initiated",
+        loanId: loan.id,
         // @ts-ignore
         message: `${loan.firstName} just initiated a loan of ${loan.currencyCode} ${loan.amountRequested}.`,
         createdAt: loan.createdAt,
@@ -1364,12 +1367,17 @@ export default class LoansController {
       };
       console.log("Timeline object line 1186:", timelineObject);
       //  Push the new object to the array
-      timeline.push(timelineObject);
+      // timeline.push(timelineObject);
 
-      console.log("Timeline object line 1190:", timeline);
+      // console.log("Timeline object line 1190:", timeline);
 
-      // stringify the timeline array
-      loan.timeline = JSON.stringify(timeline);
+      // // stringify the timeline array
+      // loan.timeline = JSON.stringify(timeline);
+
+      let newTimeline = await Timeline.create(timelineObject);
+
+      console.log(" NEW TIMELINE line 1383 :", newTimeline);
+
       await loan.save();
 
       // Send Approval Request to Admin
@@ -1470,19 +1478,15 @@ export default class LoansController {
         timelineObject = {
           id: uuid(),
           action: "loan offer made",
+          loanId: loan.id,
           // @ts-ignore
           message: `${loan.firstName} loan of ${loan.currencyCode} ${loan.amountApproved} has just been approved and offer made.`,
           createdAt: loan.createdAt,
           meta: `duration: ${loan.duration}`,
         };
-        console.log("Timeline object line 1537:", timelineObject);
-        //  Push the new object to the array
-        timeline.push(timelineObject);
-
-        console.log("Timeline object line 1541:", timeline);
-
-        // stringify the timeline array
-        loan.timeline = JSON.stringify(timeline);
+        console.log("Timeline object line 1487:", timelineObject);
+              let newTimeline = await Timeline.create(timelineObject);
+              console.log("new Timeline object line 1489:", newTimeline);
         await loan.save();
         let newLoanId = loan.id;
         // Send to Notificaation Service
@@ -1584,7 +1588,7 @@ export default class LoansController {
             if (loan && isDueForRepayment === false) {
               loan.amountApproved = amountRecommended; // amountApproved;
               amountApproved = loan.amountApproved;
-              console.log(" amountApproved line 1429: ", amountApproved);
+              console.log(" amountApproved line 1591: ", amountApproved);
               // Recalculate the interestRate and totalAmountToRepay
               loan.interestRate = rate;
               // When the loan has been approved and activated
@@ -1603,18 +1607,15 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan updated",
+                  loanId:loan.id,
                   // @ts-ignore
                   message: `${loan.firstName} loan has just been updated.`,
                   createdAt: DateTime.now(),
                   meta: `amount approved: ${loan.currencyCode} ${loan.amountApproved}, request type : ${loan.requestType}`,
                 };
-                console.log("Timeline object line 1453:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan.timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1457:", timeline);
-                // stringify the timeline array
-                loan.timeline = JSON.stringify(timeline);
+                console.log("Timeline object line 1616:", timelineObject);
+                    let newTimeline = await Timeline.create(timelineObject);
+                    console.log("new Timeline object line 1618:", newTimeline);
                 // Save
                 await loan.save();
                 console.log("Update Loan:", loan);
@@ -1915,22 +1916,16 @@ export default class LoansController {
               timelineObject = {
                 id: uuid(),
                 action: "loan payout initiated",
+                loanId:loan[0].id,
                 // @ts-ignore
                 message: `${loan[0].firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
-              console.log("Timeline object line 1429:", timelineObject);
-              //  Push the new object to the array
-              timeline = loan[0].timeline;
-              timeline.push(timelineObject);
-              console.log("Timeline object line 1433:", timeline);
-              // stringify the timeline array
-              loan[0].timeline = JSON.stringify(timeline);
-              // Save
+              console.log("Timeline object line 1925:", timelineObject);
+                    let newTimeline = await Timeline.create(timelineObject);
+                    console.log("new Timeline object line 1927:", newTimeline);  // Save
               await loan[0].save();
-              // stringify the timeline array
-              payout.timeline = JSON.stringify(timeline);
               // Save
               await payout.save();
             } else if (
@@ -1949,21 +1944,18 @@ export default class LoansController {
               timelineObject = {
                 id: uuid(),
                 action: "loan payout initiated",
+                loanId: loan[0].id,
                 // @ts-ignore
                 message: `${loan[0].firstName} loan has just been sent for payout processing.`,
                 createdAt: DateTime.now(),
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
-              console.log("Timeline object line 1463:", timelineObject);
-              //  Push the new object to the array
-              timeline = loan[0].timeline;
-              timeline.push(timelineObject);
-              console.log("Timeline object line 1467:", timeline);
-              // stringify the timeline array
-              loan[0].timeline = JSON.stringify(timeline);
+              console.log("Timeline object line 1953:", timelineObject);
+                     let newTimeline = await Timeline.create(timelineObject);
+                     console.log("new Timeline object line 1955:", newTimeline);
               await loan[0].save();
               // stringify the timeline array
-              payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
+              // payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
               // Save
               await payoutRequestIsExisting[0].save();
 
@@ -2040,22 +2032,19 @@ export default class LoansController {
               timelineObject = {
                 id: uuid(),
                 action: "loan payout approved",
+                loanId: loan[0].id,
                 // @ts-ignore
                 message: `${loan[0].firstName} loan has just been approved for payout.`,
                 createdAt: payout.createdAt,
                 meta: `amount to payout: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
-              console.log("Timeline object line 1562:", timelineObject);
-              //  Push the new object to the array
-              timeline = loan[0].timeline;
-              timeline.push(timelineObject);
-              console.log("Timeline object line 1566:", timeline);
-              // stringify the timeline array
-              loan[0].timeline = JSON.stringify(timeline);
+              console.log("Timeline object line 2041:", timelineObject);
+                     let newTimeline = await Timeline.create(timelineObject);
+                     console.log("new Timeline object line 2043:", newTimeline);
               // Save
               await loan[0].save();
               // stringify the timeline array
-              payout.timeline = JSON.stringify(timeline);
+              // payout.timeline = JSON.stringify(timeline);
               // Save
               await payout.save();
             } else if (
@@ -2073,21 +2062,18 @@ export default class LoansController {
               timelineObject = {
                 id: uuid(),
                 action: "loan payout approved",
+                loanId: loan[0].id,
                 // @ts-ignore
                 message: `${loan[0].firstName} loan has just been approved for payout.`,
                 createdAt: DateTime.now(),
                 meta: `amount to repay: ${loan[0].currencyCode} ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
               };
-              console.log("Timeline object line 1595:", timelineObject);
-              //  Push the new object to the array
-              timeline = loan[0].timeline;
-              timeline.push(timelineObject);
-              console.log("Timeline object line 1599:", timeline);
-              // stringify the timeline array
-              loan[0].timeline = JSON.stringify(timeline);
+              console.log("Timeline object line 2071:", timelineObject);
+                    let newTimeline = await Timeline.create(timelineObject);
+                    console.log("new Timeline object line 2073:", newTimeline);
               await loan[0].save();
               // stringify the timeline array
-              payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
+              // payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
               // Save
               await payoutRequestIsExisting[0].save();
 
@@ -2249,21 +2235,16 @@ export default class LoansController {
           timelineObject = {
             id: uuid(),
             action: "loan termination initiated",
+            loanId: loan[0].id,
             // @ts-ignore
             message: `${loan[0].firstName} loan has just been sent for termination processing.`,
             createdAt: DateTime.now(),
             meta: `amount to rrepay: ${loan[0].totalAmountToRepay}, request type : ${loan[0].requestType}`,
           };
-          console.log("Timeline object line 1509:", timelineObject);
-          //  Push the new object to the array
-          timeline = loan[0].timeline;
-          timeline.push(timelineObject);
-
-          console.log("Timeline object line 1514:", timeline);
-
-          // stringify the timeline array
-          loan[0].timeline = JSON.stringify(timeline);
-          await loan[0].save();
+          console.log("Timeline object line 2244:", timelineObject);
+                let newTimeline = await Timeline.create(timelineObject);
+                console.log("new Timeline object line 2246:", newTimeline);
+                 await loan[0].save();
 
           console.log("Terminated Payout loan data line 1521:", loan);
           return response.status(200).json({
@@ -2453,21 +2434,16 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan payment initiated",
+                  loanId:loan[0].id,
                   // @ts-ignore
                   message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payment processing.`,
                   createdAt: DateTime.now(),
                   meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                 };
-                console.log("Timeline object line 1696:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan[0].timeline;
-                timeline.push(timelineObject);
-
-                console.log("Timeline object line 1701:", timeline);
-
-                // stringify the timeline array
-                loan[0].timeline = JSON.stringify(timeline);
-                await loan[0].save();
+                console.log("Timeline object line 2443:", timelineObject);
+                      let newTimeline = await Timeline.create(timelineObject);
+                      console.log("new Timeline object line 2445:", newTimeline);
+                      await loan[0].save();
 
                 return response.send({
                   status: "OK",
@@ -2504,19 +2480,15 @@ export default class LoansController {
                 timelineObject = {
                   id: uuid(),
                   action: "loan termination initiated",
+                  loanId: loan[0].id,
                   // @ts-ignore
-                  message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for termination processing.`,
+                  message: `${loan[0].firstName} loan has just been sent for termination processing.`,
                   createdAt: DateTime.now(),
                   meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                 };
-                console.log("Timeline object line 1740:", timelineObject);
-                //  Push the new object to the array
-                timeline = loan[0].timeline;
-                timeline.push(timelineObject);
-                console.log("Timeline object line 1744:", timeline);
-                // stringify the timeline array
-                loan[0].timeline = JSON.stringify(timeline);
-                // Save
+                console.log("Timeline object line 2489:", timelineObject);
+                      let newTimeline = await Timeline.create(timelineObject);
+                      console.log("new Timeline object line 2491:", newTimeline); // Save
                 await loan[0].save();
 
                 // TODO
@@ -2673,19 +2645,20 @@ export default class LoansController {
                       timelineObject = {
                         id: uuid(),
                         action: "loan payment approval initiated",
+                        loanId:loan[0].id,
                         // @ts-ignore
                         message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payment processing approval.`,
                         createdAt: DateTime.now(),
                         meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                       };
-                      console.log("Timeline object line 2168:", timelineObject);
-                      //  Push the new object to the array
-                      timeline = loan[0].timeline;
-                      timeline.push(timelineObject);
-                      console.log("Timeline object line 2173:", timeline);
-                      // stringify the timeline array
-                      loan[0].timeline = JSON.stringify(timeline);
-                      // Save
+                      console.log("Timeline object line 2654:", timelineObject);
+                            let newTimeline = await Timeline.create(
+                              timelineObject
+                            );
+                            console.log(
+                              "new Timeline object line 2659:",
+                              newTimeline
+                            ); // Save
                       await loan[0].save();
 
                       return response.send({
@@ -2727,19 +2700,20 @@ export default class LoansController {
                       timelineObject = {
                         id: uuid(),
                         action: "loan payout initiated",
+                        loanId: loan[0].id,
                         // @ts-ignore
-                        message: `${loan[0].walletHolderDetails.firstName} loan has just been sent for payment processing.`,
+                        message: `${loan[0].firstName} loan has just been sent for payment processing.`,
                         createdAt: DateTime.now(),
                         meta: `amount to payout: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                       };
-                      console.log("Timeline object line 2217:", timelineObject);
-                      //  Push the new object to the array
-                      timeline = loan[0].timeline;
-                      timeline.push(timelineObject);
-                      console.log("Timeline object line 2221:", timeline);
-                      // stringify the timeline array
-                      loan[0].timeline = JSON.stringify(timeline);
-                      // Save
+                      console.log("Timeline object line 2709:", timelineObject);
+                            let newTimeline = await Timeline.create(
+                              timelineObject
+                            );
+                            console.log(
+                              "new Timeline object line 2714:",
+                              newTimeline
+                            ); // Save
                       await loan[0].save();
 
                       return response.send({
@@ -2818,8 +2792,9 @@ export default class LoansController {
                         timelineObject = {
                           id: uuid(),
                           action: "matured loan payout",
+                          loanId: loan[0].id,
                           // @ts-ignore
-                          message: `${loan[0].walletHolderDetails.firstName} payment on loan has just been sent.`,
+                          message: `${loan[0].firstName} payment on loan has just been sent.`,
                           createdAt: DateTime.now(),
                           meta: `amount invested: ${
                             loan[0].amount
@@ -2828,18 +2803,16 @@ export default class LoansController {
                           }, request type : ${loan[0].requestType}`,
                         };
                         console.log(
-                          "Timeline object line 2518:",
+                          "Timeline object line 2806:",
                           timelineObject
                         );
-                        //  Push the new object to the array
-                        newTimeline = JSON.parse(loan[0].timeline);
-                        // newTimeline = loan[0].timeline
-                        newTimeline.push(timelineObject);
-                        console.log("Timeline object line 2522:", newTimeline);
-                        // stringify the timeline array
-                        loan[0].timeline = JSON.stringify(newTimeline);
-                        // Save
-                        await loan[0].save();
+                             let newTimeline = await Timeline.create(
+                               timelineObject
+                             );
+                             console.log(
+                               "new Timeline object line 2813:",
+                               newTimeline
+                             );  await loan[0].save();
                         rolloverIsSuccessful = false;
                         break;
 
@@ -2885,20 +2858,20 @@ export default class LoansController {
                       timelineObject = {
                         id: uuid(),
                         action: "matured loan payout",
+                        loanId: loan[0].id,
                         // @ts-ignore
-                        message: `${loan[0].walletHolderDetails.firstName} payment on loan has just been sent.`,
+                        message: `${loan[0].firstName} payment on loan has just been sent.`,
                         createdAt: DateTime.now(),
                         meta: `amount reinvested: ${loan[0].amount},amount paid: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                       };
-                      console.log("Timeline object line 2554:", timelineObject);
-                      //  Push the new object to the array
-                      newTimeline = JSON.parse(loan[0].timeline);
-                      // newTimeline = loan[0].timeline
-                      newTimeline.push(timelineObject);
-                      console.log("Timeline object line 2558:", newTimeline);
-                      // stringify the timeline array
-                      loan[0].timeline = JSON.stringify(newTimeline);
-                      // Save
+                      console.log("Timeline object line 2867:", timelineObject);
+                          let newTimeline = await Timeline.create(
+                            timelineObject
+                          );
+                          console.log(
+                            "new Timeline object line 2872:",
+                            newTimeline
+                          );   // Save
                       await loan[0].save();
                       rolloverIsSuccessful = true;
                       break;
@@ -2958,23 +2931,23 @@ export default class LoansController {
                         timelineObject = {
                           id: uuid(),
                           action: "matured loan payout",
+                          loanId: loan[0].id,
                           // @ts-ignore
-                          message: `${loan[0].walletHolderDetails.firstName} payment on loan has just been sent.`,
+                          message: `${loan[0].firstName} payment on loan has just been sent.`,
                           createdAt: DateTime.now(),
                           meta: `amount paid back to wallet: ${amountToBeReinvested},interest: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
                         };
                         console.log(
-                          "Timeline object line 2618:",
+                          "Timeline object line 2941:",
                           timelineObject
                         );
-                        //  Push the new object to the array
-                        newTimeline = JSON.parse(loan[0].timeline);
-                        // newTimeline = loan[0].timeline
-                        newTimeline.push(timelineObject);
-                        console.log("Timeline object line 2622:", newTimeline);
-                        // stringify the timeline array
-                        loan[0].timeline = JSON.stringify(newTimeline);
-                        // Save
+                            let newTimeline = await Timeline.create(
+                              timelineObject
+                            );
+                            console.log(
+                              "new Timeline object line 2948:",
+                              newTimeline
+                            );   // Save
                         await loan[0].save();
                         rolloverIsSuccessful = false;
                         break;
@@ -3024,24 +2997,22 @@ export default class LoansController {
                       timelineObject = {
                         id: uuid(),
                         action: "matured loan payout",
+                        loanId: loan[0].id,
                         // @ts-ignore
-                        message: `${loan[0].walletHolderDetails.firstName} payment for matured loan has just been sent.`,
+                        message: `${loan[0].firstName} payment for matured loan has just been sent.`,
                         createdAt: DateTime.now(),
                         meta: `amount paid: ${loan[0].totalAmountToPayout},amount reinvested: ${amountToBeReinvested}, request type : ${loan[0].requestType}`,
                       };
-                      console.log("Timeline object line 2686:", timelineObject);
+                      console.log("Timeline object line 3006:", timelineObject);
                       //  Push the new object to the array
-                      console.log(
-                        "Timeline object line 2688:",
-                        loan[0].timeline
-                      );
-                      newTimeline = JSON.parse(loan[0].timeline);
-                      console.log("Timeline object line 2690:", newTimeline);
-                      newTimeline.push(timelineObject);
-                      console.log("Timeline object line 2692:", newTimeline);
-                      // stringify the timeline array
-                      loan[0].timeline = JSON.stringify(newTimeline);
-                      // Save
+
+                           newTimeline = await Timeline.create(
+                             timelineObject
+                           );
+                           console.log(
+                             "new Timeline object line 3013:",
+                             newTimeline
+                           );  // Save
                       await loan[0].save();
                       rolloverIsSuccessful = true;
                       break;
@@ -3239,19 +3210,15 @@ export default class LoansController {
             timelineObject = {
               id: uuid(),
               action: "terminated loan payout",
+              loanId: loan[0].id,
               // @ts-ignore
-              message: `${loan[0].walletHolderDetails.firstName} payment on loan has just been sent.`,
+              message: `${loan[0].firstName} payment on loan has just been sent.`,
               createdAt: DateTime.now(),
               meta: `amount invested: ${loan[0].totalAmountToPayout}, request type : ${loan[0].requestType}`,
             };
-            console.log("Timeline object line 2850:", timelineObject);
-            //  Push the new object to the array
-            timeline = loan[0].timeline;
-            timeline.push(timelineObject);
-            console.log("Timeline object line 2854:", timeline);
-            // stringify the timeline array
-            loan[0].timeline = JSON.stringify(timeline);
-            // Save
+            console.log("Timeline object line 3219:", timelineObject);
+                  let newTimeline = await Timeline.create(timelineObject);
+                  console.log("new Timeline object line 3221:", newTimeline); // Save
             await loan[0].save();
             return response.status(200).json({
               status: "OK",
@@ -3455,19 +3422,15 @@ export default class LoansController {
       timelineObject = {
         id: uuid(),
         action: "loan payout has been done ",
+        loanId: loan.id,
         // @ts-ignore
-        message: `${loan.walletHolderDetails.firstName} payment on loan has just been made.`,
+        message: `${loan.firstName} payment on loan has just been made.`,
         createdAt: DateTime.now(),
-        meta: `amount paid: ${loan.totalAmountToPayout}, request type : ${loan.requestType}`,
+        meta: `amount paid: ${loan.totalAmountToRepay}, request type : ${loan.requestType}`,
       };
-      console.log("Timeline object line 3065:", timelineObject);
-      //  Push the new object to the array
-      timeline = loan.timeline;
-      timeline.push(timelineObject);
-      // stringify the timeline array
-      loan.timeline = JSON.stringify(timeline);
-      console.log("Timeline object line 3069:", timeline);
-      // Save
+      console.log("Timeline object line 3430:", timelineObject);
+           let newTimeline = await Timeline.create(timelineObject);
+           console.log("new Timeline object line 3432:", newTimeline);  // Save
       await loan.save();
 
       console.log("data:", loan.$original);
