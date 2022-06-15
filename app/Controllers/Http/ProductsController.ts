@@ -19,7 +19,10 @@ export default class ProductsController {
     // const countSuspended = await Product.query().where('status', 'suspended').getCount()
     // console.log('Terminated Investment count: ', countSuspended)
     // const product = await Product.query().offset(0).limit(1)
-    let products = await Product.query().preload("loanTenures");
+    let products = await Product.query()
+      .preload("loanTenures")
+
+    console.log("products Result, line 23: ", products);
     let tenuresResult;
     //   try {
     //            tenuresResult = foo(product);
@@ -183,10 +186,18 @@ export default class ProductsController {
       });
     }
     // return product(s)
-    let rateData = await sortedProducts;
+    let productData = await sortedProducts;
+    //  { ...product.$original, loanTenures: productTenure };
     return response.status(200).json({
       status: "OK",
-      data: rateData.map((product) => product.$original),
+      data: productData.map((product) => {
+          console.log("Preloaded Tenures :",product.$preloaded.loanTenures[0].tenure);
+         let singleProduct = {
+           product: product.$original,
+           tenure: product.$preloaded.loanTenures,
+         };
+return singleProduct;
+        }),
     });
   }
 
