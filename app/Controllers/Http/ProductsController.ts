@@ -1,5 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Rate from "App/Models/Rate";
+import Product from "App/Models/Product";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import LoanTenure from "App/Models/LoanTenure";
@@ -9,62 +9,60 @@ const axios = require("axios").default;
 // const LocalDate = JSJoda.LocalDate
 // const Moment = require('moment')
 const API_URL = Env.get("API_URL");
-
-export default class RatesController {
+export default class ProductsController {
   public async index({ params, request, response }: HttpContextContract) {
-    console.log("Rate params: ", params);
+    console.log("Product params: ", params);
     const { duration, limit, amount, status, productName, interestRate } =
       request.qs();
-    console.log("Rate query line 19: ", request.qs());
+    console.log("Product query line 19: ", request.qs());
 
-    // const countSuspended = await Rate.query().where('status', 'suspended').getCount()
+    // const countSuspended = await Product.query().where('status', 'suspended').getCount()
     // console.log('Terminated Investment count: ', countSuspended)
-    // const rate = await Rate.query().offset(0).limit(1)
-    let products = await Rate.query().preload("loanTenures");
+    // const product = await Product.query().offset(0).limit(1)
+    let products = await Product.query().preload("loanTenures");
     let tenuresResult;
     //   try {
-    //            tenuresResult = foo(rate);
+    //            tenuresResult = foo(product);
     // console.log("Tenures Result: ", tenuresResult);
     //   } catch (error) {
     //     console.log(error)
     //   }
-    // async function getTenures(rate) {
-    //   var data = await rate.map(async (rate) => {
+    // async function getTenures(product) {
+    //   var data = await product.map(async (product) => {
     //     //@ts-ignore
-    //     let id = rate.id;
-    //     let singleRate = await Rate.query()
+    //     let id = product.id;
+    //     let singleProduct = await Product.query()
     //       .where({ id: id })
     //       .preload("loanTenures")
     //       .first();
-    //     //  console.log(" Rate singleRate : ", singleRate);
+    //     //  console.log(" Product singleProduct : ", singleProduct);
     //     //@ts-ignore
-    //     const rateTenure = await singleRate.$preloaded.loanTenures.map(
+    //     const rateTenure = await singleProduct.$preloaded.loanTenures.map(
     //       (tenure) => tenure.$original.tenure
     //     );
-    //     console.log(" Rate Tenures : ", rateTenure);
-    //     // return rate(s)
-    //     let rateData1 = { ...rate.$original, loanTenures: rateTenure };
-    //     console.log(" Rate Tenures with data : ", rateData1);
+    //     console.log(" Product Tenures : ", rateTenure);
+    //     // return product(s)
+    //     let rateData1 = { ...product.$original, loanTenures: rateTenure };
+    //     console.log(" Product Tenures with data : ", rateData1);
     //     return rateData1;
-    //     //  return singleRate;
+    //     //  return singleProduct;
     //   });
-    //   console.log(" Preload Rate with Tenures : ", data);
+    //   console.log(" Preload Product with Tenures : ", data);
     //   // code here only executes _after_ the request is done
     //   return data; // 'data' is defined
     // }
 
-
     // function successCallback(result) {
-    //   console.log("Rate ready at URL: " + result);
+    //   console.log("Product ready at URL: " + result);
     //   return result;
     // }
 
     // function failureCallback(error) {
-    //   console.error("Error getting rate: " + error);
+    //   console.error("Error getting product: " + error);
     // }
-    // async function foo(rate) {
+    // async function foo(product) {
     //   try {
-    //     const result = await getTenures(rate).then(successCallback(response));
+    //     const result = await getTenures(product).then(successCallback(response));
     //     // const newResult = await doSomethingElse(result);
     //     // const finalResult = await doThirdThing(newResult);
     //     console.log(`Got the final result: await ${result}`);
@@ -73,7 +71,7 @@ export default class RatesController {
     //     failureCallback(error);
     //   }
     // }
-    // const address = await foo(rate)
+    // const address = await foo(product)
     //   // axios.get(`${API_URL}/loans/wallets`)
     //   .then((response) => {
     //     console.log("Response ========================== :", response);
@@ -90,34 +88,34 @@ export default class RatesController {
     // };
 
     // let itIsWorking = await printAddress();
-    // console.log("Rate ready at itIsWorking: " + (await itIsWorking));
+    // console.log("Product ready at itIsWorking: " + (await itIsWorking));
 
-    // const repaymentDueDate =  (rate) => {
+    // const repaymentDueDate =  (product) => {
     //   return new Promise( (resolve, reject) => {
-    //     if (!rate) {
+    //     if (!product) {
     //       reject(new Error("Incomplete parameters or out of range"));
     //     }
     //     // let payoutDueDate;
-    //     var data =  rate.map( async (singleRate) => {
+    //     var data =  product.map( async (singleProduct) => {
     //       //@ts-ignore
-    //       let id = singleRate.id;
-    //       let singleRateTenure = await Rate.query()
+    //       let id = singleProduct.id;
+    //       let singleProductTenure = await Product.query()
     //         .where({ id: id })
     //         .preload("loanTenures")
     //         .first();
-    //       //  console.log(" Rate singleRate : ", singleRate);
+    //       //  console.log(" Product singleProduct : ", singleProduct);
     //       //@ts-ignore
-    //       const rateTenure =  singleRateTenure!.$preloaded.loanTenures.map(
+    //       const rateTenure =  singleProductTenure!.$preloaded.loanTenures.map(
     //         (tenure) => tenure.$original.tenure
     //       );
-    //       console.log(" Rate Tenures : ", rateTenure);
-    //       // return rate(s)
-    //       let rateData1 =  { ...singleRateTenure!.$original, loanTenures: rateTenure };
-    //       console.log(" Rate Tenures with data : ", rateData1);
+    //       console.log(" Product Tenures : ", rateTenure);
+    //       // return product(s)
+    //       let rateData1 =  { ...singleProductTenure!.$original, loanTenures: rateTenure };
+    //       console.log(" Product Tenures with data : ", rateData1);
     //       return rateData1;
-    //       //  return singleRate;
+    //       //  return singleProduct;
     //     });
-    //     console.log(" Preload Rate with Tenures line 119 : ", data);
+    //     console.log(" Preload Product with Tenures line 119 : ", data);
     //     // code here only executes _after_ the request is done
     //     // return data;
     //     return resolve(data);
@@ -125,26 +123,24 @@ export default class RatesController {
     // };
 
     // console.log(
-    //   " Rate repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: ",
-    //   await repaymentDueDate(rate)
+    //   " Product repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: ",
+    //   await repaymentDueDate(product)
     // );
 
+    //    " Product repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: "
+    //    await repaymentDueDate(product).finally(() => {})
 
-    //    " Rate repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: "
-    //    await repaymentDueDate(rate).finally(() => {})
-
-
-    let sortedRates =  products;
+    let sortedProducts = products;
     if (amount) {
       // @ts-ignore
-      sortedRates = await Rate.query()
+      sortedProducts = await Product.query()
         .where("lowest_amount", "<=", amount)
         .andWhere("highest_amount", ">=", amount);
     }
 
     if (duration) {
-      sortedRates = await sortedRates.filter((rate) => {
-        console.log(" Rate Duration:", rate);
+      sortedProducts = await sortedProducts.filter((product) => {
+        console.log(" Product Duration:", product);
         console.log(" Query Duration:", duration);
         const fruits = ["🍎", "🍋", "🍊", "🍇", "🍍", "🍐"];
 
@@ -152,86 +148,86 @@ export default class RatesController {
         fruits.includes("🍉"); // false
 
         // @ts-ignore
-        // return rate.loanTenures.find(duration);
+        // return product.loanTenures.find(duration);
       });
     }
     if (productName) {
-      sortedRates = sortedRates.filter((rate) => {
+      sortedProducts = sortedProducts.filter((product) => {
         // @ts-ignore
-        return rate.productName!.includes(productName);
+        return product.productName!.includes(productName);
       });
     }
     if (status) {
-      sortedRates = sortedRates.filter((rate) => {
+      sortedProducts = sortedProducts.filter((product) => {
         // @ts-ignore
-        return rate.status === `${status}`;
+        return product.status === `${status}`;
       });
     }
 
     if (interestRate) {
-      sortedRates = sortedRates.filter((rate) => {
+      sortedProducts = sortedProducts.filter((product) => {
         // @ts-ignore
-        return rate.interestRate === parseInt(interestRate);
+        return product.interestRate === parseInt(interestRate);
       });
     }
     if (limit) {
-      sortedRates = sortedRates.slice(0, Number(limit));
+      sortedProducts = sortedProducts.slice(0, Number(limit));
     }
-    console.log("sortedRates line 79: ", await sortedRates);
+    console.log("sortedProducts line 79: ", await sortedProducts);
 
-    if (sortedRates.length < 1) {
+    if (sortedProducts.length < 1) {
       return response.status(200).json({
         status: "OK",
-        message: "no loan rate matched your search",
+        message: "no loan product matched your search",
         data: [],
       });
     }
-    // return rate(s)
-    let rateData = await sortedRates;
+    // return product(s)
+    let rateData = await sortedProducts;
     return response.status(200).json({
       status: "OK",
-      data: rateData.map((rate) => rate.$original),
+      data: rateData.map((product) => product.$original),
     });
   }
 
   public async show({ request, params, response }: HttpContextContract) {
     console.log("Params :", request.qs());
-    const rate = await Rate.query()
+    const product = await Product.query()
       .where({ id: params.id })
       .preload("loanTenures")
       .first();
 
-    if (!rate) {
+    if (!product) {
       return response.status(200).json({
         status: "OK",
-        message: "no loan rate matched your search",
+        message: "no loan product matched your search",
         data: [],
       });
     }
 
-    // const rateTenure = await rate.load("loanTenures");
-    // console.log(" Rate tenures: ", rateTenure);
+    // const productTenure = await product.load("loanTenures");
+    // console.log(" Product tenures: ", productTenure);
     console.log(
-      " Rate ================= : ",
-      await rate.$preloaded.loanTenures[0]
+      " Product ================= : ",
+      await product.$preloaded.loanTenures[0]
     );
     //@ts-ignore
-    const rateTenure = await rate.$preloaded.loanTenures.map(
+    const productTenure = await product.$preloaded.loanTenures.map(
       (tenure) => tenure.$original.tenure
     );
-    console.log(" Rate Tenures : ", rateTenure);
-    // return rate(s)
-    let rateData = { ...rate.$original, loanTenures: rateTenure };
+    console.log(" Product Tenures : ", productTenure);
+    // return product(s)
+    let productData = { ...product.$original, loanTenures: productTenure };
     return response.status(200).json({
       status: "OK",
-      data: rateData,
+      data: productData,
     });
   }
 
   public async store({ request, response }: HttpContextContract) {
     // const user = await auth.authenticate()
     try {
-      const rateSchema = schema.create({
+      const productSchema = schema.create({
         productName: schema.string({ escape: true }, [rules.maxLength(20)]),
         lowestAmount: schema.number(),
         highestAmount: schema.number(),
@@ -244,10 +240,10 @@ export default class RatesController {
         lat: schema.number.optional(),
         status: schema.string({ escape: true }, [rules.maxLength(20)]),
       });
-      const payload: any = await request.validate({ schema: rateSchema });
+      const payload: any = await request.validate({ schema: productSchema });
       const tenures = payload.duration;
       // let duration = payload.duration;
-      // console.log("The new rate duration:", duration);
+      // console.log("The new product duration:", duration);
       // payload.duration = JSON.stringify(duration);
       let {
         productName,
@@ -274,27 +270,27 @@ export default class RatesController {
         lat,
         status,
       };
-      const rate = await Rate.create(payload2);
-      await rate.save();
+      const product = await Product.create(payload2);
+      await product.save();
 
-      console.log("The new loan rate:", rate);
+      console.log("The new loan product:", product);
 
-      console.log("A New Rate has been Created.");
+      console.log("A New Product has been Created.");
 
       tenures.forEach(async (tenure) => {
-        let duration = await LoanTenure.create({ tenure, rateId: rate.id });
+        let duration = await LoanTenure.create({ tenure, productId: product.id });
 
         console.log("The new duration is: ", duration);
       });
-      // Save Rate new status to Database
-      await rate.save();
-      // Send Rate Creation Message to Queue
+      // Save Product new status to Database
+      await product.save();
+      // Send Product Creation Message to Queue
 
       // @ts-ignore
-      Event.emit("new:rate", { id: rate.id, extras: rate.additionalDetails });
+      Event.emit("new:product", { id: product.id, extras: product.additionalDetails });
       return response.status(200).json({
         status: "OK",
-        data: rate.$original,
+        data: product.$original,
       });
     } catch (error) {
       console.log(error);
@@ -308,9 +304,9 @@ export default class RatesController {
 
   public async update({ request, response }: HttpContextContract) {
     try {
-      const { productName, rateId } = request.qs();
-      console.log("Rate query: ", request.qs());
-      const rateSchema = schema.create({
+      const { productName, productId } = request.qs();
+      console.log("Product query: ", request.qs());
+      const productSchema = schema.create({
         productName: schema.string.optional({ escape: true }, [
           rules.maxLength(20),
         ]),
@@ -329,71 +325,71 @@ export default class RatesController {
         lat: schema.number.optional(),
         status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
       });
-      const payload: any = await request.validate({ schema: rateSchema });
-      console.log("Rate update payload: ", payload);
-      // let rate = await Rate.query().where({
+      const payload: any = await request.validate({ schema: productSchema });
+      console.log("Product update payload: ", payload);
+      // let product = await Product.query().where({
       //   product_name: request.input('productName'),
-      //   id: request.input('rateId'),
+      //   id: request.input('productId'),
       // })
-      let rate = await Rate.query()
+      let product = await Product.query()
         .where({
           product_name: productName,
-          id: rateId,
+          id: productId,
         })
         .first();
-      console.log(" QUERY RESULT: ", rate);
-      if (!rate)
+      console.log(" QUERY RESULT: ", product);
+      if (!product)
         return response.json({
           status: "FAILED",
           message: "No data match your query parameters",
         });
-      if (rate) {
-        console.log("Loan rate Selected for Update:", rate);
-        if (rate) {
-          rate.productName = request.input("newProductName")
+      if (product) {
+        console.log("Loan product Selected for Update:", product);
+        if (product) {
+          product.productName = request.input("newProductName")
             ? request.input("newProductName")
-            : rate.productName;
-          rate.lowestAmount = request.input("lowestAmount")
+            : product.productName;
+          product.lowestAmount = request.input("lowestAmount")
             ? request.input("lowestAmount")
-            : rate.lowestAmount;
-          rate.highestAmount = request.input("highestAmount")
+            : product.lowestAmount;
+          product.highestAmount = request.input("highestAmount")
             ? request.input("highestAmount")
-            : rate.highestAmount;
-          rate.duration = request.input("duration")
-            ? request.input("duration")
-            : rate.duration;
-          rate.interestRate = request.input("interestRate")
+            : product.highestAmount;
+        //   product.duration = request.input("duration")
+        //     ? request.input("duration")
+        //     : product.duration;
+          product.interestRate = request.input("interestRate")
             ? request.input("interestRate")
-            : rate.interestRate;
-          rate.tagName = request.input("tagName")
+            : product.interestRate;
+          product.tagName = request.input("tagName")
             ? request.input("tagName")
-            : rate.tagName;
-          rate.additionalDetails = request.input("additionalDetails")
+            : product.tagName;
+          product.additionalDetails = request.input("additionalDetails")
             ? request.input("additionalDetails")
-            : rate.additionalDetails;
-          rate.long = request.input("long") ? request.input("long") : rate.long;
-          rate.lat = request.input("lat") ? request.input("lat") : rate.lat;
-          rate.status = request.input("status")
+            : product.additionalDetails;
+          product.long = request.input("long") ? request.input("long") : product.long;
+          product.lat = request.input("lat") ? request.input("lat") : product.lat;
+          product.status = request.input("status")
             ? request.input("status")
-            : rate.status;
+            : product.status;
 
-          if (rate) {
+          if (product) {
             //  do the following to be able to save the array in the database
-            let duration;
-            duration = JSON.stringify(rate.duration);
-            console.log("The new rate duration:", duration);
-            rate.duration = duration;
+            // let duration;
+            // duration = JSON.stringify(product.duration);
+            // console.log("The new product duration:", duration);
+            // product.duration = duration;
             // send to user
-            await rate.save();
-            console.log("Updated Loan rate:", rate);
+            await product.save();
+            console.log("Updated Loan product:", product);
             return response.status(200).json({
               status: "OK",
-              data: rate.$original,
+              data: product.$original,
             });
           }
           return; // 422
         } else {
-          return response.status(304).json({ status: "FAILED", data: rate });
+          return response.status(304).json({ status: "FAILED", data: product });
         }
       } else {
         return response.status(404).json({
@@ -413,28 +409,28 @@ export default class RatesController {
   }
 
   public async destroy({ request, response }: HttpContextContract) {
-    // let id = request.input('rateId')
-    const { productName, rateId } = request.qs();
-    console.log("Rate query: ", request.qs());
-    // let rate = await Rate.query().where({
+    // let id = request.input('productId')
+    const { productName, productId } = request.qs();
+    console.log("Product query: ", request.qs());
+    // let product = await Product.query().where({
     //   product_name: request.input('productName'),
-    //   id: request.input('rateId'),
+    //   id: request.input('productId'),
     // })
-    let rate = await Rate.query().where({
+    let product = await Product.query().where({
       product_name: productName,
-      id: rateId,
+      id: productId,
     });
-    console.log(" QUERY RESULT: ", rate);
+    console.log(" QUERY RESULT: ", product);
 
-    if (rate.length > 0) {
-      rate = await Rate.query()
+    if (product.length > 0) {
+      product = await Product.query()
         .where({
           product_name: productName,
-          id: rateId,
+          id: productId,
         })
         .delete();
-      console.log("Deleted data:", rate);
-      return response.send("Rate Delete.");
+      console.log("Deleted data:", product);
+      return response.send("Product Delete.");
     } else {
       return response
         .status(404)

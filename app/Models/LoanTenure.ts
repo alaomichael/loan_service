@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
-import Rate from './Rate';
+import Product from './Product';
 import { v4 as uuid } from "uuid";
 
 export default class LoanTenure extends BaseModel {
@@ -8,7 +8,7 @@ export default class LoanTenure extends BaseModel {
   public id: string;
 
   @column({})
-  public rateId: string;
+  public productId: string;
 
   @column({})
   public tenure: string;
@@ -19,8 +19,8 @@ export default class LoanTenure extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
 
-  @belongsTo(() => Rate, { localKey: "rateId" })
-  public rate: BelongsTo<typeof Rate>;
+  @belongsTo(() => Product, { localKey: "productId" })
+  public product: BelongsTo<typeof Product>;
 
   @beforeCreate()
   public static assignUuid(loantenure: LoanTenure) {

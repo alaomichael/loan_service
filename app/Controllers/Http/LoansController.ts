@@ -18,7 +18,7 @@ import {
   repaymentDueDate,
   approvalRequest,
   sendPaymentDetails,
-  investmentRate,
+  loanRate,
   // @ts-ignore
 } from "App/Helpers/utils";
 
@@ -1237,7 +1237,7 @@ export default class LoansController {
 
   public async store({ request, response }: HttpContextContract) {
     // const user = await auth.authenticate()
-    const investmentSchema = schema.create({
+    const loanSchema = schema.create({
       walletId: schema.string(),
       amountRequested: schema.number(),
       duration: schema.enum(["7", "14", "21", "30", "45", "60", "90"]),
@@ -1257,7 +1257,7 @@ export default class LoansController {
       long: schema.number(),
       lat: schema.number(),
     });
-    const payload: any = await request.validate({ schema: investmentSchema });
+    const payload: any = await request.validate({ schema: loanSchema });
     console.log("Payload line 1010  :", payload);
     // check BVN status
     let bvnIsVerified = await Wallet.query()
@@ -1293,9 +1293,9 @@ export default class LoansController {
 
     // console.log(
     //   " The Rate return for RATE line 1227: ",
-    //   await investmentRate(payloadAmount, payloadDuration)
+    //   await loanRate(payloadAmount, payloadDuration)
     // );
-    // let rate = await investmentRate(payloadAmount, payloadDuration);
+    // let rate = await loanRate(payloadAmount, payloadDuration);
     // console.log(" Rate return line 1238 : ", rate);
     // if (rate === undefined || rate.length < 1) {
     //   return response.status(400).json({
@@ -1370,9 +1370,9 @@ export default class LoansController {
     if (approvalIsAutomated === false || approvalIsAutomated.toString() === "0") {
       console.log(
         " The Rate return for RATE line 1227: ",
-        await investmentRate(payloadAmount, payloadDuration)
+        await loanRate(payloadAmount, payloadDuration)
       );
-      let rate = await investmentRate(payloadAmount, payloadDuration);
+      let rate = await loanRate(payloadAmount, payloadDuration);
       console.log(" Rate return line 1238 : ", rate);
       if (rate === undefined || rate.length < 1) {
         return response.status(400).json({
@@ -1486,9 +1486,9 @@ export default class LoansController {
       // }
       console.log(
         " The Rate return for RATE line 1227: ",
-        await investmentRate(payloadAmount, payloadDuration)
+        await loanRate(payloadAmount, payloadDuration)
       );
-      let rate = await investmentRate(payloadAmount, payloadDuration);
+      let rate = await loanRate(payloadAmount, payloadDuration);
       console.log(" Rate return line 1238 : ", rate);
       if (rate === undefined || rate.length < 1) {
         return response.status(400).json({
@@ -1630,9 +1630,9 @@ export default class LoansController {
         // }
         console.log(
           " The Rate return for RATE line 1403: ",
-          await investmentRate(payloadAmount, payloadDuration)
+          await loanRate(payloadAmount, payloadDuration)
         );
-        let rate = await investmentRate(payloadAmount, payloadDuration);
+        let rate = await loanRate(payloadAmount, payloadDuration);
         console.log(" Rate return line 1407 : ", rate);
         if (rate === undefined || rate.length < 1) {
           return response.status(400).json({
@@ -2868,13 +2868,13 @@ export default class LoansController {
 
                       console.log(
                         " The Rate return for RATE line 2491: ",
-                        await investmentRate(
+                        await loanRate(
                           amountToBeReinvested,
                           payloadDuration,
                           payloadInvestmentType
                         )
                       );
-                      rate = await investmentRate(
+                      rate = await loanRate(
                         amountToBeReinvested,
                         payloadDuration,
                         payloadInvestmentType
@@ -3008,13 +3008,13 @@ export default class LoansController {
 
                       console.log(
                         " The Rate return for RATE line 2591: ",
-                        await investmentRate(
+                        await loanRate(
                           amountToBeReinvested,
                           payloadDuration,
                           payloadInvestmentType
                         )
                       );
-                      rate = await investmentRate(
+                      rate = await loanRate(
                         amountToBeReinvested,
                         payloadDuration,
                         payloadInvestmentType

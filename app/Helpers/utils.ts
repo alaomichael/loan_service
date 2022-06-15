@@ -327,7 +327,7 @@ const sendPaymentDetails = async function (amount, duration, investmentType) {
 //   ' The Rate return for RATE utils.ts line 299: ',
 //   sendPaymentDetails(12000, 180, 'fixed')
 // )
-const investmentRate = async function (
+const loanRate = async function (
   payloadAmount,
   payloadDuration
 ) {
@@ -487,7 +487,7 @@ module.exports = {
   approvalRequest,
   loanDuration,
   sendPaymentDetails,
-  investmentRate,
+  loanRate,
   getPrintServerBaseUrl,
   createNewInvestment,
 };
@@ -500,6 +500,6 @@ export {
   approvalRequest,
   loanDuration,
   sendPaymentDetails,
-  investmentRate,
+  loanRate,
   createNewInvestment,
 };

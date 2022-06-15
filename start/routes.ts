@@ -35,7 +35,7 @@ Route.group(() => {
     Route.post("wallets", "WalletsController.store");
     Route.post("loans", "LoansController.store");
     Route.post("admin/loans/settings", "SettingsController.store");
-    Route.post("admin/loans/rates", "RatesController.store");
+    Route.post("admin/loans/products", "ProductsController.store");
      Route.post(
        "admin/loans/recommendations",
        "LoanabilitystatusesController.store"
@@ -52,14 +52,14 @@ Route.group(() => {
     // GET ROUTES
     Route.get("wallets", "WalletsController.index");
     Route.get("wallets/:walletId", "WalletsController.showByWalletId");
-    // Route.get("loans/rates", "LoansController.getLoanRate");;
+    // Route.get("loans/products", "LoansController.getLoanRate");;
     Route.get("loans", "LoansController.index");
     Route.get("admin/loans", "LoansController.index");
     Route.get("admin/loans/settings", "SettingsController.index");
-    Route.get("loans/rates", "RatesController.index");
-     Route.get("loans/rates/:id", "RatesController.show");
-    Route.get("admin/loans/rates", "RatesController.index");
-    Route.get("admin/loans/rates/:id", "RatesController.show");
+    Route.get("loans/products", "ProductsController.index");
+     Route.get("loans/products/:id", "ProductsController.show");
+    Route.get("admin/loans/products", "ProductsController.index");
+    Route.get("admin/loans/products/:id", "ProductsController.show");
     Route.get("admin/loans/approvals", "ApprovalsController.index");
     Route.get(
       "admin/loans/recommendations",
@@ -96,7 +96,7 @@ Route.group(() => {
     Route.put("admin/loans/settings", "SettingsController.update");
     Route.put("loans", "LoansController.update");
     Route.put("admin/loans", "LoansController.update");
-    Route.put("admin/loans/rates", "RatesController.update");
+    Route.put("admin/loans/products", "ProductsController.update");
     Route.put("admin/loans/approvals", "ApprovalsController.update");
     Route.put("admin/loans/offers", "LoansController.updateOffer");
 
@@ -110,7 +110,7 @@ Route.group(() => {
     // DELETE ROUTES
     Route.delete("wallets", "WalletsController.destroy");
     Route.delete("admin/loans/settings", "SettingsController.destroy");
-    Route.delete("admin/loans/rates", "RatesController.destroy");
+    Route.delete("admin/loans/products", "ProductsController.destroy");
     Route.delete("admin/loans/approvals", "ApprovalsController.destroy");
     Route.delete("admin/loans/:walletId", "LoansController.destroy");
     Route.delete("loans/:walletId", "LoansController.destroy");
