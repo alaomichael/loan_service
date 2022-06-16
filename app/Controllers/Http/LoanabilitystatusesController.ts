@@ -45,7 +45,9 @@ export default class LoanabilitystatusesController {
       status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
       timeline: schema.string.optional({ escape: true }),
     });
-    const payload: any = await request.validate({ schema: recommendationSchema });
+    const payload: any = await request.validate({
+      schema: recommendationSchema,
+    });
     console.log("Payload line 1010  :", payload);
     // check BVN status
     // let bvnIsVerified = await Wallet.query()
@@ -76,7 +78,9 @@ export default class LoanabilitystatusesController {
     Event.emit("new:recommendation", {
       id: newLoanrecommendationId,
     });
-    return response.status(201).json({ status: "OK", data: recommendation.$original });
+    return response
+      .status(201)
+      .json({ status: "OK", data: recommendation.$original });
   }
 
   public async index({ params, request, response }: HttpContextContract) {
@@ -84,6 +88,7 @@ export default class LoanabilitystatusesController {
     const {
       currencyCode,
       balance,
+      amountRecommended,
       //   bvn,
       //   isBvnVerified,
       //   walletDetails,
@@ -104,8 +109,14 @@ export default class LoanabilitystatusesController {
     if (balance) {
       // @ts-ignore
       sortedRecommendations = await Loanabilitystatus.query()
-        .where("recommendation", "<=", balance)
-        .andWhere("recommendation", ">=", balance);
+        .where("balance", "<=", balance)
+        .andWhere("balance", ">=", balance);
+    }
+    if (amountRecommended) {
+      // @ts-ignore
+      sortedRecommendations = await Loanabilitystatus.query()
+        .where("recommendation", "<=", amountRecommended)
+        .andWhere("recommendation", ">=", amountRecommended);
     }
 
     if (currencyCode) {
@@ -183,7 +194,8 @@ export default class LoanabilitystatusesController {
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
-      if (!recommendation) return response.status(404).json({ status: "FAILED" });
+      if (!recommendation)
+        return response.status(404).json({ status: "FAILED" });
       return response
         .status(200)
         .json({ status: "OK", data: recommendation.$original });
@@ -192,98 +204,99 @@ export default class LoanabilitystatusesController {
     }
   }
 
-
   public async update({ request, response }: HttpContextContract) {
     try {
-        const walletSchema = schema.create({
-           currencyCode: schema.string.optional({ escape: true }, [
-            rules.maxLength(5),
-          ]),
-          balance: schema.number.optional(),
-          bvn: schema.string.optional({ escape: true }, [
-            rules.minLength(11),
-            rules.maxLength(11),
-          ]),
-          isBvnVerified: schema.boolean.optional(),
-          tagName: schema.string.optional({ escape: true }, [
-            rules.maxLength(100),
-          ]),
-          long: schema.number.optional(),
-          lat: schema.number.optional(),
-          walletDetails: schema.object.optional().members({
-            name: schema.string.optional({ escape: true }, [
-              rules.maxLength(50),
-            ]),
-            phoneNumber: schema.string.optional({ escape: true }, [
-              rules.maxLength(11),
-            ]),
-            email: schema.string.optional({ escape: true }, [
-              rules.maxLength(50),
-              rules.email(),
-            ]),
-          }),
-          status: schema.string.optional({ escape: true }, [
-            rules.maxLength(20),
-          ]),
-        });
-        const payload: any = await request.validate({ schema: walletSchema });
-        console.log("The new recommendation:", payload);
+      const recommendationSchema = schema.create({
+        currencyCode: schema.string.optional({ escape: true }, [
+          rules.maxLength(5),
+        ]),
+        recommendation: schema.number.optional(),
+        amountLoanable: schema.number.optional(),
+        creditRating: schema.number.optional(),
+        totalNumberOfLoansCollected: schema.number.optional(),
+        totalAmountOfLoansCollected: schema.number.optional(),
+        totalAmountOfLoansRepaid: schema.number.optional(),
+        totalAmountOfLoansYetToBeRepaid: schema.number.optional(),
+        balance: schema.number.optional(),
+        lastLoanDuration: schema.string.optional({ escape: true }, [
+          rules.maxLength(11),
+        ]),
+        bvn: schema.string.optional({ escape: true }, [
+          rules.minLength(11),
+          rules.maxLength(11),
+        ]),
+        isBvnVerified: schema.boolean.optional(),
+        isDefaulter: schema.boolean.optional(),
+        isFirstLoan: schema.boolean.optional(),
+        loanHistory: schema.string.optional({ escape: true }, [
+          rules.maxLength(255),
+        ]),
+        long: schema.number.optional(),
+        lat: schema.number.optional(),
+        status: schema.string.optional({ escape: true }, [rules.maxLength(20)]),
+      });
+      const payload: any = await request.validate({ schema: recommendationSchema });
+      console.log("The new recommendation:", payload);
       const { walletId } = request.qs();
       console.log("Wallet query: ", request.qs());
-      let {
-        currencyCode,
-        balance,
-        bvn,
-        isBvnVerified,
-        walletDetails,
-        long,
-        lat,
-        tagName,
-        creditRating,
-        totalAmountToRepay,
-        status,
-      } = request.body();
+      // let {
+      //   currencyCode,
+      //   balance,
+      //   bvn,
+      //   isBvnVerified,
+      //   long,
+      //   lat,
+      //   creditRating,
+      //   status,
+      // } = request.body();
+
       // let recommendation = await Loanabilitystatus.query().where({
       //   product_name: request.input('productName'),
       //   id: request.input('rateId'),
       // })
       let recommendation = await Loanabilitystatus.query()
         .where({
-          id: walletId,
+          walletId: walletId,
         })
         .first();
       console.log(" QUERY RESULT: ", recommendation);
       if (recommendation !== null) {
-        console.log("Wallet recommendation Selected for Update:", recommendation);
+        console.log(
+          "Wallet recommendation Selected for Update:",
+          recommendation
+        );
         if (recommendation) {
-          recommendation.currencyCode = currencyCode
-            ? currencyCode
-            : recommendation.currencyCode;
-          recommendation.balance = balance
-            ? balance
-            : recommendation.balance;
-          recommendation.bvn = bvn ? bvn : recommendation.bvn;
-          recommendation.isBvnVerified =  isBvnVerified !== recommendation.isBvnVerified &&
-          isBvnVerified !== undefined &&
-          isBvnVerified !== null
-            ? isBvnVerified
-            : recommendation.isBvnVerified;
-                  recommendation.long = long
-            ? long
-            : recommendation.long;
-          recommendation.lat = lat ? lat : recommendation.lat;
+          // recommendation.currencyCode = currencyCode
+          //   ? currencyCode
+          //   : recommendation.currencyCode;
+          // recommendation.balance = balance
+          //   ? balance
+          //   : recommendation.balance;
+          // recommendation.bvn = bvn ? bvn : recommendation.bvn;
+          // recommendation.isBvnVerified =  isBvnVerified !== recommendation.isBvnVerified &&
+          // isBvnVerified !== undefined &&
+          // isBvnVerified !== null
+          //   ? isBvnVerified
+          //   : recommendation.isBvnVerified;
+          //         recommendation.long = long
+          //   ? long
+          //   : recommendation.long;
+          // recommendation.lat = lat ? lat : recommendation.lat;
 
-          recommendation.creditRating = creditRating
-            ? creditRating
-            : recommendation.creditRating;
-           recommendation.status = status
-            ? status
-            : recommendation.status;
-
+          // recommendation.creditRating = creditRating
+          //   ? creditRating
+          //   : recommendation.creditRating;
+          //  recommendation.status = status
+          //   ? status
+          //   : recommendation.status;
+          recommendation.merge(payload);
           if (recommendation) {
             // send to user
             await recommendation.save();
-            console.log("Update Loanabilitystatus recommendation:", recommendation);
+            console.log(
+              "Update Loanabilitystatus recommendation:",
+              recommendation
+            );
             return response.status(200).json({
               status: "OK",
               data: recommendation.$original,
@@ -291,7 +304,9 @@ export default class LoanabilitystatusesController {
           }
           return; // 422
         } else {
-          return response.status(304).json({ status: "FAILED", data: recommendation });
+          return response
+            .status(304)
+            .json({ status: "FAILED", data: recommendation });
         }
       } else {
         return response.status(404).json({
@@ -300,19 +315,19 @@ export default class LoanabilitystatusesController {
         });
       }
     } catch (error) {
-      console.log(error);
-      console.error(error.messages);
+      console.log("First Error message:",error);
+      console.error("Second Error message:", error.message);
       return response.status(404).json({
         status: "FAILED",
-        message: error.messages.errors,
+        message: error.message,
       });
     }
     // return // 401
   }
 
   public async destroy({ request, response }: HttpContextContract) {
-    const { walletId } = request.qs();
-    console.log("Wallet query: ", request.qs());
+    const { walletId,id } = request.qs();
+    console.log("Recommendation query: ", request.qs());
 
     let recommendation = await Loanabilitystatus.query().where({
       id: walletId,
@@ -322,7 +337,8 @@ export default class LoanabilitystatusesController {
     if (recommendation.length > 0) {
       recommendation = await Loanabilitystatus.query()
         .where({
-          id: walletId,
+          walletId: walletId,
+          id: id,
         })
         .delete();
       console.log("Deleted data:", recommendation);

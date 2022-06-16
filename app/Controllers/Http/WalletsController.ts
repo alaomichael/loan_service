@@ -158,11 +158,12 @@ export default class WalletsController {
     let loanabilityObject = {
       walletId: wallet.id,
       currencyCode: wallet.currencyCode,
-      bvn:wallet.bvn,
-      isBvnVerified:wallet.isBvnVerified,
-      long:wallet.long,
-      lat:wallet.lat,
-    }
+      bvn: wallet.bvn,
+      isBvnVerified: wallet.isBvnVerified,
+      long: wallet.long,
+      lat: wallet.lat,
+      isFirstLoan: true,
+    };
 
     const loanRecommendation = await Loanabilitystatus.create(
       loanabilityObject

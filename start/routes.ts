@@ -62,9 +62,14 @@ Route.group(() => {
     Route.get("admin/loans/products/:id", "ProductsController.show");
     Route.get("admin/loans/approvals", "ApprovalsController.index");
     Route.get(
-      "admin/loans/recommendations",
+      "admin/loans/recommendations/rating",
       "LoansController.getCreditRecommendations"
       );
+      Route.get(
+        "admin/loans/recommendations",
+        "LoanabilitystatusesController.index"
+      );
+
     Route.get("loans/:walletId", "LoansController.showByWalletId");
     Route.get("loans/loan/:loanId", "LoansController.showByLoanId");
     Route.get("admin/loans/loan/:loanId", "LoansController.showByLoanId");
@@ -97,6 +102,10 @@ Route.group(() => {
     Route.put("loans", "LoansController.update");
     Route.put("admin/loans", "LoansController.update");
     Route.put("admin/loans/products", "ProductsController.update");
+      Route.put(
+        "admin/loans/recommendations",
+        "LoanabilitystatusesController.update"
+      );
     Route.put("admin/loans/approvals", "ApprovalsController.update");
     Route.put("admin/loans/offers", "LoansController.updateOffer");
 
@@ -110,6 +119,10 @@ Route.group(() => {
     Route.delete("admin/loans/settings", "SettingsController.destroy");
     Route.delete("admin/loans/products", "ProductsController.destroy");
     Route.delete("admin/loans/approvals", "ApprovalsController.destroy");
+     Route.delete(
+       "admin/loans/recommendations",
+       "LoanabilitystatusesController.destroy"
+     );
     Route.delete("admin/loans/:loanId", "LoansController.destroy");
     Route.delete("loans/:loanId", "LoansController.destroy");
   });

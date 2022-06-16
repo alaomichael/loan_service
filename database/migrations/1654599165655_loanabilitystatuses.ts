@@ -53,7 +53,7 @@ export default class extends BaseSchema {
        */
       table.timestamp("created_at", { useTz: true }).index();
       table.boolean("is_defaulter").notNullable().defaultTo(false).index();
-      table.boolean("is_first_loan").notNullable().defaultTo(false).index();
+      table.boolean("is_first_loan").notNullable().defaultTo(true).index();
       table.string("status", 255).notNullable().defaultTo("initiated").index();
       table.string("timeline").nullable().index();
 
