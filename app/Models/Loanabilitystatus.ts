@@ -1,7 +1,8 @@
 
 import { DateTime } from "luxon";
-import { BaseModel, beforeCreate, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, beforeCreate, belongsTo, BelongsTo, column } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
+import Wallet from "./Wallet";
 
 export default class Loanabilitystatus extends BaseModel {
   @column({ isPrimary: true })
@@ -21,6 +22,9 @@ export default class Loanabilitystatus extends BaseModel {
 
   @column()
   public amountLoanable: number;
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  public recommendationUpdatedAt: DateTime;
 
   @column()
   public lastLoanDuration: "7" | "14" | "21" | "30" | "45" | "60" | "90";
@@ -75,6 +79,9 @@ export default class Loanabilitystatus extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @belongsTo(() => Wallet, { localKey: "walletId" })
+  public wallet: BelongsTo<typeof Wallet>;
 
   @beforeCreate()
   public static assignUuid(loanabilitystatus: Loanabilitystatus) {

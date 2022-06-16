@@ -1,6 +1,7 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 // import Approval from "App/Models/Approval";
 import Wallet from "App/Models/Wallet";
+import Loanabilitystatus from "App/Models/Loanabilitystatus";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 // import { DateTime } from 'luxon'
@@ -154,6 +155,19 @@ export default class WalletsController {
     console.log("The new wallet:", wallet);
 
     console.log("A New Wallet has been Created.");
+    let loanabilityObject = {
+      walletId: wallet.id,
+      currencyCode: wallet.currencyCode,
+      bvn:wallet.bvn,
+      isBvnVerified:wallet.isBvnVerified,
+      long:wallet.long,
+      lat:wallet.lat,
+    }
+
+    const loanRecommendation = await Loanabilitystatus.create(
+      loanabilityObject
+    );
+    console.log("The new loanabilitystatus ,line 170:", loanRecommendation)
     // Send Wallet Creation Message to Queue
     // @ts-ignore
     Event.emit("new:wallet", { id: wallet.id, extras: wallet.walletDetails });

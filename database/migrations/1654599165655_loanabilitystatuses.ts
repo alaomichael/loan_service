@@ -6,7 +6,13 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().index().unique().notNullable();
-      table.string("wallet_id",255).nullable().index();
+      table
+        .uuid("wallet_id")
+        .references("id")
+        .inTable("wallets")
+        .notNullable()
+        .index()
+        .onDelete("CASCADE");
       table.string("user_id",255).nullable().index();
       table.float("balance", 255).unsigned().nullable().defaultTo(0).index();
       table
@@ -23,17 +29,7 @@ export default class extends BaseSchema {
         .defaultTo(4500);
       table.timestamp("recommendation_updated_at", { useTz: true });
       table
-        .enum("last_loan_duration", [
-          "0",
-          "7",
-          "14",
-          "21",
-          "30",
-          "45",
-          "60",
-          "90",
-        ])
-
+        .string("last_loan_duration", 255)
         .notNullable()
         .defaultTo(0)
         .index();
@@ -69,6 +65,7 @@ export default class extends BaseSchema {
           "id",
           "wallet_id",
           "balance",
+          "recommendation",
           "amount_loanable",
           "last_loan_duration",
           "bvn",

@@ -41,12 +41,12 @@ Route.group(() => {
        "LoanabilitystatusesController.store"
      );
 
-    Route.post("investments/approvals", "ApprovalsController.store");
-    Route.post("admin/investments", "InvestmentsController.store");
-    Route.post("admin/investments/approvals", "ApprovalsController.store");
+    Route.post("loans/approvals", "ApprovalsController.store");
+    Route.post("admin/loans", "LoansController.store");
+    Route.post("admin/loans/approvals", "ApprovalsController.store");
     Route.post(
-      "admin/investments/transactions",
-      "InvestmentsController.processPayment"
+      "admin/loans/transactions",
+      "LoansController.processPayment"
     );
 
     // GET ROUTES
@@ -71,24 +71,24 @@ Route.group(() => {
     Route.get("admin/loans/feedbacks", "LoansController.feedbacks");
     Route.get("admin/loans/:walletId", "LoansController.showByWalletId");
 
-    // Route.get('investments/payouts', 'InvestmentsController.showPayouts')
-    Route.get("investments/payouts", "PayoutsController.index");
-    Route.get("admin/investments/payouts", "InvestmentsController.showPayouts");
+    // Route.get('loans/payouts', 'LoansController.showPayouts')
+    Route.get("loans/payouts", "PayoutsController.index");
+    Route.get("admin/loans/payouts", "LoansController.showPayouts");
     Route.get(
-      "admin/investments/payoutrecords",
+      "admin/loans/payoutrecords",
       "PayoutRecordsController.index"
     );
     Route.get(
-      "admin/investments/transactionsfeedbacks",
-      "InvestmentsController.transactionStatus"
+      "admin/loans/transactionsfeedbacks",
+      "LoansController.transactionStatus"
     );
     Route.get(
-      "admin/investments/:investmentId",
-      "InvestmentsController.showByInvestmentId"
+      "admin/loans/:loanId",
+      "LoansController.showByLoanId"
     );
     Route.get(
-      "investments/:investmentId",
-      "InvestmentsController.showByInvestmentId"
+      "loans/:loanId",
+      "LoansController.showByLoanId"
     );
 
     // PUT ROUTES
@@ -100,19 +100,17 @@ Route.group(() => {
     Route.put("admin/loans/approvals", "ApprovalsController.update");
     Route.put("admin/loans/offers", "LoansController.updateOffer");
 
-    Route.put("investments/payouts", "InvestmentsController.payout");
-    Route.put("investments/terminates", "InvestmentsController.payout");
-    Route.put("admin/investments/terminates", "InvestmentsController.payout");
-    Route.put("admin/investments/payouts", "InvestmentsController.payout");
-    Route.put("admin/investments", "InvestmentsController.update");
-    Route.put("investments", "InvestmentsController.update");
+    Route.put("loans/payouts", "LoansController.payout");
+    Route.put("loans/terminates", "LoansController.payout");
+    Route.put("admin/loans/terminates", "LoansController.payout");
+    Route.put("admin/loans/payouts", "LoansController.payout");
 
     // DELETE ROUTES
     Route.delete("wallets", "WalletsController.destroy");
     Route.delete("admin/loans/settings", "SettingsController.destroy");
     Route.delete("admin/loans/products", "ProductsController.destroy");
     Route.delete("admin/loans/approvals", "ApprovalsController.destroy");
-    Route.delete("admin/loans/:walletId", "LoansController.destroy");
-    Route.delete("loans/:walletId", "LoansController.destroy");
+    Route.delete("admin/loans/:loanId", "LoansController.destroy");
+    Route.delete("loans/:loanId", "LoansController.destroy");
   });
 }).prefix("api/v2");

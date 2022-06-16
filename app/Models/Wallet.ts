@@ -1,7 +1,8 @@
 
 import { DateTime } from "luxon";
-import { BaseModel, beforeCreate, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, beforeCreate, column, hasOne, HasOne } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
+import Loanabilitystatus from "./Loanabilitystatus";
 
 export default class Wallet extends BaseModel {
   @column({ isPrimary: true })
@@ -54,6 +55,9 @@ export default class Wallet extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @hasOne(() => Loanabilitystatus, { localKey: "id" })
+  public loanabilitystatus: HasOne<typeof Loanabilitystatus>;
 
   @beforeCreate()
   public static assignUuid(wallet: Wallet) {
