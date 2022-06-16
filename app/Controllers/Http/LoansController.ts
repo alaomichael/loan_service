@@ -12,7 +12,7 @@ import { v4 as uuid } from "uuid";
 // const axios = require('axios').default
 // const API_URL = Env.get('API_URL')
 import {
-  generateRate,
+  // generateRate,
   interestDueOnLoan,
   dueForRepayment,
   // repaymentDueDate,

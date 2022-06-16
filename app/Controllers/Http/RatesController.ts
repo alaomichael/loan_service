@@ -3,12 +3,10 @@ import Rate from "App/Models/Rate";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import LoanTenure from "App/Models/LoanTenure";
-const Env = require("@ioc:Adonis/Core/Env");
-const axios = require("axios").default;
-// const JSJoda = require('js-joda')
-// const LocalDate = JSJoda.LocalDate
+// const Env = require("@ioc:Adonis/Core/Env");
+// const axios = require("axios").default;
 // const Moment = require('moment')
-const API_URL = Env.get("API_URL");
+// const API_URL = Env.get("API_URL");
 
 export default class RatesController {
   public async index({ params, request, response }: HttpContextContract) {
@@ -21,119 +19,6 @@ export default class RatesController {
     // console.log('Terminated Investment count: ', countSuspended)
     // const rate = await Rate.query().offset(0).limit(1)
     let products = await Rate.query().preload("loanTenures");
-    let tenuresResult;
-    //   try {
-    //            tenuresResult = foo(rate);
-    // console.log("Tenures Result: ", tenuresResult);
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // async function getTenures(rate) {
-    //   var data = await rate.map(async (rate) => {
-    //     //@ts-ignore
-    //     let id = rate.id;
-    //     let singleRate = await Rate.query()
-    //       .where({ id: id })
-    //       .preload("loanTenures")
-    //       .first();
-    //     //  console.log(" Rate singleRate : ", singleRate);
-    //     //@ts-ignore
-    //     const rateTenure = await singleRate.$preloaded.loanTenures.map(
-    //       (tenure) => tenure.$original.tenure
-    //     );
-    //     console.log(" Rate Tenures : ", rateTenure);
-    //     // return rate(s)
-    //     let rateData1 = { ...rate.$original, loanTenures: rateTenure };
-    //     console.log(" Rate Tenures with data : ", rateData1);
-    //     return rateData1;
-    //     //  return singleRate;
-    //   });
-    //   console.log(" Preload Rate with Tenures : ", data);
-    //   // code here only executes _after_ the request is done
-    //   return data; // 'data' is defined
-    // }
-
-
-    // function successCallback(result) {
-    //   console.log("Rate ready at URL: " + result);
-    //   return result;
-    // }
-
-    // function failureCallback(error) {
-    //   console.error("Error getting rate: " + error);
-    // }
-    // async function foo(rate) {
-    //   try {
-    //     const result = await getTenures(rate).then(successCallback(response));
-    //     // const newResult = await doSomethingElse(result);
-    //     // const finalResult = await doThirdThing(newResult);
-    //     console.log(`Got the final result: await ${result}`);
-    //     return result;
-    //   } catch (error) {
-    //     failureCallback(error);
-    //   }
-    // }
-    // const address = await foo(rate)
-    //   // axios.get(`${API_URL}/loans/wallets`)
-    //   .then((response) => {
-    //     console.log("Response ========================== :", response);
-    //     return response;
-    //   })
-    //   .then((user) => {
-    //     return user; //.address;
-    //   });
-
-    // const printAddress = async () => {
-    //   const a = await address;
-    //   console.log("   RATE RESULT *******************  ", a);
-    //   return a;
-    // };
-
-    // let itIsWorking = await printAddress();
-    // console.log("Rate ready at itIsWorking: " + (await itIsWorking));
-
-    // const repaymentDueDate =  (rate) => {
-    //   return new Promise( (resolve, reject) => {
-    //     if (!rate) {
-    //       reject(new Error("Incomplete parameters or out of range"));
-    //     }
-    //     // let payoutDueDate;
-    //     var data =  rate.map( async (singleRate) => {
-    //       //@ts-ignore
-    //       let id = singleRate.id;
-    //       let singleRateTenure = await Rate.query()
-    //         .where({ id: id })
-    //         .preload("loanTenures")
-    //         .first();
-    //       //  console.log(" Rate singleRate : ", singleRate);
-    //       //@ts-ignore
-    //       const rateTenure =  singleRateTenure!.$preloaded.loanTenures.map(
-    //         (tenure) => tenure.$original.tenure
-    //       );
-    //       console.log(" Rate Tenures : ", rateTenure);
-    //       // return rate(s)
-    //       let rateData1 =  { ...singleRateTenure!.$original, loanTenures: rateTenure };
-    //       console.log(" Rate Tenures with data : ", rateData1);
-    //       return rateData1;
-    //       //  return singleRate;
-    //     });
-    //     console.log(" Preload Rate with Tenures line 119 : ", data);
-    //     // code here only executes _after_ the request is done
-    //     // return data;
-    //     return resolve(data);
-    //   });
-    // };
-
-    // console.log(
-    //   " Rate repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: ",
-    //   await repaymentDueDate(rate)
-    // );
-
-
-    //    " Rate repayment Due Date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: "
-    //    await repaymentDueDate(rate).finally(() => {})
-
-
     let sortedRates =  products;
     if (amount) {
       // @ts-ignore
@@ -282,7 +167,7 @@ export default class RatesController {
       console.log("A New Rate has been Created.");
 
       tenures.forEach(async (tenure) => {
-        let duration = await LoanTenure.create({ tenure, rateId: rate.id });
+        let duration = await LoanTenure.create({ tenure, productId: rate.id });
 
         console.log("The new duration is: ", duration);
       });
@@ -359,9 +244,6 @@ export default class RatesController {
           rate.highestAmount = request.input("highestAmount")
             ? request.input("highestAmount")
             : rate.highestAmount;
-          rate.duration = request.input("duration")
-            ? request.input("duration")
-            : rate.duration;
           rate.interestRate = request.input("interestRate")
             ? request.input("interestRate")
             : rate.interestRate;
@@ -379,10 +261,6 @@ export default class RatesController {
 
           if (rate) {
             //  do the following to be able to save the array in the database
-            let duration;
-            duration = JSON.stringify(rate.duration);
-            console.log("The new rate duration:", duration);
-            rate.duration = duration;
             // send to user
             await rate.save();
             console.log("Updated Loan rate:", rate);

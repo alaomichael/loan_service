@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "test": "node ace test --watch",
     "deploy": "git add . && git commit -m Heroku && git push heroku main",
-    "restart": "heroku restart -a astrapay-v2-loan",
+    "restart": "heroku restart -a loanservices",
     "heroku-postbuild": "npm install pm2"
   },
   "devDependencies": {

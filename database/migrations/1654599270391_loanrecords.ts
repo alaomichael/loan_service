@@ -66,7 +66,6 @@ export default class extends BaseSchema {
           "wallet_id",
           "amount_requested",
           "amount_approved",
-          "duration",
           "tag_name",
           "currency_code",
           "bvn",

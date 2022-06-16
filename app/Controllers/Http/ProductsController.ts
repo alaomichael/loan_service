@@ -3,12 +3,12 @@ import Product from "App/Models/Product";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import LoanTenure from "App/Models/LoanTenure";
-const Env = require("@ioc:Adonis/Core/Env");
-const axios = require("axios").default;
+// const Env = require("@ioc:Adonis/Core/Env");
+// const axios = require("axios").default;
 // const JSJoda = require('js-joda')
 // const LocalDate = JSJoda.LocalDate
 // const Moment = require('moment')
-const API_URL = Env.get("API_URL");
+// const API_URL = Env.get("API_URL");
 export default class ProductsController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("Product params: ", params);
