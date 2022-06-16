@@ -3,23 +3,23 @@ import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Loanabilitystatus from "App/Models/Loanabilitystatus";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
-import { DateTime } from "luxon";
-import { v4 as uuid } from "uuid";
-import Env from "@ioc:Adonis/Core/Env";
+// import { DateTime } from "luxon";
+// import { v4 as uuid } from "uuid";
+// import Env from "@ioc:Adonis/Core/Env";
 // const axios = require('axios').default
 // const API_URL = Env.get('API_URL')
-import {
-  generateRate,
-  interestDueOnLoan,
-  dueForRepayment,
-  repaymentDueDate,
-  approvalRequest,
-  sendPaymentDetails,
-  investmentRate,
-  // @ts-ignore
-} from "App/Helpers/utils";
+// import {
+//   generateRate,
+//   interestDueOnLoan,
+//   dueForRepayment,
+//   repaymentDueDate,
+//   approvalRequest,
+//   sendPaymentDetails,
+//   loanRate,
+//   // @ts-ignore
+// } from "App/Helpers/utils";
 
-import Wallet from "App/Models/Wallet";
+// import Wallet from "App/Models/Wallet";
 export default class LoanabilitystatusesController {
   public async store({ request, response }: HttpContextContract) {
     // const user = await auth.authenticate()

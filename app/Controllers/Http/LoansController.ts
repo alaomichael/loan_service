@@ -2,8 +2,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Loan from "App/Models/Loan";
 import Setting from "App/Models/Setting";
-// import Payout from "App/Models/Payout";
-// import PayoutRecord from "App/Models/PayoutRecord";
+// import Loanrecord from "App/Models/Loanrecord";
+// import Loanrecord from "App/Models/Loanrecord";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import { DateTime } from "luxon";
@@ -19,6 +19,7 @@ import {
   approvalRequest,
   sendPaymentDetails,
   loanRate,
+  createNewLoan,
   // createNewLoan,
   // @ts-ignore
 } from "App/Helpers/utils";
@@ -26,6 +27,7 @@ import {
 import Approval from "App/Models/Approval";
 import Wallet from "App/Models/Wallet";
 import Timeline from "App/Models/Timeline";
+import Loanrecord from "App/Models/Loanrecord";
 export default class LoansController {
   public async index({ params, request, response }: HttpContextContract) {
     console.log("LOAN params: ", params);
@@ -45,7 +47,8 @@ export default class LoansController {
     let sortedInvestments = loan.map((loan) => {
       return {
         ...loan.$original,
-        timelines: loan.$preloaded.timelines.fill(loan.timelines.),
+        // @ts-ignore
+        timelines: loan.$preloaded.timelines.map((timeline)=> timeline.$original),
       };
     });
     // console.log('LOAN newArray sorting: ', newArray)
@@ -202,14 +205,23 @@ export default class LoansController {
     console.log("LOAN params loanId: ", loanId);
     try {
       let loan = await Loan.query()
-        .where({ id: loanId })
-        .orderBy("createdAt", "desc")
-        .first();
+        .where({ id: loanId }).preload("timelines", query => {
+          query.orderBy("createdAt", "desc");
+        }).first();
       // .with('timeline')
       // .orderBy('timeline', 'desc')
       // .fetch()
       if (!loan) return response.status(404).json({ status: "FAILED" });
-      return response.status(200).json({ status: "OK", data: loan.$original });
+      let updatedResponseWithTimeline = {
+          ...loan.$original,
+          // @ts-ignore
+          timelines: loan.$preloaded.timelines.map(
+            (timeline) => timeline.$original
+          ),
+        }
+      return response
+        .status(200)
+        .json({ status: "OK", data: updatedResponseWithTimeline });
     } catch (error) {
       console.log(error);
     }
@@ -226,15 +238,22 @@ export default class LoansController {
     try {
       let loans = await Loan.query()
         .where({ wallet_id: walletId })
-        .orderBy("createdAt", "desc");
-      // .with('timeline')
-      // .orderBy('timeline', 'desc')
-      // .fetch()
+        .preload("timelines", query => {
+          query.orderBy("createdAt", "desc");
+        });
       console.log("Loans result :", loans)
       if (loans.length > 0){
+        let updatedLoanWithTimeline = loans.map((loan) => { return {
+          ...loan.$original,
+          // @ts-ignore
+          timelines: loan.$preloaded.timelines.map(
+            (timeline) => timeline.$original
+          ),
+        };})
+        // loans.map((loan) => loan.$original)
         return response
         .status(200)
-        .json({ status: "OK", data: loans.map((loan) => loan.$original) });
+        .json({ status: "OK", data:updatedLoanWithTimeline}) ;
        } else { return response
          .status(404)
          .json({ status: "FAILED", message: "Invalid request" });};
@@ -255,7 +274,7 @@ export default class LoansController {
       // .limit()
       const { search, limit, walletId, loanId, requestType } = request.qs();
       console.log("PAYOUT query: ", request.qs());
-      const payout = await Payout.all();
+      const payout = await Loanrecord.all();
       let sortedPayouts = payout;
       console.log("PAYOUT Loan line 150: ", payout);
       if (search) {
@@ -318,7 +337,7 @@ export default class LoansController {
     console.log("LOAN query line 310: ", request.qs());
     let loan = await Loan.all();
     let approvals;
-    let timeline;
+    // let timeline;
     let timelineObject;
     if (
       requestType === "request loan" &&
@@ -361,10 +380,6 @@ export default class LoansController {
         }
         console.log("LOAN DATA line 355: ", loan);
         if (loan.length < 1) {
-          // return response.json({
-          //   status: 'FAILED',
-          //   message: 'No loan activation approval data matched your query, please try again',
-          // })
           // loan = await Loan.query()
           //   // .where('status', 'active')
           //   .where("request_type", requestType)
@@ -381,8 +396,12 @@ export default class LoansController {
         loan[0].approvalStatus = approvals.approvalStatus;
         loan[0].isLoanApproved = true;
         // TODO
-        // send loan details to Transaction Service
+        // send loan details to Bank Admin
         // on success
+        // check if the user have an account with the bank
+
+        // if no account with the bank
+        // create savings and loan account with the bank
 
         // update status of loan
         // update request date
@@ -495,22 +514,6 @@ export default class LoansController {
           meta: `amount declined: ${loan[0].currencyCode} ${loan[0].amountRequested}, request type : ${loan[0].requestType}`,
         };
         console.log("Timeline object line 482:", timelineObject);
-        //  Push the new object to the array
-        // timeline = loan[0].timeline;
-        // timeline.push(timelineObject);
-        // console.log("Timeline object line 486:", timeline);
-        // // stringify the timeline array
-        // loan[0].timeline = JSON.stringify(timeline);
-
-        //  create a new object for the timeline
-
-        //  Push the new object to the array
-        // timeline.push(timelineObject);
-
-        // console.log("Timeline object line 1190:", timeline);
-
-        // // stringify the timeline array
-        // loan.timeline = JSON.stringify(timeline);
 
         let newTimeline = await Timeline.create(timelineObject);
 
@@ -728,8 +731,8 @@ export default class LoansController {
 
         // update status loan
         // update start date
-        loan[0].isPayoutAuthorized = true;
-        loan[0].isTerminationAuthorized = true;
+        // loan[0].isPayoutAuthorized = true;
+        // loan[0].isTerminationAuthorized = true;
         loan[0].status = "payout";
         // let currentDateMs = DateTime.now().toISO()
         // @ts-ignore
@@ -944,7 +947,7 @@ export default class LoansController {
         if (loan.status !== "active") {
           let createdAt = loan.createdAt;
           let duration = loan.duration;
-          let timeline;
+          // let timeline;
           let timelineObject;
           try {
             isDueForRepayment = await dueForRepayment(createdAt, duration);
@@ -1137,7 +1140,7 @@ export default class LoansController {
         if (loan.status !== "active") {
           let createdAt = loan.createdAt;
           let duration = loan.duration;
-          let timeline;
+          // let timeline;
           let timelineObject;
           try {
             isDueForRepayment = await dueForRepayment(createdAt, duration);
@@ -1220,12 +1223,20 @@ export default class LoansController {
 
   public async getLoanRate({ request, response }: HttpContextContract) {
     let { amount, duration } = request.qs();
+    // console.log(
+    //   " The Rate return for RATE line 1073: ",
+    //   await generateRate(amount, duration)
+    // );
+    // let rate = await generateRate(amount, duration);
+    // console.log(" Rate return line 1077 : ", rate);
+
     console.log(
       " The Rate return for RATE line 1073: ",
-      await generateRate(amount, duration)
+      await loanRate(amount, duration)
     );
-    let rate = await generateRate(amount, duration);
+    let rate = await loanRate(amount, duration);
     console.log(" Rate return line 1077 : ", rate);
+
     // @ts-ignore
     if (rate === undefined || rate.length < 1) {
       return response.status(400).json({
@@ -1308,7 +1319,7 @@ export default class LoansController {
      let timelineObject;
     let settings = await Setting.query().where({ tagName: "default setting" });
     console.log("Approval setting line 910:", settings[0]);
-    let timeline: any[] = [];
+    // let timeline: any[] = [];
     //  Check if loan activation is automated
     let approvalIsAutomated = settings[0].isLoanAutomated;
     // let approvalIsAutomated = false
@@ -1584,7 +1595,7 @@ export default class LoansController {
         if (loan.status !== "active") {
           let createdAt = loan.createdAt;
           let duration = loan.duration;
-          let timeline;
+          // let timeline;
           let timelineObject;
           try {
             isDueForRepayment = await dueForRepayment(createdAt, duration);
@@ -1821,7 +1832,7 @@ export default class LoansController {
         let duration = 4;
         console.log("Time loan was started line 1332: ", startDate);
         let timelineObject;
-        let timeline;
+        // let timeline;
         let isDueForRepayment = await dueForRepayment(startDate, duration);
         console.log("Is due for payout status line 1336:", isDueForRepayment);
         // let amt = loan[0].amount
@@ -1876,11 +1887,11 @@ export default class LoansController {
             // START
 
             console.log("Updated loan Status line 1379: ", loan);
-            console.log("Payout loan data line 1380:", payload);
+            console.log("Loanrecord loan data line 1380:", payload);
             payload.loanId = loanId;
             payload.requestType = requestType;
             // check if payout request is existing
-            let payoutRequestIsExisting = await Payout.query().where({
+            let payoutRequestIsExisting = await Loanrecord.query().where({
               loan_id: loanId,
               wallet_id: walletId,
             });
@@ -1907,14 +1918,14 @@ export default class LoansController {
                 loan[0].approvalStatus === "approved" &&
                 loan[0].status === "payout")
             ) {
-              // console.log('Matured Payout loan data line 1392:', payload)
-              payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log("Matured Payout loan data line 1413:", payload);
-              payout = await Payout.create(payload);
+              // console.log('Matured Loanrecord loan data line 1392:', payload)
+              // payload.timeline = JSON.stringify(loan[0].timeline);
+              console.log("Matured Loanrecord loan data line 1413:", payload);
+              payout = await Loanrecord.create(payload);
               payout.approvalStatus = "pending";
               payout.status = "payout";
               await payout.save();
-              console.log("Matured Payout loan data line 1418:", payout);
+              console.log("Matured Loanrecord loan data line 1418:", payout);
 
               // update timeline
               timelineObject = {
@@ -1940,7 +1951,7 @@ export default class LoansController {
                 loan[0].approvalStatus === "approved" &&
                 loan[0].status === "payout")
             ) {
-              // let payout = await Payout.create(payload)
+              // let payout = await Loanrecord.create(payload)
               payoutRequestIsExisting[0].approvalStatus = "pending";
               payoutRequestIsExisting[0].status = "payout";
               await payoutRequestIsExisting[0].save();
@@ -1964,7 +1975,7 @@ export default class LoansController {
               await payoutRequestIsExisting[0].save();
 
               console.log(
-                "Matured Payout loan data line 1476:",
+                "Matured Loanrecord loan data line 1476:",
                 payoutRequestIsExisting[0]
               );
             }
@@ -1994,11 +2005,11 @@ export default class LoansController {
             // Send notification
 
             console.log("Updated loan Status line 1315: ", loan);
-            console.log("Payout loan data 1:", payload);
+            console.log("Loanrecord loan data 1:", payload);
             payload.loanId = loanId;
             payload.requestType = requestType;
             // check if payout request is existing
-            let payoutRequestIsExisting = await Payout.query().where({
+            let payoutRequestIsExisting = await Loanrecord.query().where({
               loan_id: loanId,
               wallet_id: walletId,
             });
@@ -2025,12 +2036,12 @@ export default class LoansController {
                 loan[0].approvalStatus === "approved" &&
                 loan[0].status === "payout")
             ) {
-              payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log("Matured Payout loan data line 1548:", payload);
-              payout = await Payout.create(payload);
+              // payload.timeline = JSON.stringify(loan[0].timeline);
+              console.log("Matured Loanrecord loan data line 1548:", payload);
+              payout = await Loanrecord.create(payload);
               payout.status = "payout";
               await payout.save();
-              console.log("Matured Payout loan data line 1551:", payout);
+              console.log("Matured Loanrecord loan data line 1551:", payout);
 
               // update timeline
               timelineObject = {
@@ -2059,7 +2070,7 @@ export default class LoansController {
                 loan[0].approvalStatus === "approved" &&
                 loan[0].status === "payout")
             ) {
-              // let payout = await Payout.create(payload)
+              // let payout = await Loanrecord.create(payload)
               payoutRequestIsExisting[0].status = "payout";
               await payoutRequestIsExisting[0].save();
               // update timeline
@@ -2082,7 +2093,7 @@ export default class LoansController {
               await payoutRequestIsExisting[0].save();
 
               console.log(
-                "Matured Payout loan data line 1608:",
+                "Matured Loanrecord loan data line 1608:",
                 payoutRequestIsExisting[0]
               );
             }
@@ -2156,7 +2167,7 @@ export default class LoansController {
             payload.requestType = requestType;
             // check if payout request is existing
             let payout;
-            let payoutRequestIsExisting = await Payout.query().where({
+            let payoutRequestIsExisting = await Loanrecord.query().where({
               loan_id: loanId,
               wallet_id: walletId,
             });
@@ -2169,22 +2180,22 @@ export default class LoansController {
               loan[0].approvalStatus === "approved" &&
               loan[0].status === "active"
             ) {
-              console.log("Payout loan data 1:", payload);
-              payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log("Payout loan data line 1576:", payload);
-              payout = await Payout.create(payload);
+              console.log("Loanrecord loan data 1:", payload);
+              // payload.timeline = JSON.stringify(loan[0].timeline);
+              console.log("Loanrecord loan data line 1576:", payload);
+              payout = await Loanrecord.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 1276:", payout);
+              console.log("Terminated Loanrecord loan data line 1276:", payout);
             } else if (
               payoutRequestIsExisting.length > 0 &&
               loan[0].approvalStatus === "approved" &&
               loan[0].status === "active"
             ) {
-              console.log("Payout loan data 1:", payload);
+              console.log("Loanrecord loan data 1:", payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 1285:", payout);
+              console.log("Terminated Loanrecord loan data line 1285:", payout);
             }
             loan[0].status = "active";
             loan[0].approvalStatus = "pending";
@@ -2198,7 +2209,7 @@ export default class LoansController {
             payload.loanId = loanId;
             payload.requestType = requestType;
             // check if payout request is existing
-            let payoutRequestIsExisting = await Payout.query().where({
+            let payoutRequestIsExisting = await Loanrecord.query().where({
               loan_id: loanId,
               wallet_id: walletId,
             });
@@ -2211,23 +2222,23 @@ export default class LoansController {
               loan[0].approvalStatus === "approved" &&
               loan[0].status === "active"
             ) {
-              console.log("Payout loan data 1:", payload);
-              payload.timeline = JSON.stringify(loan[0].timeline);
+              console.log("Loanrecord loan data 1:", payload);
+              // payload.timeline = JSON.stringify(loan[0].timeline);
               console.log("Loan data line 1618:", payload);
 
-              payout = await Payout.create(payload);
+              payout = await Loanrecord.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 1316:", payout);
+              console.log("Terminated Loanrecord loan data line 1316:", payout);
             } else if (
               payoutRequestIsExisting.length > 0 &&
               loan[0].approvalStatus === "approved" &&
               loan[0].status === "active"
             ) {
-              console.log("Payout loan data 1:", payload);
+              console.log("Loanrecord loan data 1:", payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 1325:", payout);
+              console.log("Terminated Loanrecord loan data line 1325:", payout);
             }
 
             loan[0].status = "terminated";
@@ -2250,7 +2261,7 @@ export default class LoansController {
                 console.log("new Timeline object line 2246:", newTimeline);
                  await loan[0].save();
 
-          console.log("Terminated Payout loan data line 1521:", loan);
+          console.log("Terminated Loanrecord loan data line 1521:", loan);
           return response.status(200).json({
             status: "OK",
             data: loan.map((inv) => inv.$original),
@@ -2291,7 +2302,7 @@ export default class LoansController {
         return response.json({ status: "FAILED", message: error.message });
       }
       if (loan.length > 0) {
-        let investmentData = loan[0];
+        let loanData = loan[0];
         let rolloverType = loan[0].rolloverType;
         let amount = loan[0].amount;
         let duration = loan[0].duration;
@@ -2303,7 +2314,7 @@ export default class LoansController {
         let payload;
         let payout;
         let timelineObject;
-        let timeline;
+        // let timeline;
         let settings = await Setting.query().where({
           tagName: "default setting",
         });
@@ -2357,15 +2368,15 @@ export default class LoansController {
             // let isTransactionSentForProcessing
             if (rolloverType === "100") {
               // Save the payment data in payout table
-              payload = investmentData;
-              console.log("Payout loan data line 1619:", payload);
-              // payout = await Payout.create(payload)
+              payload = loanData;
+              console.log("Loanrecord loan data line 1619:", payload);
+              // payout = await Loanrecord.create(payload)
               // payout.status = 'matured'
               // await payout.save()
-              // console.log('Matured Payout loan data line 1235:', payout)
+              // console.log('Matured Loanrecord loan data line 1235:', payout)
 
               // check if payout request is existing
-              let payoutRequestIsExisting = await Payout.query().where({
+              let payoutRequestIsExisting = await Loanrecord.query().where({
                 loan_id: loanId,
                 wallet_id: walletId,
               });
@@ -2379,14 +2390,14 @@ export default class LoansController {
                 loan[0].approvalStatus !== "pending" &&
                 loan[0].status !== "initiated"
               ) {
-                console.log("Payout loan data line 1781:", payload);
+                console.log("Loanrecord loan data line 1781:", payload);
                 payload.timeline = JSON.stringify(loan[0].timeline);
-                console.log("Payout loan data line 1783:", payload);
+                console.log("Loanrecord loan data line 1783:", payload);
 
-                payout = await Payout.create(payload);
+                payout = await Loanrecord.create(payload);
                 payout.status = "payout";
                 await payout.save();
-                console.log("Matured Payout loan data line 1788:", payout);
+                console.log("Matured Loanrecord loan data line 1788:", payout);
               } else {
                 payoutRequestIsExisting[0].requestType = "payout loan";
                 payoutRequestIsExisting[0].approvalStatus = "approved";
@@ -2527,7 +2538,7 @@ export default class LoansController {
               );
               //  function for effecting the set rollover
               const effectRollover = async (
-                investmentData,
+                loanData,
                 amount,
                 rolloverType,
                 rolloverDone,
@@ -2536,13 +2547,13 @@ export default class LoansController {
                 return new Promise(async (resolve, reject) => {
                   console.log(
                     "Datas line 1562 : ",
-                    investmentData,
+                    loanData,
                     amount,
                     rolloverType,
                     rolloverDone,
                     rolloverTarget
                   );
-                  if (!investmentData || rolloverTarget < 0) {
+                  if (!loanData || rolloverTarget < 0) {
                     reject(
                       new Error(
                         "Incomplete parameters , or no rollover target was set, or is less than allowed range"
@@ -2552,25 +2563,25 @@ export default class LoansController {
                   let amountToPayoutNow;
                   let amountToBeReinvested;
                   let timelineObject;
-                  let timeline;
+                  // let timeline;
                   let rolloverIsSuccessful;
                   let settings = await Setting.query().where({
                     tagName: "default setting",
                   });
                   console.log("Approval setting line 2081:", settings[0]);
                   if (rolloverDone >= rolloverTarget) {
-                    let payload = investmentData;
+                    let payload = loanData;
                     let payout;
                     let loanId = payload.id;
                     walletId = payload.walletId;
                     let requestType = "payout loan";
                     amountToPayoutNow =
-                      amount + investmentData.interestDueOnLoan;
+                      amount + loanData.interestDueOnLoan;
                     // Send Loan Initiation Message to Queue
-                    payload = investmentData;
-                    console.log("Payout loan data line 2091:", payload);
+                    payload = loanData;
+                    console.log("Loanrecord loan data line 2091:", payload);
                     // check if payout request is existing
-                    let payoutRequestIsExisting = await Payout.query().where({
+                    let payoutRequestIsExisting = await Loanrecord.query().where({
                       loan_id: loanId,
                       wallet_id: walletId,
                     });
@@ -2584,11 +2595,11 @@ export default class LoansController {
                       payload.approvalStatus !== "pending" &&
                       payload.status !== "initiated"
                     ) {
-                      console.log("Payout loan data line 2107:", payload);
+                      console.log("Loanrecord loan data line 2107:", payload);
                       payload.timeline = JSON.stringify(loan[0].timeline);
-                      console.log("Payout loan data line 2109:", payload);
+                      console.log("Loanrecord loan data line 2109:", payload);
 
-                      payout = await Payout.create(payload);
+                      payout = await Loanrecord.create(payload);
                       payout.status = "payout";
                       payout.isPayoutAuthorized = loan[0].isPayoutAuthorized;
                       payout.isTerminationAuthorized =
@@ -2596,16 +2607,16 @@ export default class LoansController {
 
                       await payout.save();
                       console.log(
-                        "Matured Payout loan data line 2117:",
+                        "Matured Loanrecord loan data line 2117:",
                         payout
                       );
                     } else {
                       payoutRequestIsExisting[0].requestType =
                         loan[0].requestType;
-                      payoutRequestIsExisting[0].isPayoutAuthorized =
-                        loan[0].isPayoutAuthorized;
-                      payoutRequestIsExisting[0].isTerminationAuthorized =
-                        loan[0].isTerminationAuthorized;
+                      // payoutRequestIsExisting[0].isPayoutAuthorized =
+                        // loan[0].isPayoutAuthorized;
+                      // payoutRequestIsExisting[0].isTerminationAuthorized =
+                        // loan[0].isTerminationAuthorized;
                       payoutRequestIsExisting[0].status = "payout";
                       // loan[0]
                       payload.status = "payout";
@@ -2729,13 +2740,13 @@ export default class LoansController {
                     }
                   }
                   // if rolloverDone < rolloverTarget
-                  investmentData = loan[0];
-                  let payload = investmentData;
+                  loanData = loan[0];
+                  let payload = loanData;
                   console.log("Payload line 1969 :", payload);
-                  let payloadDuration = investmentData.duration;
-                  let payloadInvestmentType = investmentData.investmentType;
+                  let payloadDuration = loanData.duration;
+                  let payloadInvestmentType = loanData.investmentType;
                   let payout;
-                  let newTimeline: any[] = [];
+                  // let newTimeline: any[] = [];
                   let rate;
 
                   switch (rolloverType) {
@@ -2751,21 +2762,21 @@ export default class LoansController {
                       loan[0].rolloverTarget = rolloverTarget;
                       loan[0].rolloverDone = rolloverDone;
                       await loan[0].save();
-                      investmentData = loan[0];
+                      loanData = loan[0];
                       // Save the payment data in payout table
-                      payload = investmentData;
-                      console.log("Payout loan data line 2475:", payload);
+                      payload = loanData;
+                      console.log("Loanrecord loan data line 2475:", payload);
                       payload.timeline = JSON.stringify(loan[0].timeline);
                       console.log(
-                        "Matured Payout loan data line 2477:",
+                        "Matured Loanrecord loan data line 2477:",
                         payload
                       );
 
-                      payout = await Payout.create(payload);
+                      payout = await Loanrecord.create(payload);
                       payout.status = "payout";
                       await payout.save();
                       console.log(
-                        "Matured Payout loan data line 2482:",
+                        "Matured Loanrecord loan data line 2482:",
                         payout
                       );
 
@@ -2778,13 +2789,13 @@ export default class LoansController {
                         await loanRate(
                           amountToBeReinvested,
                           payloadDuration,
-                          payloadInvestmentType
+                          // payloadInvestmentType
                         )
                       );
                       rate = await loanRate(
                         amountToBeReinvested,
                         payloadDuration,
-                        payloadInvestmentType
+                        // payloadInvestmentType
                       );
                       console.log(" Rate return line 2503 : ", rate);
                       if (rate === undefined) {
@@ -2827,11 +2838,11 @@ export default class LoansController {
                         // })
                       }
                       // initiate a new loan
-                      var isNewInvestmentCreated = await createNewInvestment(
+                      var isNewInvestmentCreated = await createNewLoan(
                         amountToBeReinvested,
                         payloadDuration,
                         payloadInvestmentType,
-                        investmentData
+                        loanData
                       );
                       console.log(
                         "new loan is created: ",
@@ -2850,7 +2861,7 @@ export default class LoansController {
                         //      amountToBeReinvested,
                         //      payloadDuration,
                         //      payloadInvestmentType,
-                        //      investmentData,
+                        //      loanData,
                         //    ],
                         //  })
                         // break
@@ -2891,20 +2902,20 @@ export default class LoansController {
                       loan[0].rolloverTarget = rolloverTarget;
                       loan[0].rolloverDone = rolloverDone;
                       await loan[0].save();
-                      investmentData = loan[0];
+                      loanData = loan[0];
                       // Save the payment data in payout table
-                      payload = investmentData;
-                      console.log("Payout loan data line 2578:", payload);
+                      payload = loanData;
+                      console.log("Loanrecord loan data line 2578:", payload);
                       payload.timeline = JSON.stringify(loan[0].timeline);
                       console.log(
-                        "Matured Payout loan data line 2580:",
+                        "Matured Loanrecord loan data line 2580:",
                         payload
                       );
-                      payout = await Payout.create(payload);
+                      payout = await Loanrecord.create(payload);
                       payout.status = "payout";
                       await payout.save();
                       console.log(
-                        "Matured Payout loan data line 2584:",
+                        "Matured Loanrecord loan data line 2584:",
                         payout
                       );
 
@@ -2917,13 +2928,11 @@ export default class LoansController {
                         await loanRate(
                           amountToBeReinvested,
                           payloadDuration,
-                          payloadInvestmentType
                         )
                       );
                       rate = await loanRate(
                         amountToBeReinvested,
                         payloadDuration,
-                        payloadInvestmentType
                       );
                       console.log(" Rate return line 2603 : ", rate);
                       if (rate === undefined) {
@@ -2963,11 +2972,11 @@ export default class LoansController {
                       }
 
                       // initiate a new loan
-                      isNewInvestmentCreated = await createNewInvestment(
+                      isNewInvestmentCreated = await createNewLoan(
                         amountToBeReinvested,
                         payloadDuration,
                         payloadInvestmentType,
-                        investmentData
+                        loanData
                       );
                       console.log(
                         "new loan is created 2628: ",
@@ -2987,7 +2996,7 @@ export default class LoansController {
                         //     amountToBeReinvested,
                         //     payloadDuration,
                         //     payloadInvestmentType,
-                        //     investmentData,
+                        //     loanData,
                         //   ],
                         // })
                         // break
@@ -3032,14 +3041,14 @@ export default class LoansController {
                     //   loan[0].rolloverTarget = rolloverTarget
                     //   loan[0].rolloverDone = rolloverDone
                     //   await loan[0].save()
-                    //   investmentData = loan[0]
+                    //   loanData = loan[0]
                     //   // Save the payment data in payout table
-                    //   payload = investmentData
-                    //   console.log('Payout loan data line 1941:', payload)
-                    //   payout = await Payout.create(payload)
+                    //   payload = loanData
+                    //   console.log('Loanrecord loan data line 1941:', payload)
+                    //   payout = await Loanrecord.create(payload)
                     //   payout.status = 'payout'
                     //   await payout.save()
-                    //   console.log('Matured Payout loan data line 1945:', payout)
+                    //   console.log('Matured Loanrecord loan data line 1945:', payout)
                     //   // send payment details to transction service
 
                     //   // Send Notification
@@ -3049,7 +3058,7 @@ export default class LoansController {
                     //     amountToBeReinvested,
                     //     payloadDuration,
                     //     payloadInvestmentType,
-                    //     investmentData
+                    //     loanData
                     //   )
                     //   console.log('investmentCreated data line 1990:', investmentCreated)
                     //   if (investmentCreated === undefined) {
@@ -3063,7 +3072,7 @@ export default class LoansController {
                     //     amountToBeReinvested,
                     //     payloadDuration,
                     //     payloadInvestmentType,
-                    //     investmentData,
+                    //     loanData,
                     //   ],
                     // })
                     //   }
@@ -3087,7 +3096,7 @@ export default class LoansController {
               };
 
               let rolloverImplementation = await effectRollover(
-                investmentData,
+                loanData,
                 amount,
                 rolloverType,
                 rolloverDone,
@@ -3145,14 +3154,14 @@ export default class LoansController {
                   data: [],
                 });
               }
-              console.log("Payout loan data line 2780:", payload);
+              console.log("Loanrecord loan data line 2780:", payload);
               payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log("Terminated Payout loan data line 2782:", payload);
+              console.log("Terminated Loanrecord loan data line 2782:", payload);
 
-              const payout = await Payout.create(payload);
+              const payout = await Loanrecord.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 2787:", payout);
+              console.log("Terminated Loanrecord loan data line 2787:", payout);
               //  END
               loan = await Loan.query().where("id", loanId);
               loan[0].requestType = requestType;
@@ -3194,21 +3203,21 @@ export default class LoansController {
               // Move the code below to a new function that will check payout approval status and update the transaction
               // START
               // payload.datePayoutWasDone = new Date().toISOString()
-              console.log("Payout loan data line 2825:", payload);
+              console.log("Loanrecord loan data line 2825:", payload);
               payload.timeline = JSON.stringify(loan[0].timeline);
-              console.log("Terminated Payout loan data line 2827:", payload);
+              console.log("Terminated Loanrecord loan data line 2827:", payload);
 
-              let payout = await Payout.create(payload);
+              let payout = await Loanrecord.create(payload);
               payout.status = "terminated";
               await payout.save();
-              console.log("Terminated Payout loan data line 2832:", payout);
+              console.log("Terminated Loanrecord loan data line 2832:", payout);
               //  END
               loan = await Loan.query().where("id", loanId);
               loan[0].requestType = requestType;
               loan[0].status = "terminated";
               loan[0].approvalStatus = "approved";
               await loan[0].save();
-              console.log("Terminated Payout loan data line 2839:", loan);
+              console.log("Terminated Loanrecord loan data line 2839:", loan);
             }
             // update timeline
             timelineObject = {
@@ -3298,7 +3307,6 @@ export default class LoansController {
       let {
         id,
         walletId,
-        loanAccountDetails,
         duration,
         amountRequested,
         amountApproved,
@@ -3332,7 +3340,6 @@ export default class LoansController {
         amountApproved,
         tagName,
         currencyCode,
-        loanAccountDetails,
         long,
         lat,
         interestRate,
@@ -3360,12 +3367,12 @@ export default class LoansController {
       payload.status = "paid";
       payload.isDisbursementSuccessful = isDisbursementSuccessful;
       // @ts-ignore
-      console.log("Payout Payload: ", payload);
+      console.log("Loanrecord Payload: ", payload);
 
       // @ts-ignore
       // let { walletId, loanId, walletId } = request.all()
       let payoutRecord;
-      payoutRecord = await PayoutRecord.query().where({
+      payoutRecord = await Loanrecord.query().where({
         loan_id: payload.loanId,
         wallet_id: walletId,
       });
@@ -3386,33 +3393,33 @@ export default class LoansController {
 
       // Save the Update
       await loan.save();
-      payload.timeline = JSON.stringify(loan.timeline);
-      console.log("Matured Payout loan data line 3021:", payload);
+      // payload.timeline = JSON.stringify(loan.timeline);
+      console.log("Matured Loanrecord loan data line 3021:", payload);
 
-      payoutRecord = await PayoutRecord.create(payload);
+      payoutRecord = await Loanrecord.create(payload);
       // update loan status
       // payout.status = 'paid'
       await payoutRecord.save();
 
-      console.log("Payout Record loan data line 3028:", payoutRecord);
+      console.log("Loanrecord Record loan data line 3028:", payoutRecord);
       // @ts-ignore
       loan.datePayoutWasDone = payoutRecord.createdAt;
 
-      // Update Payout
-      let payout = await Payout.query()
+      // Update Loanrecord
+      let payout = await Loanrecord.query()
         .where({
           loan_id: payload.loanId,
           wallet_id: walletId,
         })
         .first();
-      console.log("Payout loan data line 3040:", payout);
+      console.log("Loanrecord loan data line 3040:", payout);
       if (payout) {
-        payout.totalAmountToPayout = payoutRecord.totalAmountPaid;
-        payout.isPayoutAuthorized = payoutRecord.isPayoutAuthorized;
-        payout.isTerminationAuthorized = payoutRecord.isTerminationAuthorized;
+        // payout.totalAmountToPayout = payoutRecord.totalAmountPaid;
+        // payout.isPayoutAuthorized = payoutRecord.isPayoutAuthorized;
+        // payout.isTerminationAuthorized = payoutRecord.isTerminationAuthorized;
         payout.isDisbursementSuccessful = payoutRecord.isDisbursementSuccessful;
         payout.approvalStatus = payoutRecord.approvalStatus;
-        payout.datePayoutWasDone = payoutRecord.createdAt;
+        // payout.datePayoutWasDone = payoutRecord.createdAt;
         payout.status = payoutRecord.status;
         payout.timeline = payoutRecord.timeline;
         // Save the update
