@@ -8,17 +8,18 @@ import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Event from "@ioc:Adonis/Core/Event";
 import { DateTime } from "luxon";
 import { v4 as uuid } from "uuid";
-import Env from "@ioc:Adonis/Core/Env";
+// import Env from "@ioc:Adonis/Core/Env";
 // const axios = require('axios').default
 // const API_URL = Env.get('API_URL')
 import {
   generateRate,
   interestDueOnLoan,
   dueForRepayment,
-  repaymentDueDate,
+  // repaymentDueDate,
   approvalRequest,
   sendPaymentDetails,
   loanRate,
+  // createNewLoan,
   // @ts-ignore
 } from "App/Helpers/utils";
 
@@ -38,11 +39,14 @@ export default class LoansController {
     // let settings = await Setting.query().where({ currency_code: 'NGN' })
     // console.log('Approval setting line 35:', settings[0].isDisbursementAutomated)
     // const loan = await Loan.query().offset(0).limit(1)
-    const loan = await Loan.all(); //.sort(function (Loan.timeline.createdAt, Loan.timeline.createdAt) {return Loan.timeline.createdAt-Loan.timeline.createdAt})
+    const loan = await Loan.query().preload("timelines"); //.sort(function (Loan.timeline.createdAt, Loan.timeline.createdAt) {return Loan.timeline.createdAt-Loan.timeline.createdAt})
     // console.log('LOAN before sorting line 40: ', loan)
     // let newArray = loan.map((loan) => {return loan.$original})
     let sortedInvestments = loan.map((loan) => {
-      return loan.$original;
+      return {
+        ...loan.$original,
+        timelines: loan.$preloaded.timelines.fill(loan.timelines.),
+      };
     });
     // console.log('LOAN newArray sorting: ', newArray)
     console.log("LOAN before sorting: ", sortedInvestments);

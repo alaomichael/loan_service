@@ -189,7 +189,7 @@ export default class LoanabilitystatusesController {
     const { walletId } = request.params();
     try {
       let recommendation = await Loanabilitystatus.query()
-        .where({ id: walletId })
+        .where({ walletId: walletId })
         .first();
       // .with('timeline')
       // .orderBy('timeline', 'desc')
@@ -250,10 +250,6 @@ export default class LoanabilitystatusesController {
       //   status,
       // } = request.body();
 
-      // let recommendation = await Loanabilitystatus.query().where({
-      //   product_name: request.input('productName'),
-      //   id: request.input('rateId'),
-      // })
       let recommendation = await Loanabilitystatus.query()
         .where({
           walletId: walletId,
@@ -266,30 +262,7 @@ export default class LoanabilitystatusesController {
           recommendation
         );
         if (recommendation) {
-          // recommendation.currencyCode = currencyCode
-          //   ? currencyCode
-          //   : recommendation.currencyCode;
-          // recommendation.balance = balance
-          //   ? balance
-          //   : recommendation.balance;
-          // recommendation.bvn = bvn ? bvn : recommendation.bvn;
-          // recommendation.isBvnVerified =  isBvnVerified !== recommendation.isBvnVerified &&
-          // isBvnVerified !== undefined &&
-          // isBvnVerified !== null
-          //   ? isBvnVerified
-          //   : recommendation.isBvnVerified;
-          //         recommendation.long = long
-          //   ? long
-          //   : recommendation.long;
-          // recommendation.lat = lat ? lat : recommendation.lat;
-
-          // recommendation.creditRating = creditRating
-          //   ? creditRating
-          //   : recommendation.creditRating;
-          //  recommendation.status = status
-          //   ? status
-          //   : recommendation.status;
-          recommendation.merge(payload);
+            recommendation.merge(payload);
           if (recommendation) {
             // send to user
             await recommendation.save();
@@ -330,7 +303,8 @@ export default class LoanabilitystatusesController {
     console.log("Recommendation query: ", request.qs());
 
     let recommendation = await Loanabilitystatus.query().where({
-      id: walletId,
+      walletId: walletId,
+      id: id,
     });
     console.log(" QUERY RESULT: ", recommendation);
 

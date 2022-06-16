@@ -69,7 +69,10 @@ Route.group(() => {
         "admin/loans/recommendations",
         "LoanabilitystatusesController.index"
       );
-
+      Route.get(
+        "admin/loans/recommendations/:walletId",
+        "LoanabilitystatusesController.showByWalletId"
+      );
     Route.get("loans/:walletId", "LoansController.showByWalletId");
     Route.get("loans/loan/:loanId", "LoansController.showByLoanId");
     Route.get("admin/loans/loan/:loanId", "LoansController.showByLoanId");

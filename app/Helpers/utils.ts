@@ -286,7 +286,7 @@ const repaymentDueDate = (created_at, duration) => {
 const approvalRequest = async function (walletId, loanId, requestType) {
   try {
     // let requestType = 'request loan'
-    const response = await axios.post(`${API_URL}/investments/approvals`, {
+    const response = await axios.post(`${API_URL}/loans/approvals`, {
       walletId,
       loanId,
       requestType,
@@ -310,7 +310,7 @@ const approvalRequest = async function (walletId, loanId, requestType) {
 const sendPaymentDetails = async function (amount, duration, investmentType) {
   try {
     const response = await axios.get(
-      `${API_URL}/investments/rates?amount=${amount}&duration=${duration}&investmentType=${investmentType}`
+      `${API_URL}/admin/loans/payouts?amount=${amount}&duration=${duration}&investmentType=${investmentType}`
     );
     console.log("The API response: ", response.data);
     if (response.data.status === "OK" && response.data.data.length > 0) {
@@ -350,46 +350,39 @@ const loanRate = async function (
   }
 };
 
-const createNewInvestment = async function (
+const createNewLoan = async function (
   payloadAmount,
   payloadDuration,
-  payloadInvestmentType,
-  investmentData
+  payloadLoanType,
+  loanData
 ) {
-  console.log("Loan data line 362: ", investmentData);
+  console.log("Loan data line 362: ", loanData);
   console.log("Loan payloadAmount data line 363: ", payloadAmount);
   console.log("Loan payloadDuration data line 364: ", payloadDuration);
-  console.log(
-    "Loan payloadInvestmentType data line 366: ",
-    payloadInvestmentType
-  );
+  console.log("Loan payloadInvestmentType data line 366: ", payloadLoanType);
   try {
     // let requestType = 'start investment'
     let payload;
     // destructure / extract the needed data from the investment
     let {
       amount,
-      rolloverType,
-      rolloverTarget,
-      rolloverDone,
-      investmentType,
+      loanType,
       duration,
       userId,
+      walletId,
       tagName,
       currencyCode,
       long,
       lat,
       walletHolderDetails,
-    } = investmentData;
+    } = loanData;
     // copy the investment data to payload
     payload = {
       amount,
-      rolloverType,
-      rolloverTarget,
-      rolloverDone,
-      investmentType,
+      loanType,
       duration,
       userId,
+      walletId,
       tagName,
       currencyCode,
       long,
@@ -400,12 +393,9 @@ const createNewInvestment = async function (
     //  payload.interestRate = rate
     console.log("PAYLOAD line 2325 :", payload);
 
-    const response = await axios.post(`${API_URL}/investments`, {
+    const response = await axios.post(`${API_URL}/loans`, {
       amount: payloadAmount,
-      rolloverType,
-      rolloverTarget,
-      rolloverDone,
-      investmentType,
+      loanType,
       duration,
       userId,
       tagName,
@@ -489,7 +479,7 @@ module.exports = {
   sendPaymentDetails,
   loanRate,
   getPrintServerBaseUrl,
-  createNewInvestment,
+  createNewLoan,
 };
 
 export {
@@ -501,5 +491,5 @@ export {
   loanDuration,
   sendPaymentDetails,
   loanRate,
-  createNewInvestment,
+  createNewLoan,
 };
