@@ -16,7 +16,7 @@
     "restart": "heroku restart -a loanservices",
     "clear-cache": "heroku builds:cache:purge -a loanservices",
     "heroku-prebuild": "npm install pm2",
-    "heroku-postbuild": "npm install @adonisjs/assembler@5.6.2"
+    "heroku-postbuild": "npm install @adonisjs/assembler@latest"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.6.2",
