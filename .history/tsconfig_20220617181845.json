@@ -1,5 +1,5 @@
 {
-  "extends":"./build/node_modules/adonis-preset-ts/tsconfig",
+  "extends":".buil/node_modules/adonis-preset-ts/tsconfig",
   "include": [
     "**/*"
   ],
