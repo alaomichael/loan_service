@@ -15,8 +15,8 @@
     "deploy": "git add . && git commit -am Heroku && git push heroku main",
     "restart": "heroku restart -a loanservices",
     "clear-cache": "heroku builds:cache:purge -a loanservices",
-"heroku-prebuild":"npm install @adonisjs/assembler",
-    "heroku-postbuild": "npm install pm2"
+"heroku-prebuild":,
+    "heroku-postbuild": "npm install pm2npm install @adonisjs/assembler"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.8.0",
