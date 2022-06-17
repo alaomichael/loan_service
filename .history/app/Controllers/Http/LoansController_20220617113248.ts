@@ -1568,6 +1568,7 @@ export default class LoansController {
           // let loanApprovedStatus = request.input("isLoanApproved");
           // loan.isLoanApproved =
           //   request.input("isLoanApproved") !== undefined
+         
           //     ? request.input("isLoanApproved")
           //     : loan.isLoanApproved;
           // console.log("loanApprovedStatus :", loanApprovedStatus);
