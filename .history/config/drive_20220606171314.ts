@@ -19,8 +19,6 @@ import Application from '@ioc:Adonis/Core/Application'
 |
 */
 export default driveConfig({
-
-  connection: Application.inDev ? 'mysql2' : 'mysql',
   /*
   |--------------------------------------------------------------------------
   | Default disk

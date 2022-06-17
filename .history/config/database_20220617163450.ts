@@ -34,34 +34,36 @@ const databaseConfig: DatabaseConfig = {
     | npm i mysql2
     |
     */
-    mysql2: {
-      client: 'mysql2',
+    // mysql: {
+    //   client: 'mysql2',
+    //   connection: {
+    //     host: Env.get('MYSQL_HOST'),
+    //     port: Env.get('MYSQL_PORT'),
+    //     user: Env.get('MYSQL_USER'),
+    //     password: Env.get('MYSQL_PASSWORD', ''),
+    //     database: Env.get('MYSQL_DB_NAME'),
+    //   },
+    //   migrations: {
+    //     naturalSort: true,
+    //   },
+    //   healthCheck: false,
+    //   debug: false,
+    // },DATABASE_URL='mysql://username:password@hostname/database_name?reconnect=true'
+    // mysql2://b233f6745ccd46:1fc481be@us-cdbr-east-05.cleardb.net/heroku_f6842c08b8f1279?reconnect=true
+    mysql: {
+      client: "mysql",
       connection: {
-        host: Env.get('MYSQL_HOST'),
-        port: Env.get('MYSQL_PORT'),
-        user: Env.get('MYSQL_USER'),
-        password: Env.get('MYSQL_PASSWORD', ''),
-        database: Env.get('MYSQL_DB_NAME'),
+        host: Env.get("MYSQL_HOST"),
+        port: Env.get("MYSQL_PORT"),
+        user: Env.get("MYSQL_USER"),
+        password: Env.get("MYSQL_PASSWORD", ""),
+        database: Env.get("MYSQL_DB_NAME"),
       },
       migrations: {
         naturalSort: true,
       },
       healthCheck: false,
       debug: false,
-    },
-
-    // DATABASE_URL='mysql://username:password@hostname/database_name?reconnect=true'
-    // mysql2://b233f6745ccd46:1fc481be@us-cdbr-east-05.cleardb.net/heroku_f6842c08b8f1279?reconnect=true
-    mysql: {
-      client: "mysql",
-      connection: {
-        host: CLEARDB_DATABASE_URL.host as string,
-        port: Number(""),
-        user: CLEARDB_DATABASE_URL.username as string,
-        password: CLEARDB_DATABASE_URL.password as string,
-        database: CLEARDB_DATABASE_URL.pathname.substr(1) as string,
-      },
-      healthCheck: false,
     },
   },
 };
