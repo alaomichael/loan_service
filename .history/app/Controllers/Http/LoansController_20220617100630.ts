@@ -1568,12 +1568,10 @@ export default class LoansController {
           // let loanApprovedStatus = request.input("isLoanApproved");
           // loan.isLoanApproved =
           //   request.input("isLoanApproved") !== undefined
-          loan.merge(request.only[])
           //     ? request.input("isLoanApproved")
           //     : loan.isLoanApproved;
           // console.log("loanApprovedStatus :", loanApprovedStatus);
-          loan.merge(request.only(["isLoanApproved","status"]))
-          
+          loan.merge()
           if (loan) {
             // send to user
             await loan.save();
@@ -1617,6 +1615,26 @@ export default class LoansController {
         // @ts-ignore
         sortedApprovalRequest = await Loan.query().where("id", loanId);
       }
+
+      // if (isPayoutAuthorized) {
+      //   sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
+      //     // @ts-ignore
+      //     return (
+      //       loan.isPayoutAuthorized.toString() === `${isPayoutAuthorized}`
+      //     );
+      //   });
+      // }
+
+      // if (isTerminationAuthorized) {
+      //   sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
+      //     // @ts-ignore
+      //     return (
+      //       loan.isTerminationAuthorized.toString() ===
+      //       `${isTerminationAuthorized}`
+      //     );
+      //   });
+      // }
+
       if (repaymentDate) {
         sortedApprovalRequest = sortedApprovalRequest.filter((loan) => {
           // @ts-ignore
@@ -1668,13 +1686,15 @@ export default class LoansController {
           ", loanId: " +
           loanId
       );
-    
+      // let loan = await Loan.query().where('wallet_id', id).where('id', params.id)
       let loan = await Loan.query().where("id", loanId);
       console.log("Loan Info, line 1322: ", loan);
       if (loan.length > 0) {
         console.log("loan search data :", loan[0].$original);
-        
-      //  TODO
+        // @ts-ignore
+        // let isDueForRepayment = await dueForPayout(loan[0].startDate, loan[0].duration)
+        // console.log('Is due for payout status :', isDueForRepayment)
+
         // TESTING
         let startDate = DateTime.now().minus({ days: 5 }).toISO();
         let duration = 4;
@@ -1766,7 +1786,8 @@ export default class LoansController {
                 loan[0].approvalStatus === "approved" &&
                 loan[0].status === "payout")
             ) {
-            
+              // console.log('Matured Loanrecord loan data line 1392:', payload)
+              // payload.timeline = JSON.stringify(loan[0].timeline);
               console.log("Matured Loanrecord loan data line 1413:", payload);
               payout = await Loanrecord.create(payload);
               payout.approvalStatus = "pending";
@@ -1816,6 +1837,8 @@ export default class LoansController {
                      let newTimeline = await Timeline.create(timelineObject);
                      console.log("new Timeline object line 1955:", newTimeline);
               await loan[0].save();
+              // stringify the timeline array
+              // payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
               // Save
               await payoutRequestIsExisting[0].save();
 
@@ -1903,6 +1926,8 @@ export default class LoansController {
                      console.log("new Timeline object line 2043:", newTimeline);
               // Save
               await loan[0].save();
+              // stringify the timeline array
+              // payout.timeline = JSON.stringify(timeline);
               // Save
               await payout.save();
             } else if (
@@ -1930,6 +1955,8 @@ export default class LoansController {
                     let newTimeline = await Timeline.create(timelineObject);
                     console.log("new Timeline object line 2073:", newTimeline);
               await loan[0].save();
+              // stringify the timeline array
+              // payoutRequestIsExisting[0].timeline = JSON.stringify(timeline);
               // Save
               await payoutRequestIsExisting[0].save();
 
@@ -1970,7 +1997,7 @@ export default class LoansController {
           });
           console.log("Approval setting line 1241:", settings[0]);
           let approvalRequestIsExisting;
-          let approvalIsAutomated = settings[0].isTerminationAutomated;
+          let approvalIsAutomated = settings[0].isTerminationAutomated; // isDisbursementAutomated
           if (approvalIsAutomated === false) {
             approvalRequestIsExisting = await Approval.query().where({
               loan_id: loanId,
@@ -2022,7 +2049,7 @@ export default class LoansController {
               loan[0].status === "active"
             ) {
               console.log("Loanrecord loan data 1:", payload);
-             
+              // payload.timeline = JSON.stringify(loan[0].timeline);
               console.log("Loanrecord loan data line 1576:", payload);
               payout = await Loanrecord.create(payload);
               payout.status = "terminated";
@@ -2064,7 +2091,10 @@ export default class LoansController {
               loan[0].status === "active"
             ) {
               console.log("Loanrecord loan data 1:", payload);
-               payout = await Loanrecord.create(payload);
+              // payload.timeline = JSON.stringify(loan[0].timeline);
+              console.log("Loan data line 1618:", payload);
+
+              payout = await Loanrecord.create(payload);
               payout.status = "terminated";
               await payout.save();
               console.log("Terminated Loanrecord loan data line 1316:", payout);
@@ -2195,6 +2225,15 @@ export default class LoansController {
             loan[0].isPayoutAuthorized === true ||
             loan[0].isTerminationAuthorized === true
           ) {
+            // Check Rollover Type
+            // let rolloverType = loan[0].rolloverType
+            // let amount = loan[0].amount
+            // let duration = loan[0].duration
+            // let investmentType = loan[0].investmentType
+            // let rolloverTarget = loan[0].rolloverTarget
+            // let rolloverDone = loan[0].rolloverDone
+            // let currencyCode = loan[0].currencyCode
+            // let isTransactionSentForProcessing
             if (rolloverType === "100") {
               // Save the payment data in payout table
               payload = loanData;
@@ -2442,6 +2481,10 @@ export default class LoansController {
                     } else {
                       payoutRequestIsExisting[0].requestType =
                         loan[0].requestType;
+                      // payoutRequestIsExisting[0].isPayoutAuthorized =
+                        // loan[0].isPayoutAuthorized;
+                      // payoutRequestIsExisting[0].isTerminationAuthorized =
+                        // loan[0].isTerminationAuthorized;
                       payoutRequestIsExisting[0].status = "payout";
                       // loan[0]
                       payload.status = "payout";
@@ -2655,6 +2698,12 @@ export default class LoansController {
                              );  await loan[0].save();
                         rolloverIsSuccessful = false;
                         break;
+
+                        // return response.status(400).json({
+                        //   status: 'FAILED',
+                        //   message: 'no loan rate matched your search, please try again.',
+                        //   data: [],
+                        // })
                       }
                       // initiate a new loan
                       var isNewInvestmentCreated = await createNewLoan(
@@ -2673,7 +2722,18 @@ export default class LoansController {
                         // Send Notification
                         rolloverIsSuccessful = false;
                         break;
-                                }
+                        //  return response.status(404).json({
+                        //    status: 'FAILED',
+                        //    message: 'reinvestment was not successful, please try again',
+                        //    data: [
+                        //      amountToBeReinvested,
+                        //      payloadDuration,
+                        //      payloadInvestmentType,
+                        //      loanData,
+                        //    ],
+                        //  })
+                        // break
+                      }
                       console.log(
                         `Principal of ${currencyCode} ${amountToBeReinvested} was Reinvested and the interest of ${currencyCode} ${amountToPayoutNow} was paid`
                       );
@@ -2772,7 +2832,11 @@ export default class LoansController {
                         await loan[0].save();
                         rolloverIsSuccessful = false;
                         break;
-                 
+                        // return response.status(400).json({
+                        //   status: 'FAILED',
+                        //   message: 'no loan rate matched your search, please try again.',
+                        //   data: [],
+                        // })
                       }
 
                       // initiate a new loan
@@ -2793,7 +2857,18 @@ export default class LoansController {
 
                         rolloverIsSuccessful = false;
                         break;
-                                            }
+                        // return response.status(404).json({
+                        //   status: 'FAILED',
+                        //   message: 'reinvestment was not successful, please try again',
+                        //   data: [
+                        //     amountToBeReinvested,
+                        //     payloadDuration,
+                        //     payloadInvestmentType,
+                        //     loanData,
+                        //   ],
+                        // })
+                        // break
+                      }
 
                       console.log(
                         `The Sum Total of the Principal and the interest of ${currencyCode} ${amountToBeReinvested} was Reinvested`
@@ -2822,6 +2897,58 @@ export default class LoansController {
                       await loan[0].save();
                       rolloverIsSuccessful = true;
                       break;
+                    // case '103':
+                    //   // '103' = 'rollover interest only'
+                    //   amountToBeReinvested = loan[0].interestDueOnLoan
+                    //   amountToPayoutNow = amount
+                    //   payloadDuration = loan[0].duration
+                    //   payloadInvestmentType = loan[0].investmentType
+                    //   loan[0].amount = amountToBeReinvested
+                    //   loan[0].totalAmountToPayout = amountToPayoutNow
+                    //   rolloverDone = rolloverDone + 1
+                    //   loan[0].rolloverTarget = rolloverTarget
+                    //   loan[0].rolloverDone = rolloverDone
+                    //   await loan[0].save()
+                    //   loanData = loan[0]
+                    //   // Save the payment data in payout table
+                    //   payload = loanData
+                    //   console.log('Loanrecord loan data line 1941:', payload)
+                    //   payout = await Loanrecord.create(payload)
+                    //   payout.status = 'payout'
+                    //   await payout.save()
+                    //   console.log('Matured Loanrecord loan data line 1945:', payout)
+                    //   // send payment details to transction service
+
+                    //   // Send Notification
+
+                    //   // initiate a new loan
+                    //   investmentCreated = await createInvestment(
+                    //     amountToBeReinvested,
+                    //     payloadDuration,
+                    //     payloadInvestmentType,
+                    //     loanData
+                    //   )
+                    //   console.log('investmentCreated data line 1990:', investmentCreated)
+                    //   if (investmentCreated === undefined) {
+                    //     // send the money to the user
+                    //     // send payment details to transction service
+                    //     // Send Notification
+                    // return response.status(404).json({
+                    //   status: 'FAILED',
+                    //   message: 'reinvestment was not successful, please try again',
+                    //   data: [
+                    //     amountToBeReinvested,
+                    //     payloadDuration,
+                    //     payloadInvestmentType,
+                    //     loanData,
+                    //   ],
+                    // })
+                    //   }
+
+                    //   console.log(
+                    //     `The Interest of ${currencyCode} ${amountToBeReinvested} was Reinvested and the Principal of ${currencyCode} ${amountToPayoutNow} was paid`
+                    //   )
+                    //   break
                     default:
                       console.log("Nothing was done on this loan");
                       break;
@@ -3155,6 +3282,9 @@ export default class LoansController {
         .first();
       console.log("Loanrecord loan data line 3040:", payout);
       if (payout) {
+        // payout.totalAmountToPayout = payoutRecord.totalAmountPaid;
+        // payout.isPayoutAuthorized = payoutRecord.isPayoutAuthorized;
+        // payout.isTerminationAuthorized = payoutRecord.isTerminationAuthorized;
         payout.isDisbursementSuccessful = payoutRecord.isDisbursementSuccessful;
         payout.approvalStatus = payoutRecord.approvalStatus;
         // payout.datePayoutWasDone = payoutRecord.createdAt;

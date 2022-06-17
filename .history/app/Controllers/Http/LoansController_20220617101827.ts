@@ -3155,6 +3155,9 @@ export default class LoansController {
         .first();
       console.log("Loanrecord loan data line 3040:", payout);
       if (payout) {
+        // payout.totalAmountToPayout = payoutRecord.totalAmountPaid;
+        // payout.isPayoutAuthorized = payoutRecord.isPayoutAuthorized;
+        // payout.isTerminationAuthorized = payoutRecord.isTerminationAuthorized;
         payout.isDisbursementSuccessful = payoutRecord.isDisbursementSuccessful;
         payout.approvalStatus = payoutRecord.approvalStatus;
         // payout.datePayoutWasDone = payoutRecord.createdAt;
