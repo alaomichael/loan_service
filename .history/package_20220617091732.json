@@ -14,7 +14,7 @@
     "test": "node ace test --watch",
     "deploy": "git add . && git commit -am Heroku && git push heroku main",
     "restart": "heroku restart -a loanservices",
-    "heroku-postbuild": "npm install pm2 @adonisjs/assembler"
+    "heroku-postbuild": "npm install pm2 @adonisjs/assembler@latest"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.8.0",
