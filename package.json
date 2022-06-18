@@ -8,7 +8,7 @@
     "debug": "node ace serve --node-args=\"--inspect\"",
     "build": "node ace build --production",
     "start:prod": "node server.ts",
-    "start:prod011": "node ./build/server.js",
+    "start:prod01": "node ./build/server.js",
     "start": "node ace serve --watch",
     "start_01": "pm2-runtime start ecosystem.config.js --env production",
     "start_former": "node server.js",
