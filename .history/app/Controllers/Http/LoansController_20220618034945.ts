@@ -28,7 +28,7 @@ export default class LoansController {
       request.qs();
     console.log("LOAN query: ", request.qs());
     const loan = await Loan.query().preload("timelines"); 
-    debugger
+    // debugger
     let sortedInvestments = loan.map((loan) => {
       return {
         ...loan.$original,

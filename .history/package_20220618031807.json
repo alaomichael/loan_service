@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node ace serve --watch",
-    "debug": "node ace serve --node-args=\"--inspect\"",
+    "debug": "node ace serve --watch",
     "build": "node ace build --production",
     "start:prod": "node server.js",
     "start:prod01": "node ./build/server.js",
