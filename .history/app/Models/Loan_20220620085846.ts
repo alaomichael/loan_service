@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
-import { column, beforeCreate, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
+import { column, beforeCreate, BaseModel, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Timeline from "./Timeline";
-import AppBaseModel from 'App/Models/AppBaseModel'
 
-export default class Loan extends AppBaseModel {
+
+export default class Loan extends BaseModel {
   @column({ isPrimary: true })
   public id: string;
 

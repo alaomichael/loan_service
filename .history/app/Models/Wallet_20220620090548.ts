@@ -22,7 +22,7 @@ export default class Wallet extends AppBaseModel {
   public isBvnVerified: boolean;
 
   @column()
-  public walletDetails: string;
+  public walletDetails: strin;
 
   @column()
   public long: number;
