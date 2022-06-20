@@ -22,7 +22,7 @@ export default class extends BaseSchema {
       table.string("savings_account_number", 255).notNullable().index();
       table.string("loan_account_number", 255).notNullable().index();
       table.string("beneficiary_account_number", 255).notNullable().index();
-      table.string("beneficiary_account_name", 255).notNullable();
+      table.string("beneficiary_account_name", 255).notNullable().index();
       table.string("beneficiary_account_bank", 255).notNullable().index();
       table.float("amount_requested").unsigned().notNullable().index();
       table.string("duration", 255).notNullable().index();
