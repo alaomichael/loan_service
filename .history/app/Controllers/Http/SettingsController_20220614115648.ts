@@ -93,7 +93,7 @@ export default class SettingsController {
     // return setting(s)
     return response.status(200).json({
       status: "OK",
-      data: sortedSettings.map((setting) => setting)//.$original),
+      data: sortedSettings.map((setting) => setting.$original),
     });
   }
 

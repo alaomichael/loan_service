@@ -828,7 +828,7 @@ export default class LoansController {
         message: "No data matched your feedback query",
       });
     }
-
+  
   }
 
   public async updateOffer({ request, response }: HttpContextContract) {
