@@ -36,10 +36,7 @@ export default class Loan extends AppBaseModel {
   public beneficiaryAccountNumber: string;
 
   @column()
-  public beneficiaryAccountName: string;
-
-  @column()
-  public beneficiaryAccountBank: string;
+  public loanAccountId: string;
 
   @column()
   public amountRequested: number;
