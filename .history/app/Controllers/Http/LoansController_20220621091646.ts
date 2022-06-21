@@ -1231,8 +1231,7 @@ export default class LoansController {
       payload.isBvnVerified = true;
     }
 // Confirm other account details match the user details
-let name = `${payload.firstName}  ${payload.lastName}`;
-console.log("Name line 1232 :", name);
+let name = ``
 if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
   return response.json({status:"FAILED", message: "user details does not match, please check your details and try again."})
 }
