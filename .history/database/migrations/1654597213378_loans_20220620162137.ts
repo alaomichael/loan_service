@@ -19,10 +19,7 @@ export default class extends BaseSchema {
       table.string("loan_account_number", 255).notNullable();
       table.string("beneficiary_account_number", 255).notNullable();
       table.string("beneficiary_account_name", 255).notNullable();
-      table.string("beneficiary_account_bank_name", 255).notNullable();
-      table.string("other_account_number", 255).notNullable();
-      table.string("other_account_name", 255).notNullable();
-      table.string("other_account_bank_name", 255).notNullable();
+      table.string("beneficiary_account_bank", 255).notNullable();
       table.string("duration", 255).notNullable();
       table.string("tag_name", 255).notNullable();
       table.string("currency_code", 10).notNullable();
@@ -59,13 +56,16 @@ export default class extends BaseSchema {
         .notNullable()
         .defaultTo("pending")
         .index();
-      table.string("status", 255).notNullable().defaultTo("initiated");
+      table.string("status", 255).notNullable().defaultTo("initiated").index();
       table.string("timeline").nullable();
       table.string("date_disbursement_was_done").nullable();
       table.timestamp("updated_at", { useTz: true });
 
       // indexes
-      table.index(["id", "wallet_id", "tag_name"], "loan_full_index");
+      table.index(
+        ["id", "wallet_id", "tag_name"],
+        "loan_full_index"
+      );
     });
   }
 

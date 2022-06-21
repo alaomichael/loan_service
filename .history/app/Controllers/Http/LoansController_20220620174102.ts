@@ -1177,10 +1177,7 @@ export default class LoansController {
       loanAccountNumber: schema.string(),
       beneficiaryAccountNumber: schema.string(),
       beneficiaryAccountName: schema.string(),
-      beneficiaryAccountBankName: schema.string(),
-      otherAccountNumber: schema.string(),
-      otherAccountName: schema.string(),
-      otherAccountBankName: schema.string(),
+      beneficiaryAccountBank: schema.string(),
       amountRequested: schema.number(),
       duration: schema.enum([
         "7",
@@ -1230,11 +1227,6 @@ export default class LoansController {
     } else {
       payload.isBvnVerified = true;
     }
-// Confirm other account details match the user details
-if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
-  return response.json({status:"FAILED", message: "user details does not match, please check your details and try again."})
-}
-
     // check creditRating
 
     // check available rate to apply
@@ -2152,12 +2144,64 @@ if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
         return response.json({ status: "FAILED", message: error.message });
       }
       if (loan.length > 0) {
+        let loanData = loan[0];
+        let rolloverType = loan[0].rolloverType;
+        let amount = loan[0].amount;
+        let duration = loan[0].duration;
+        let investmentType = loan[0].investmentType;
+        let rolloverTarget = loan[0].rolloverTarget;
+        let rolloverDone = loan[0].rolloverDone;
+        let currencyCode = loan[0].currencyCode;
+        let isTransactionSentForProcessing;
+        let payload;
+        let payout;
+        let timelineObject;
+        // let timeline;
+        let settings = await Setting.query().where({
+          tagName: "default setting",
+        });
+        console.log("Approval setting line 1568:", settings[0]);
         console.log("Loan Info, line 1569: ", loan);
-                 return response.json({
-            status: "OK",
-            data:loan.map((inv) => inv.$original),
-          });
+        if (
+          (loan.length > 0 &&
+            loan[0].isPayoutAuthorized === true &&
+            loan[0].isTerminationAuthorized === true &&
+            loan[0].requestType === "payout loan" &&
+            loan[0].approvalStatus === "approved" &&
+            loan[0].status === "payout") ||
+          (loan.length > 0 &&
+            loan[0].isPayoutAuthorized === true &&
+            loan[0].isTerminationAuthorized === false &&
+            loan[0].requestType === "payout loan" &&
+            loan[0].approvalStatus === "approved" &&
+            loan[0].status === "payout") ||
+          (loan.length > 0 &&
+            loan[0].isPayoutAuthorized === false &&
+            loan[0].isTerminationAuthorized === true &&
+            loan[0].requestType === "terminate loan" &&
+            loan[0].approvalStatus === "approved" &&
+            loan[0].status === "terminated") ||
+          (loan.length > 0 &&
+            loan[0].isPayoutAuthorized === true &&
+            loan[0].isTerminationAuthorized === true &&
+            loan[0].requestType === "terminate loan" &&
+            loan[0].approvalStatus === "approved" &&
+            loan[0].status === "terminated")
+        ) {
+          console.log("loan search data line 1596 :", loan[0].$original);
+
         } else {
+          return response.status(404).json({
+            status: "FAILED",
+            message:
+              "no loan matched your search, or payment has been processed.",
+            data: {
+              paymentStatus: loan.map((inv) => inv.$original.status),
+              amountPaid: loan.map((inv) => inv.$original.totalAmountToPayout),
+            },
+          });
+        }
+      } else {
         console.log("Loan data after search line 2911:", loan);
         return response.status(200).json({
           status: "FAILED",

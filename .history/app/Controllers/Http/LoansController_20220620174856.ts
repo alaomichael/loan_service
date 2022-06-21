@@ -1177,10 +1177,10 @@ export default class LoansController {
       loanAccountNumber: schema.string(),
       beneficiaryAccountNumber: schema.string(),
       beneficiaryAccountName: schema.string(),
-      beneficiaryAccountBankName: schema.string(),
-      otherAccountNumber: schema.string(),
-      otherAccountName: schema.string(),
-      otherAccountBankName: schema.string(),
+      beneficiaryAccountBank: schema.string(),
+      beneficiaryAccountNumber: schema.string(),
+      beneficiaryAccountName: schema.string(),
+      beneficiaryAccountBank: schema.string(),
       amountRequested: schema.number(),
       duration: schema.enum([
         "7",
@@ -1230,11 +1230,6 @@ export default class LoansController {
     } else {
       payload.isBvnVerified = true;
     }
-// Confirm other account details match the user details
-if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
-  return response.json({status:"FAILED", message: "user details does not match, please check your details and try again."})
-}
-
     // check creditRating
 
     // check available rate to apply

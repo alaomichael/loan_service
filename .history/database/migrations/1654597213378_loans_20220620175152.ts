@@ -20,9 +20,6 @@ export default class extends BaseSchema {
       table.string("beneficiary_account_number", 255).notNullable();
       table.string("beneficiary_account_name", 255).notNullable();
       table.string("beneficiary_account_bank_name", 255).notNullable();
-      table.string("other_account_number", 255).notNullable();
-      table.string("other_account_name", 255).notNullable();
-      table.string("other_account_bank_name", 255).notNullable();
       table.string("duration", 255).notNullable();
       table.string("tag_name", 255).notNullable();
       table.string("currency_code", 10).notNullable();
@@ -65,7 +62,10 @@ export default class extends BaseSchema {
       table.timestamp("updated_at", { useTz: true });
 
       // indexes
-      table.index(["id", "wallet_id", "tag_name"], "loan_full_index");
+      table.index(
+        ["id", "wallet_id", "tag_name"],
+        "loan_full_index"
+      );
     });
   }
 

@@ -19,15 +19,12 @@ export default class extends BaseSchema {
       table.string("loan_account_number", 255).notNullable();
       table.string("beneficiary_account_number", 255).notNullable();
       table.string("beneficiary_account_name", 255).notNullable();
-      table.string("beneficiary_account_bank_name", 255).notNullable();
-      table.string("other_account_number", 255).notNullable();
-      table.string("other_account_name", 255).notNullable();
-      table.string("other_account_bank_name", 255).notNullable();
+      table.string("beneficiary_account_bank", 255).notNullable();
       table.string("duration", 255).notNullable();
       table.string("tag_name", 255).notNullable();
       table.string("currency_code", 10).notNullable();
       table.string("bvn", 11).notNullable().index();
-      table.boolean("is_bvn_verified").notNullable().defaultTo(false);
+      table.boolean("is_bvn_verified").notNullable().defaultTo(false).index();
       // table.jsonb("loan_account_details").notNullable().index();
       table.float("long").nullable();
       table.float("lat").nullable();
@@ -42,12 +39,13 @@ export default class extends BaseSchema {
       table.timestamp("created_at", { useTz: true });
       table.date("start_date").nullable().index();
       table.date("repayment_date").nullable().index();
-      table.boolean("is_loan_approved").notNullable().defaultTo(false);
-      table.boolean("is_offer_accepted").notNullable().defaultTo(false);
+      table.boolean("is_loan_approved").notNullable().defaultTo(false).index();
+      table.boolean("is_offer_accepted").notNullable().defaultTo(false).index();
       table
         .boolean("is_disbursement_successful")
         .notNullable()
-        .defaultTo(false);
+        .defaultTo(false)
+        .index();
       table.boolean("is_repayment_successful").notNullable().defaultTo(false);
       table
         .string("request_type", 255)
@@ -59,13 +57,16 @@ export default class extends BaseSchema {
         .notNullable()
         .defaultTo("pending")
         .index();
-      table.string("status", 255).notNullable().defaultTo("initiated");
+      table.string("status", 255).notNullable().defaultTo("initiated").index();
       table.string("timeline").nullable();
-      table.string("date_disbursement_was_done").nullable();
+      table.string("date_disbursement_was_done").nullable().index();
       table.timestamp("updated_at", { useTz: true });
 
       // indexes
-      table.index(["id", "wallet_id", "tag_name"], "loan_full_index");
+      table.index(
+        ["id", "wallet_id", "duration", "tag_name", "bvn"],
+        "loan_full_index"
+      );
     });
   }
 

@@ -1177,10 +1177,7 @@ export default class LoansController {
       loanAccountNumber: schema.string(),
       beneficiaryAccountNumber: schema.string(),
       beneficiaryAccountName: schema.string(),
-      beneficiaryAccountBankName: schema.string(),
-      otherAccountNumber: schema.string(),
-      otherAccountName: schema.string(),
-      otherAccountBankName: schema.string(),
+      beneficiaryAccountBank: schema.string(),
       amountRequested: schema.number(),
       duration: schema.enum([
         "7",
@@ -1230,11 +1227,6 @@ export default class LoansController {
     } else {
       payload.isBvnVerified = true;
     }
-// Confirm other account details match the user details
-if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
-  return response.json({status:"FAILED", message: "user details does not match, please check your details and try again."})
-}
-
     // check creditRating
 
     // check available rate to apply
@@ -2152,12 +2144,19 @@ if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
         return response.json({ status: "FAILED", message: error.message });
       }
       if (loan.length > 0) {
+
         console.log("Loan Info, line 1569: ", loan);
-                 return response.json({
-            status: "OK",
-            data:loan.map((inv) => inv.$original),
+                 return response.status(404).json({
+            status: "FAILED",
+            message:
+              "no loan matched your search, or payment has been processed.",
+            data: {
+              paymentStatus: loan.map((inv) => inv.$original.status),
+              amountPaid: loan.map((inv) => inv.$original.totalAmountToPayout),
+
           });
-        } else {
+        }
+      } else {
         console.log("Loan data after search line 2911:", loan);
         return response.status(200).json({
           status: "FAILED",

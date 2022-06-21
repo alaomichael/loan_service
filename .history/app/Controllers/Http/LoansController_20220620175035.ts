@@ -1230,11 +1230,6 @@ export default class LoansController {
     } else {
       payload.isBvnVerified = true;
     }
-// Confirm other account details match the user details
-if(payload.firstName +" "+ payload.lastName !== payload.otherAccountName){
-  return response.json({status:"FAILED", message: "user details does not match, please check your details and try again."})
-}
-
     // check creditRating
 
     // check available rate to apply
